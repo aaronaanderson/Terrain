@@ -1,12 +1,9 @@
-# cmake_minimum_required(VERSION 3.15) # melatonin_perfetto requires min 3.24
-cmake_minimum_required(VERSION 3.24) 
+cmake_minimum_required(VERSION 3.22) 
 
-project(JUCE_GL_PLUGIN VERSION 0.0.1)
+project(TERRAIN VERSION 0.0.1)
 
 find_package(OpenGL REQUIRED)
 add_subdirectory(JUCE)                    # If you've put JUCE in a subdirectory called JUCE
-
-add_subdirectory(melatonin_perfetto)
 
 juce_add_plugin(WaveTerrainSynth
     VERSION "0.0.1"                               # Set this if the plugin version is different to the project version
@@ -16,8 +13,7 @@ juce_add_plugin(WaveTerrainSynth
     IS_SYNTH TRUE                       # Is this a synth or an effect?
     NEEDS_MIDI_INPUT TRUE              # Does the plugin need midi input?
     # NEEDS_MIDI_OUTPUT TRUE/FALSE              # Does the plugin need midi output?
-    # IS_MIDI_EFFECT TRUE/FALSE                 # Is this plugin a MIDI effect?
-    # EDITOR_WANTS_KEYBOARD_FOCUS TRUE/FALSE    # Does the editor need keyboard focus?
+    IS_MIDI_EFFECT FALSE                 # Is this plugin a MIDI effect?
     VST3_COPY_DIR "." 
     COPY_PLUGIN_AFTER_BUILD TRUE
     PLUGIN_MANUFACTURER_CODE Morf               # A four-character manufacturer id with at least one upper-case character
@@ -27,8 +23,6 @@ juce_add_plugin(WaveTerrainSynth
     PRODUCT_NAME "Wave Terrain Synth"        # The name of the final executable, which can differ from the target name
 )    
 
-juce_add_module(drowaudio/module/dRowAudio)
-    
 set_property(TARGET WaveTerrainSynth PROPERTY CXX_STANDARD 17)
 
 target_sources(WaveTerrainSynth
@@ -44,14 +38,12 @@ target_compile_definitions(WaveTerrainSynth
         JUCE_VST3_CAN_REPLACE_VST2=0
         JUCE_DISPLAY_SPLASH_SCREEN=0)
         
-target_include_directories(WaveTerrainSynth PUBLIC PerlinNoise/PerlinNoise.hpp)
-
-juce_add_binary_data(BinaryData SOURCES
-    Source/Interface/Renderer/shaders/TrajectoryPoint.frag 
-    Source/Interface/Renderer/shaders/TrajectoryPoint.vert
-    Source/Interface/Renderer/shaders/Terrain.frag 
-    Source/Interface/Renderer/shaders/Terrain.vert
-)
+# juce_add_binary_data(BinaryData SOURCES
+#     Source/Interface/Renderer/shaders/TrajectoryPoint.frag 
+#     Source/Interface/Renderer/shaders/TrajectoryPoint.vert
+#     Source/Interface/Renderer/shaders/Terrain.frag 
+#     Source/Interface/Renderer/shaders/Terrain.vert
+# )
 
 # including glu32.lib on mac will cause it to screech 
 if(WIN32) 
@@ -68,8 +60,6 @@ target_link_libraries(WaveTerrainSynth
         juce::juce_audio_utils
         juce::juce_dsp
         juce::juce_opengl
-        # Melatonin::Perfetto
-        dRowAudio
     PUBLIC
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
