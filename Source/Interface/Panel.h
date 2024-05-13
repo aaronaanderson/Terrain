@@ -9,18 +9,33 @@ class Panel : public juce::Component
 public:
     Panel (juce::String panelName)
       : name (panelName)
-    {}
+    {
+        nameLabel.setText (name, juce::NotificationType::dontSendNotification);
+        nameLabel.setJustificationType (juce::Justification::centred);
+        addAndMakeVisible (nameLabel);
+    }
     void paint (juce::Graphics& g) override 
     {
+        g.setColour (juce::Colours::black);
         auto b = getLocalBounds();
         g.drawRect (b);
-        auto titleBounds = b.removeFromTop (20);
-        g.drawRect (titleBounds);
-        g.drawText (name, 
-                    titleBounds, 
-                    juce::Justification::centred);
+
+        g.drawRect (b.removeFromTop (20));
+    }
+    void resized() override 
+    {
+        auto b = getLocalBounds();
+        nameLabel.setBounds (b.removeFromTop (labelHeight));
+    }
+    juce::Rectangle<int> getAdjustedBounds() const noexcept  
+    {
+        auto b = getLocalBounds();
+        auto leftOverBounds = b.removeFromTop (labelHeight);
+        return b;
     }
 private:
     juce::String name;
+    int labelHeight = 20;
+    juce::Label nameLabel;
 };
 }

@@ -2,8 +2,12 @@
 
 MainEditor::MainEditor (MainProcessor& p)
     : AudioProcessorEditor (&p), processorRef (p), 
-      state(processorRef.getState())
+      state(processorRef.getState()), 
+      undoManager (processorRef.getUndoManager()),
+      trajectoryPanel (state.getChildWithName (id::TRAJECTORIES), undoManager, globalTimer)
 {
+    jassert (state.getType() == id::TERRAINSYNTH);
+    std::cout << state.toXmlString() << std::endl;
     setLookAndFeel (&lookAndFeel);
 
     setSize (1200, 800);
@@ -14,6 +18,7 @@ MainEditor::MainEditor (MainProcessor& p)
     addAndMakeVisible (terrainPanel);
     addAndMakeVisible (controlPanel);
     addAndMakeVisible (visualiserPanel);
+
 }
 MainEditor::~MainEditor() 
 {

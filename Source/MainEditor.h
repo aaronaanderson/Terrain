@@ -20,6 +20,8 @@ public:
 private:
     MainProcessor& processorRef; // Do NOT change order
     juce::ValueTree state;       // of processorRef and state xoxo
+    juce::UndoManager& undoManager;
+    GlobalTimer globalTimer;
 
     ti::TrajectoryPanel trajectoryPanel;    
     ti::TerrainPanel    terrainPanel;

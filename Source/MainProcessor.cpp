@@ -2,11 +2,30 @@
 #include "MainEditor.h"
 
 #include "DefaultTreeGenerator.h"
+
+juce::StringArray getTrajectoryChoices(juce::ValueTree trajectoriesTree)
+{
+    juce::StringArray sa;
+    jassert (trajectoriesTree.getType() == id::TRAJECTORIES);
+    for (int i = 0; i < trajectoriesTree.getNumChildren(); i++)
+        sa.add (trajectoriesTree.getChild (i).getProperty (id::type).toString());
+    return sa;
+}
+const juce::String MainProcessor::trajectoryNameFromIndex (int i)
+{
+    auto trajectories = state.getChildWithName (id::TRAJECTORIES);
+    return trajectories.getChild (i).getProperty (id::type).toString();
+}
 //==============================================================================
 MainProcessor::MainProcessor()
      : AudioProcessor (BusesProperties().withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
-       state (DefaultTree::create())
+        state (DefaultTree::create())
 {
+    addParameter (currentTrajectoryParameter = new tp::ChoiceParameter ("Current Trajectory", 
+        getTrajectoryChoices (state.getChildWithName (id::TRAJECTORIES)), 
+        "", 
+        [&](int i){state.getChildWithName (id::TRAJECTORIES).setProperty (id::currentTrajectory, trajectoryNameFromIndex(i), &undoManager);}));
+
 }
 
 MainProcessor::~MainProcessor() {}
@@ -53,7 +72,18 @@ void MainProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 bool MainProcessor::hasEditor() const { return true; }
 juce::AudioProcessorEditor* MainProcessor::createEditor() { return new MainEditor (*this); }
 //==============================================================================
-void MainProcessor::getStateInformation (juce::MemoryBlock& destData) { juce::ignoreUnused (destData); }
-void MainProcessor::setStateInformation (const void* data, int sizeInBytes) { juce::ignoreUnused (data, sizeInBytes); }
+void MainProcessor::getStateInformation (juce::MemoryBlock& destData) 
+{ 
+    std::unique_ptr<juce::XmlElement> xml (state.createXml());
+    copyXmlToBinary (*xml, destData);
+}
+void MainProcessor::setStateInformation (const void* data, int sizeInBytes)
+{ 
+    std::unique_ptr<juce::XmlElement> xml (getXmlFromBinary (data, sizeInBytes));
+    if (xml.get() == nullptr) return; // make sure we have data
+    if (!xml->hasTagName (state.getType())) return; // make sure it's the right data
+
+    state = juce::ValueTree::fromXml (*xml);
+}
 //==============================================================================
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter() { return new MainProcessor(); }
