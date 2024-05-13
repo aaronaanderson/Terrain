@@ -8,6 +8,8 @@ MainEditor::MainEditor (MainProcessor& p)
     setLookAndFeel (&lookAndFeel);
 
     setSize (1200, 800);
+    setResizable (true, false);
+    setResizeLimits (300, 200, 2400, 1600);
 }
 MainEditor::~MainEditor() 
 {

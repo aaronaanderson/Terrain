@@ -20,7 +20,7 @@ juce_add_plugin(WaveTerrainSynth
     PLUGIN_CODE JEe8                            # A unique four-character plugin id with exactly one upper-case character
                                                 # GarageBand 10.3 requires the first letter to be upper-case, and the remaining letters to be lower-case
     FORMATS VST3 Standalone                  # The formats to build. Other valid formats are: AAX Unity VST AU AUv3
-    PRODUCT_NAME "Wave Terrain Synth"        # The name of the final executable, which can differ from the target name
+    PRODUCT_NAME "Terrain"        # The name of the final executable, which can differ from the target name
 )    
 
 set_property(TARGET WaveTerrainSynth PROPERTY CXX_STANDARD 17)
@@ -56,7 +56,6 @@ endif()
 
 target_link_libraries(WaveTerrainSynth
     PRIVATE
-        BinaryData
         juce::juce_audio_utils
         juce::juce_dsp
         juce::juce_opengl
