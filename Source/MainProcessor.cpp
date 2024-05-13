@@ -1,9 +1,11 @@
 #include "MainProcessor.h"
 #include "MainEditor.h"
 
+#include "DefaultTreeGenerator.h"
 //==============================================================================
 MainProcessor::MainProcessor()
-     : AudioProcessor (BusesProperties().withOutput ("Output", juce::AudioChannelSet::stereo(), true))
+     : AudioProcessor (BusesProperties().withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
+       state (DefaultTree::create())
 {
 }
 
