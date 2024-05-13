@@ -1,6 +1,10 @@
 #pragma once
 
 #include "MainProcessor.h"
+#include "Interface/TrajectoryPanel.h"
+#include "Interface/TerrainPanel.h"
+#include "Interface/ControlPanel.h"
+#include "Interface/VisualiserPanel.h"
 
 class TerrainLookAndFeel : public juce::LookAndFeel_V4 {};
 
@@ -16,6 +20,11 @@ public:
 private:
     MainProcessor& processorRef; // Do NOT change order
     juce::ValueTree state;       // of processorRef and state xoxo
+
+    ti::TrajectoryPanel trajectoryPanel;    
+    ti::TerrainPanel    terrainPanel;
+    ti::ControlPanel    controlPanel;
+    ti::VisualiserPanel visualiserPanel;
 
     TerrainLookAndFeel lookAndFeel;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainEditor)
