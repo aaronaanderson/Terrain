@@ -1,0 +1,76 @@
+# cmake_minimum_required(VERSION 3.15) # melatonin_perfetto requires min 3.24
+cmake_minimum_required(VERSION 3.24) 
+
+project(JUCE_GL_PLUGIN VERSION 0.0.1)
+
+find_package(OpenGL REQUIRED)
+add_subdirectory(JUCE)                    # If you've put JUCE in a subdirectory called JUCE
+
+add_subdirectory(melatonin_perfetto)
+
+juce_add_plugin(WaveTerrainSynth
+    VERSION "0.0.1"                               # Set this if the plugin version is different to the project version
+    # ICON_BIG ...                              # ICON_* arguments specify a path to an image file to use as an icon for the Standalone
+    # ICON_SMALL ...
+    # COMPANY_NAME ...                          # Specify the name of the plugin's author
+    IS_SYNTH TRUE                       # Is this a synth or an effect?
+    NEEDS_MIDI_INPUT TRUE              # Does the plugin need midi input?
+    # NEEDS_MIDI_OUTPUT TRUE/FALSE              # Does the plugin need midi output?
+    # IS_MIDI_EFFECT TRUE/FALSE                 # Is this plugin a MIDI effect?
+    # EDITOR_WANTS_KEYBOARD_FOCUS TRUE/FALSE    # Does the editor need keyboard focus?
+    VST3_COPY_DIR "." 
+    COPY_PLUGIN_AFTER_BUILD TRUE
+    PLUGIN_MANUFACTURER_CODE Morf               # A four-character manufacturer id with at least one upper-case character
+    PLUGIN_CODE JEe8                            # A unique four-character plugin id with exactly one upper-case character
+                                                # GarageBand 10.3 requires the first letter to be upper-case, and the remaining letters to be lower-case
+    FORMATS VST3 Standalone                  # The formats to build. Other valid formats are: AAX Unity VST AU AUv3
+    PRODUCT_NAME "Wave Terrain Synth"        # The name of the final executable, which can differ from the target name
+)    
+
+juce_add_module(drowaudio/module/dRowAudio)
+    
+set_property(TARGET WaveTerrainSynth PROPERTY CXX_STANDARD 17)
+
+target_sources(WaveTerrainSynth
+    PRIVATE
+        Source/MainEditor.cpp
+        Source/MainProcessor.cpp)
+
+target_compile_definitions(WaveTerrainSynth
+    PUBLIC
+        # JUCE_WEB_BROWSER and JUCE_USE_CURL would be on by default, but you might not need them.
+        JUCE_WEB_BROWSER=0  # If you remove this, add `NEEDS_WEB_BROWSER TRUE` to the `juce_add_plugin` call
+        JUCE_USE_CURL=0     # If you remove this, add `NEEDS_CURL TRUE` to the `juce_add_plugin` call
+        JUCE_VST3_CAN_REPLACE_VST2=0
+        JUCE_DISPLAY_SPLASH_SCREEN=0)
+        
+target_include_directories(WaveTerrainSynth PUBLIC PerlinNoise/PerlinNoise.hpp)
+
+juce_add_binary_data(BinaryData SOURCES
+    Source/Interface/Renderer/shaders/TrajectoryPoint.frag 
+    Source/Interface/Renderer/shaders/TrajectoryPoint.vert
+    Source/Interface/Renderer/shaders/Terrain.frag 
+    Source/Interface/Renderer/shaders/Terrain.vert
+)
+
+# including glu32.lib on mac will cause it to screech 
+if(WIN32) 
+    target_link_libraries(WaveTerrainSynth 
+    PRIVATE
+        glu32.lib   
+    )
+endif()
+
+
+target_link_libraries(WaveTerrainSynth
+    PRIVATE
+        BinaryData
+        juce::juce_audio_utils
+        juce::juce_dsp
+        juce::juce_opengl
+        # Melatonin::Perfetto
+        dRowAudio
+    PUBLIC
+        juce::juce_recommended_config_flags
+        juce::juce_recommended_lto_flags
+        juce::juce_recommended_warning_flags)
