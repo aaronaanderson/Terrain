@@ -4,7 +4,7 @@ MainEditor::MainEditor (MainProcessor& p)
     : AudioProcessorEditor (&p), processorRef (p), 
       state(processorRef.getState()), 
       undoManager (processorRef.getUndoManager()),
-      trajectoryPanel (state.getChildWithName (id::TRAJECTORIES), undoManager, globalTimer)
+      trajectoryPanel (state.getChildWithName (id::TRAJECTORIES), undoManager, globalTimer, processorRef.getParameters())
 {
     jassert (state.getType() == id::TERRAINSYNTH);
     std::cout << state.toXmlString() << std::endl;
@@ -18,6 +18,9 @@ MainEditor::MainEditor (MainProcessor& p)
     addAndMakeVisible (terrainPanel);
     addAndMakeVisible (controlPanel);
     addAndMakeVisible (visualiserPanel);
+
+    setWantsKeyboardFocus (true);
+    addKeyListener (this);
 
 }
 MainEditor::~MainEditor() 
@@ -56,3 +59,19 @@ void MainEditor::paint (juce::Graphics& g)
     visualiserPanel.setBounds (b);
 }
 void MainEditor::resized() {}
+bool MainEditor::keyPressed (const juce::KeyPress& key,
+                             juce::Component* originatingComponent) 
+{
+juce::ignoreUnused(originatingComponent);
+        
+    if(key.getModifiers().isCommandDown() && (key.getKeyCode() == 'v' || key.getKeyCode() == 'V'))
+    {
+        if (valueTreeViewWindow == nullptr)
+            valueTreeViewWindow = std::make_unique<ValueTreeViewWindow> (state);
+        valueTreeViewWindow->addToDesktop ();
+        valueTreeViewWindow->setSize (400, 800);
+        valueTreeViewWindow->setVisible (true);
+        return true;
+    }
+    return true;
+}

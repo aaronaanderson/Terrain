@@ -6,9 +6,16 @@
 #include "Interface/ControlPanel.h"
 #include "Interface/VisualiserPanel.h"
 
+#include "Interface/ValueTreeView.h"
+
 class TerrainLookAndFeel : public juce::LookAndFeel_V4 {};
 
-class MainEditor  : public juce::AudioProcessorEditor
+
+
+
+
+class MainEditor  : public juce::AudioProcessorEditor,
+                    private juce::KeyListener
 {
 public:
     explicit MainEditor (MainProcessor&);
@@ -19,15 +26,22 @@ public:
 
 private:
     MainProcessor& processorRef; // Do NOT change order
-    juce::ValueTree state;       // of processorRef and state xoxo
+    juce::ValueTree& state;       // of processorRef and state xoxo
     juce::UndoManager& undoManager;
     GlobalTimer globalTimer;
+
+    TerrainLookAndFeel lookAndFeel;
 
     ti::TrajectoryPanel trajectoryPanel;    
     ti::TerrainPanel    terrainPanel;
     ti::ControlPanel    controlPanel;
     ti::VisualiserPanel visualiserPanel;
 
-    TerrainLookAndFeel lookAndFeel;
+
+    std::unique_ptr<ValueTreeViewWindow> valueTreeViewWindow;
+    bool keyPressed (const juce::KeyPress& key,
+                     juce::Component* originatingComponent) override;
+
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainEditor)
 };

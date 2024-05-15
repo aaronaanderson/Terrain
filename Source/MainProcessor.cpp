@@ -21,11 +21,12 @@ MainProcessor::MainProcessor()
      : AudioProcessor (BusesProperties().withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
         state (DefaultTree::create())
 {
-    addParameter (currentTrajectoryParameter = new tp::ChoiceParameter ("Current Trajectory", 
+    addParameter (parameters.currentTrajectoryParameter = new tp::ChoiceParameter ("Current Trajectory", 
         getTrajectoryChoices (state.getChildWithName (id::TRAJECTORIES)), 
         "", 
-        [&](int i){state.getChildWithName (id::TRAJECTORIES).setProperty (id::currentTrajectory, trajectoryNameFromIndex(i), &undoManager);}));
-
+        {}));
+        // [&](int i){state.getChildWithName (id::TRAJECTORIES).setProperty (id::currentTrajectory, trajectoryNameFromIndex(i), &undoManager);}));
+    state.addListener (this);
 }
 
 MainProcessor::~MainProcessor() {}

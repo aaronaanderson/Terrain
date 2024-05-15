@@ -1,43 +1,9 @@
 #pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
+#include "Parameters.h"
+#include "Identifiers.h"
 
-namespace tp
-{
-class ChoiceParameter : public juce::AudioParameterChoice
-{
-public:
-    ChoiceParameter(juce::String parameterName, 
-                    juce::StringArray iChoices, 
-                    juce::String label,
-                    std::function<void(int)> newValueFunction = nullptr, 
-                    int defaultChoice = 0)
-      : choices (iChoices), 
-        onNewValue (newValueFunction),
-        juce::AudioParameterChoice (parameterName.removeCharacters(" ") + juce::String("Choice"), 
-                                    parameterName, 
-                                    iChoices, 
-                                    defaultChoice,
-                                    juce::AudioParameterChoiceAttributes().withLabel (label))
-    {
-        valueChanged (defaultChoice);
-    }
-
-    void valueChanged(int newValue) override
-    {
-        if (onNewValue == nullptr) return;
-        if (newValue == storedValue) return;
-        onNewValue (newValue);
-        storedValue = newValue;
-    }
-        
-private: 
-    std::function<void(int)> onNewValue;
-    juce::StringArray choices;
-    int storedValue = -1;
-
-};
-}
 //==============================================================================
 class MainProcessor  : public juce::AudioProcessor, 
                        private juce::ValueTree::Listener
@@ -82,12 +48,37 @@ public:
     juce::ValueTree& getState() { return state; }
     juce::UndoManager& getUndoManager() { return undoManager; }
 
+
+    const tp::Parameters& getParameters() const { return parameters; }
 private:
     juce::ValueTree state;
     juce::UndoManager undoManager;
 
     const juce::String trajectoryNameFromIndex (int i);
-    tp::ChoiceParameter* currentTrajectoryParameter;
+
+    tp::Parameters parameters;
+
+    void valueTreePropertyChanged (juce::ValueTree& treeWhosePropertyHasChanged,
+                                   const juce::Identifier& property) override 
+    {
+        auto tree = treeWhosePropertyHasChanged;
+        if (tree.getType() == id::TRAJECTORIES)
+        {
+            if (property == id::currentTrajectory)
+            {
+                setCurrentTrajectoryParamFromString (tree.getProperty (property).toString());
+                std::cout << property.toString();
+            }
+        }
+    }
+    void setCurrentTrajectoryParamFromString (juce::String s) //Need something better here
+    {
+        auto p = parameters.currentTrajectoryParameter;
+        if (s == "Ellipse") p->setIndex (0);
+        else if (s == "Limacon") p->setIndex (1);
+        else if (s == "Butterfly") p->setIndex (2);
+        else if (s == "Scarabaeus") p->setIndex (3);
+    }
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainProcessor)
 };

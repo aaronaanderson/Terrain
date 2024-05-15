@@ -4,6 +4,7 @@
 #include <juce_data_structures/juce_data_structures.h>
 #include "../Identifiers.h"
 #include "GlobalTimer.h"
+#include "../Parameters.h"
 namespace ti
 {
 class TrajectorySelector : public juce::Component, 
@@ -13,9 +14,11 @@ class TrajectorySelector : public juce::Component,
 public:
     TrajectorySelector (juce::ValueTree trajectoryBranch, 
                         juce::UndoManager& um, 
-                        GlobalTimer& gt)
+                        GlobalTimer& gt, 
+                        const tp::Parameters p)
       : state (trajectoryBranch),
-        undoManager (um)
+        undoManager (um),
+        parameters (p)
     {
         state.addListener (this);
         initializeState();
@@ -30,7 +33,6 @@ public:
         };
         addAndMakeVisible (trajectoryListLabel);
 
-        state.addListener (this);
         gt.addListener (*this);
     }
     void paint (juce::Graphics& g)
@@ -46,16 +48,14 @@ public:
     }
     void onTimerCallback() override 
     {
-        if (needsRepainted)
-        {
-            repaint(); 
-            needsRepainted = false;
-        }
+        trajectoryList.setSelectedItemIndex (parameters.currentTrajectoryParameter->getIndex(), juce::dontSendNotification);
+        repaint();
     }
 
 private:
     juce::ValueTree state;
     juce::UndoManager& undoManager;
+    const tp::Parameters parameters;
 
     juce::ComboBox trajectoryList;
     juce::Label trajectoryListLabel;
@@ -88,11 +88,8 @@ private:
     void valueTreePropertyChanged (juce::ValueTree& treeWhosePropertyHasChanged,
                                    const juce::Identifier& property) override 
     {
-            if (property == id::currentTrajectory)
-            {
-                needsRepainted = true;
-                setItemByName (property.toString());
-            }
+        juce::ignoreUnused (treeWhosePropertyHasChanged);
+        juce::ignoreUnused (property);
     }
                                 
                                    
@@ -103,11 +100,12 @@ class TrajectoryPanel : public Panel,
 public:
     TrajectoryPanel (juce::ValueTree trajectoryState, 
                      juce::UndoManager& um, 
-                     GlobalTimer gt)
+                     GlobalTimer& gt, 
+                     const tp::Parameters& p)
       : Panel ("Trajectory"), 
         state (trajectoryState), 
         undoManager (um),
-        trajectorySelector (state, undoManager, gt)
+        trajectorySelector (state, undoManager, gt, p)
     {
         jassert (state.getType() == id::TRAJECTORIES);
         addAndMakeVisible (trajectorySelector);
