@@ -67,7 +67,6 @@ private:
             if (property == id::currentTrajectory)
             {
                 setCurrentTrajectoryParamFromString (tree.getProperty (property).toString());
-                std::cout << property.toString();
             }
         }
     }

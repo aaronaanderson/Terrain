@@ -7,8 +7,7 @@
 #include "../Parameters.h"
 namespace ti
 {
-class TrajectorySelector : public juce::Component, 
-                           private juce::ValueTree::Listener, 
+class TrajectorySelector : public juce::Component,
                            private GlobalTimer::Listener
 {
 public:
@@ -20,7 +19,7 @@ public:
         undoManager (um),
         parameters (p)
     {
-        state.addListener (this);
+
         initializeState();
 
         addAndMakeVisible (trajectoryList);
@@ -83,16 +82,99 @@ private:
         for (int i = 0; i < trajectoryList.getNumItems(); i++)
             if (trajectoryList.getItemText (i) == name)
                 trajectoryList.setSelectedId (i + 1);
+    }                            
+};
+struct LabelSlider : public juce::Component
+{
+    LabelSlider (juce::String labelText, juce::Range<double> range)
+    {
+        label.setText (labelText, juce::dontSendNotification);
+        slider.setRange (range, 0.0);
+        slider.setTextBoxStyle (juce::Slider::TextEntryBoxPosition::NoTextBox, true, 20, 20);
+        addAndMakeVisible (label);
+        addAndMakeVisible (slider);
+    }
+    void resized() override 
+    {
+        auto b = getLocalBounds();
+        label.setBounds (b.removeFromLeft (20));
+        slider.setBounds (b);
+    }
+    void setValue (double v) { slider.setValue (v, juce::NotificationType::dontSendNotification); }
+private:
+    juce::Label label;
+    juce::Slider slider;
+};
+static juce::ValueTree getCurrentTrajectoryBranch (juce::ValueTree trajectoriesBranch)
+{
+    jassert (trajectoriesBranch.getType() == id::TRAJECTORIES);
+    auto trajectoryType = trajectoriesBranch.getProperty (id::currentTrajectory).toString();
+    for (int i = 0; i < trajectoriesBranch.getNumChildren(); i++)
+        if (trajectoriesBranch.getChild (i).getProperty (id::type) == trajectoryType)
+            return trajectoriesBranch.getChild (i);
+
+    jassertfalse;
+    return {};
+}
+class ModifierArray : public juce::Component,
+                      private GlobalTimer::Listener, 
+                      private juce::ValueTree::Listener
+{
+public:
+    ModifierArray (juce::ValueTree trajectoryState, 
+                   juce::UndoManager& um, 
+                   GlobalTimer& gt, 
+                   const tp::Parameters& p)
+      : state (trajectoryState), 
+        undoManager (um), 
+        parameters (p), 
+        aModifier ("a", {0.0, 1.0}),
+        bModifier ("b", {0.0, 1.0}),
+        cModifier ("c", {0.0, 1.0}),
+        dModifier ("d", {0.0, 1.0})
+    {
+        jassert (state.getType() == id::TRAJECTORIES);
+        
+        gt.addListener (*this);
+
+        addAndMakeVisible (aModifier);
+        addAndMakeVisible (bModifier);
+        addAndMakeVisible (cModifier);
+        addAndMakeVisible (dModifier);
+
+        initializeState();
     }
 
-    void valueTreePropertyChanged (juce::ValueTree& treeWhosePropertyHasChanged,
-                                   const juce::Identifier& property) override 
+    void onTimerCallback() override { repaint(); }
+    void resized() override 
     {
-        juce::ignoreUnused (treeWhosePropertyHasChanged);
-        juce::ignoreUnused (property);
+        auto b = getLocalBounds();
+        auto quarterHeight = b.getHeight() / 4;
+        aModifier.setBounds (b.removeFromTop (quarterHeight));
+        bModifier.setBounds (b.removeFromTop (quarterHeight));
+        cModifier.setBounds (b.removeFromTop (quarterHeight));
+        dModifier.setBounds (b.removeFromTop (quarterHeight));
     }
-                                
-                                   
+
+private:
+    juce::ValueTree state;
+    juce::UndoManager& undoManager;
+
+    tp::Parameters parameters;
+
+    LabelSlider aModifier;
+    LabelSlider bModifier;
+    LabelSlider cModifier;
+    LabelSlider dModifier;
+
+    void initializeState()
+    {
+        auto activeTrajectoryBranch = getCurrentTrajectoryBranch (state);
+        aModifier.setValue (activeTrajectoryBranch.getProperty (id::mod_A));
+        bModifier.setValue (activeTrajectoryBranch.getProperty (id::mod_B));
+        cModifier.setValue (activeTrajectoryBranch.getProperty (id::mod_C));
+        dModifier.setValue (activeTrajectoryBranch.getProperty (id::mod_D));
+    }
 };
 class TrajectoryPanel : public Panel,
                         private GlobalTimer::Listener
@@ -105,11 +187,12 @@ public:
       : Panel ("Trajectory"), 
         state (trajectoryState), 
         undoManager (um),
-        trajectorySelector (state, undoManager, gt, p)
+        trajectorySelector (state, undoManager, gt, p),
+        modifierArray      (state, undoManager, gt, p)
     {
         jassert (state.getType() == id::TRAJECTORIES);
         addAndMakeVisible (trajectorySelector);
-
+        addAndMakeVisible (modifierArray);
         gt.addListener (*this);
     }
 
@@ -118,6 +201,7 @@ public:
         Panel::resized();
         auto b = getAdjustedBounds();
         trajectorySelector.setBounds (b.removeFromTop (40));
+        modifierArray.setBounds (b.removeFromTop (80));
     }
 
     void onTimerCallback() override { repaint(); }
@@ -126,5 +210,6 @@ private:
     juce::UndoManager& undoManager;
     
     TrajectorySelector trajectorySelector;
+    ModifierArray modifierArray;
 };
 }

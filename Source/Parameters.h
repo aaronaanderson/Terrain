@@ -1,4 +1,5 @@
 #pragma once
+
 namespace tp
 {
 class ChoiceParameter : public juce::AudioParameterChoice
