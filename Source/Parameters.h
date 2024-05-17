@@ -53,7 +53,7 @@ public:
                                   {0.0f, 1.0f},  
                                   defaultValue,
                                   juce::AudioParameterFloatAttributes().withLabel (label)
-                                                                       .withStringFromValueFunction ([&](float v, int n){ return juce::String (v, 3); }))
+                                                                       .withStringFromValueFunction ([&](float v, int n){ juce::ignoreUnused (n); return juce::String (v, 3); }))
     {
         valueChanged (defaultValue);
     }

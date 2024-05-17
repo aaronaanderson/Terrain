@@ -19,7 +19,8 @@ const juce::String MainProcessor::trajectoryNameFromIndex (int i)
 //==============================================================================
 MainProcessor::MainProcessor()
      : AudioProcessor (BusesProperties().withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
-        state (DefaultTree::create())
+        state (DefaultTree::create()), 
+        synthesizer (parameters)
 {
     addParameter (parameters.currentTrajectoryParameter = new tp::ChoiceParameter ("Current Trajectory", 
         getTrajectoryChoices (state.getChildWithName (id::TRAJECTORIES)), 
@@ -64,15 +65,13 @@ bool MainProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
     return true;
 }
 void MainProcessor::processBlock (juce::AudioBuffer<float>& buffer,
-                                              juce::MidiBuffer& midiMessages)
+                                  juce::MidiBuffer& midiMessages)
 {
     juce::ignoreUnused (midiMessages);
     juce::ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels  = getTotalNumInputChannels();
-    auto totalNumOutputChannels = getTotalNumOutputChannels();
-
-    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
+    for (int i = 0; i < buffer.getNumChannels(); i++)
+        buffer.clear(i, 0, buffer.getNumSamples());
+    synthesizer.renderNextBlock (buffer, midiMessages, 0, buffer.getNumSamples());
 }
 //==============================================================================
 bool MainProcessor::hasEditor() const { return true; }

@@ -3,6 +3,7 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include "Parameters.h"
 #include "Identifiers.h"
+#include "DSP/WaveTerrainSynthesizer.h"
 
 //==============================================================================
 class MainProcessor  : public juce::AudioProcessor, 
@@ -53,6 +54,7 @@ public:
 private:
     juce::ValueTree state;
     juce::UndoManager undoManager;
+    tp::WaveTerrainSynthesizer synthesizer;
 
     const juce::String trajectoryNameFromIndex (int i);
 
