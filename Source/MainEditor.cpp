@@ -7,7 +7,6 @@ MainEditor::MainEditor (MainProcessor& p)
       trajectoryPanel (state.getChildWithName (id::TRAJECTORIES), undoManager, globalTimer, processorRef.getParameters())
 {
     jassert (state.getType() == id::TERRAINSYNTH);
-    std::cout << state.toXmlString() << std::endl;
     setLookAndFeel (&lookAndFeel);
 
     setSize (1200, 800);

@@ -101,6 +101,7 @@ struct LabelSlider : public juce::Component
         slider.setBounds (b);
     }
     void setValue (double v) { slider.setValue (v, juce::NotificationType::dontSendNotification); }
+    juce::Slider& getSlider() { return slider; }
 private:
     juce::Label label;
     juce::Slider slider;
@@ -110,12 +111,13 @@ static juce::ValueTree getCurrentTrajectoryBranch (juce::ValueTree trajectoriesB
     jassert (trajectoriesBranch.getType() == id::TRAJECTORIES);
     auto trajectoryType = trajectoriesBranch.getProperty (id::currentTrajectory).toString();
     for (int i = 0; i < trajectoriesBranch.getNumChildren(); i++)
-        if (trajectoriesBranch.getChild (i).getProperty (id::type) == trajectoryType)
+        if (trajectoriesBranch.getChild (i).getProperty (id::type).toString() == trajectoryType)
             return trajectoriesBranch.getChild (i);
 
     jassertfalse;
     return {};
 }
+
 class ModifierArray : public juce::Component,
                       private GlobalTimer::Listener, 
                       private juce::ValueTree::Listener
@@ -135,11 +137,16 @@ public:
     {
         jassert (state.getType() == id::TRAJECTORIES);
         
+        state.addListener (this);
         gt.addListener (*this);
 
+        aModifier.getSlider().onValueChange = [&]() {setModifier (id::mod_A, static_cast<float>(aModifier.getSlider().getValue())); };
         addAndMakeVisible (aModifier);
+        bModifier.getSlider().onValueChange = [&]() {setModifier (id::mod_B, static_cast<float>(bModifier.getSlider().getValue())); };
         addAndMakeVisible (bModifier);
+        cModifier.getSlider().onValueChange = [&]() {setModifier (id::mod_C, static_cast<float>(cModifier.getSlider().getValue())); };
         addAndMakeVisible (cModifier);
+        dModifier.getSlider().onValueChange = [&]() {setModifier (id::mod_D, static_cast<float>(dModifier.getSlider().getValue())); };
         addAndMakeVisible (dModifier);
 
         initializeState();
@@ -166,14 +173,48 @@ private:
     LabelSlider bModifier;
     LabelSlider cModifier;
     LabelSlider dModifier;
-
+    
+    void setModifier (juce::Identifier mod, float value)
+    {
+        auto activeTrajectoryBranch = getCurrentTrajectoryBranch (state);
+        auto modifierBranch = activeTrajectoryBranch.getChildWithName (id::MODIFIERS);
+        modifierBranch.setProperty (mod, value, &undoManager);
+    }
     void initializeState()
     {
         auto activeTrajectoryBranch = getCurrentTrajectoryBranch (state);
-        aModifier.setValue (activeTrajectoryBranch.getProperty (id::mod_A));
-        bModifier.setValue (activeTrajectoryBranch.getProperty (id::mod_B));
-        cModifier.setValue (activeTrajectoryBranch.getProperty (id::mod_C));
-        dModifier.setValue (activeTrajectoryBranch.getProperty (id::mod_D));
+        auto modifierBranch = activeTrajectoryBranch.getChildWithName (id::MODIFIERS);
+        aModifier.setValue (modifierBranch.getProperty (id::mod_A));
+        bModifier.setValue (modifierBranch.getProperty (id::mod_B));
+        cModifier.setValue (modifierBranch.getProperty (id::mod_C));
+        dModifier.setValue (modifierBranch.getProperty (id::mod_D));
+
+        resetLayout();
+    }
+    void valueTreePropertyChanged (juce::ValueTree& treeWhosePropertyHasChanged,
+                                   const juce::Identifier& property) override 
+    {
+        auto tree = treeWhosePropertyHasChanged;
+        if (tree.getType() == id::TRAJECTORIES)
+            if (property == id::currentTrajectory)
+                initializeState();
+    }
+    void resetLayout()
+    {
+        scanForMod (id::mod_A) ? aModifier.setVisible (true) : aModifier.setVisible (false);
+        scanForMod (id::mod_B) ? bModifier.setVisible (true) : bModifier.setVisible (false);
+        scanForMod (id::mod_C) ? cModifier.setVisible (true) : cModifier.setVisible (false);
+        scanForMod (id::mod_D) ? dModifier.setVisible (true) : dModifier.setVisible (false);
+    }
+    bool scanForMod (juce::Identifier mod)
+    {
+        juce::ValueTree activeTrajectory = getCurrentTrajectoryBranch (state);
+        
+        auto modifiersBranch = activeTrajectory.getChildWithName (id::MODIFIERS);
+        if (modifiersBranch.getProperty (mod) != juce::var()) // if the property is present
+            return true;
+        
+        return false;
     }
 };
 class TrajectoryPanel : public Panel,
