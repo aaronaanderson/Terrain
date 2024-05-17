@@ -25,7 +25,12 @@ MainProcessor::MainProcessor()
         getTrajectoryChoices (state.getChildWithName (id::TRAJECTORIES)), 
         "", 
         {}));
-        // [&](int i){state.getChildWithName (id::TRAJECTORIES).setProperty (id::currentTrajectory, trajectoryNameFromIndex(i), &undoManager);}));
+
+    addParameter (parameters.trajectoryModA = new tp::NormalizedFloatParameter ("Trajectory Mod A"));
+    addParameter (parameters.trajectoryModB = new tp::NormalizedFloatParameter ("Trajectory Mod B"));
+    addParameter (parameters.trajectoryModC = new tp::NormalizedFloatParameter ("Trajectory Mod C"));
+    addParameter (parameters.trajectoryModD = new tp::NormalizedFloatParameter ("Trajectory Mod D"));
+    
     state.addListener (this);
 }
 

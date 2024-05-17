@@ -152,7 +152,14 @@ public:
         initializeState();
     }
 
-    void onTimerCallback() override { repaint(); }
+    void onTimerCallback() override 
+    { 
+        aModifier.getSlider().setValue (*parameters.trajectoryModA, juce::dontSendNotification);
+        bModifier.getSlider().setValue (*parameters.trajectoryModB, juce::dontSendNotification);
+        cModifier.getSlider().setValue (*parameters.trajectoryModC, juce::dontSendNotification);
+        dModifier.getSlider().setValue (*parameters.trajectoryModD, juce::dontSendNotification);
+        repaint(); 
+    }
     void resized() override 
     {
         auto b = getLocalBounds();

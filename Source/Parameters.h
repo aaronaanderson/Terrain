@@ -40,8 +40,39 @@ private:
     int storedValue = -1;
 
 };
+class NormalizedFloatParameter : public juce::AudioParameterFloat
+{
+public:
+    NormalizedFloatParameter (juce::String parameterName, 
+                              float defaultValue = 0.0f,
+                              juce::String label = "", 
+                              std::function<void(float)> newValueFunction = nullptr)
+    : onNewValue (newValueFunction), 
+      juce::AudioParameterFloat (parameterName.removeCharacters(" ") + juce::String("Choice"), 
+                                  parameterName,
+                                  {0.0f, 1.0f},  
+                                  defaultValue,
+                                  juce::AudioParameterFloatAttributes().withLabel (label)
+                                                                       .withStringFromValueFunction ([&](float v, int n){ return juce::String (v, 3); }))
+    {
+        valueChanged (defaultValue);
+    }
+
+private:
+    void valueChanged (float newValue) override 
+    {
+        if (onNewValue != nullptr) 
+            onNewValue (newValue);
+    }
+    std::function<void(float)> onNewValue;
+
+};
 struct Parameters
 {
     ChoiceParameter* currentTrajectoryParameter;
+    NormalizedFloatParameter* trajectoryModA;
+    NormalizedFloatParameter* trajectoryModB;
+    NormalizedFloatParameter* trajectoryModC;
+    NormalizedFloatParameter* trajectoryModD;
 };
 }
