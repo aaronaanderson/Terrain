@@ -54,6 +54,17 @@ public:
             
         }
     } 
+    void setCurrentPlaybackSampleRate (double newRate) override 
+    {
+        if (newRate != 0.0)
+        {
+            sampleRate = newRate;
+            // envelope.setParameters ({200.0f, 20.0f, 0.7f, 1000.0f});
+            envelope.prepare (sampleRate);
+            setFrequency (frequency);
+        }
+        juce::SynthesiserVoice::setCurrentPlaybackSampleRate (newRate);
+    }
 private:
     ADSR envelope;
     float frequency, amplitude;

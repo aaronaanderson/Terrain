@@ -54,7 +54,11 @@ const juce::String MainProcessor::getProgramName (int index)
 }
 void MainProcessor::changeProgramName (int index, const juce::String& newName) { juce::ignoreUnused (index, newName); }
 //==============================================================================
-void MainProcessor::prepareToPlay (double sampleRate, int samplesPerBlock) { juce::ignoreUnused (sampleRate, samplesPerBlock); }
+void MainProcessor::prepareToPlay (double sampleRate, int samplesPerBlock) 
+{ 
+    juce::ignoreUnused (sampleRate, samplesPerBlock); 
+    synthesizer.setCurrentPlaybackSampleRate (sampleRate);
+}
 void MainProcessor::releaseResources() {}
 bool MainProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
