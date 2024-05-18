@@ -56,8 +56,7 @@ void MainProcessor::changeProgramName (int index, const juce::String& newName) {
 //==============================================================================
 void MainProcessor::prepareToPlay (double sampleRate, int samplesPerBlock) 
 { 
-    juce::ignoreUnused (sampleRate, samplesPerBlock); 
-    synthesizer->setCurrentPlaybackSampleRate (sampleRate);
+    synthesizer->prepareToPlay (sampleRate, samplesPerBlock);
 }
 void MainProcessor::releaseResources() {}
 bool MainProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
@@ -75,6 +74,7 @@ void MainProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     juce::ScopedNoDenormals noDenormals;
     for (int i = 0; i < buffer.getNumChannels(); i++)
         buffer.clear(i, 0, buffer.getNumSamples());
+    
     synthesizer->renderNextBlock (buffer, midiMessages, 0, buffer.getNumSamples());
 }
 //==============================================================================

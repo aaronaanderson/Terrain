@@ -56,7 +56,10 @@ class Trajectory : public juce::SynthesiserVoice
 public:
     Trajectory (Parameters& p)
       : parameters (p), 
-        mod_a (parameters.trajectoryModA)
+        mod_a (parameters.trajectoryModA),
+        mod_b (parameters.trajectoryModB),
+        mod_c (parameters.trajectoryModC),
+        mod_d (parameters.trajectoryModD)
     {
         envelope.prepare (sampleRate);
         envelope.setParameters ({200.0f, 20.0f, 0.7f, 1000.0f});
@@ -105,11 +108,19 @@ public:
         }
         juce::SynthesiserVoice::setCurrentPlaybackSampleRate (newRate);
     }
+    void prepareToPlay (double newRate, int blockSize)
+    {
+        juce::ignoreUnused (newRate);
+        mod_a.prepare (blockSize);
+        mod_b.prepare (blockSize);
+        mod_c.prepare (blockSize);
+        mod_d.prepare (blockSize);
+    }
 private:
     ADSR envelope;
     Parameters& parameters;
 
-    InterpolatedParameter mod_a;
+    InterpolatedParameter mod_a, mod_b, mod_c, mod_d;
 
     float frequency, amplitude;
     double phase = 0.0;
@@ -132,6 +143,17 @@ public:
     {
         setPolyphony (24);
         addSound (new Terrain (parameters));
+    }
+
+    void prepareToPlay (double sr, int blockSize)
+    {
+        for (int i = 0; i < getNumVoices(); i++)
+        {
+            auto v = getVoice (i);
+            auto trajectory = dynamic_cast<Trajectory*> (v);
+            trajectory->prepareToPlay (sr, blockSize);
+        }
+        setCurrentPlaybackSampleRate (sr);
     }
 
 private:

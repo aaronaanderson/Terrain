@@ -8,7 +8,8 @@
 namespace ti
 {
 class TrajectorySelector : public juce::Component,
-                           private GlobalTimer::Listener
+                           private GlobalTimer::Listener, 
+                           private juce::AudioProcessorParameter::Listener
 {
 public:
     TrajectorySelector (juce::ValueTree trajectoryBranch, 
@@ -33,6 +34,7 @@ public:
         addAndMakeVisible (trajectoryListLabel);
 
         gt.addListener (*this);
+        parameters.currentTrajectoryParameter->addListener (this);
     }
     void paint (juce::Graphics& g)
     {
@@ -47,8 +49,12 @@ public:
     }
     void onTimerCallback() override 
     {
-        trajectoryList.setSelectedItemIndex (parameters.currentTrajectoryParameter->getIndex(), juce::dontSendNotification);
-        repaint();
+        if (needsRepainted)
+        {
+            trajectoryList.setSelectedItemIndex (parameters.currentTrajectoryParameter->getIndex(), juce::dontSendNotification);
+            repaint();
+            needsRepainted = false;
+        }
     }
 
 private:
@@ -82,17 +88,28 @@ private:
         for (int i = 0; i < trajectoryList.getNumItems(); i++)
             if (trajectoryList.getItemText (i) == name)
                 trajectoryList.setSelectedId (i + 1);
-    }                            
+    }                
+    void parameterValueChanged (int parameterIndex, float newValue) override 
+    {
+        juce::ignoreUnused (parameterIndex, newValue);
+        needsRepainted = true;
+    }
+    void parameterGestureChanged (int parameterIndex, bool gestureIsStarting) override { juce::ignoreUnused (parameterIndex, gestureIsStarting); }          
 };
-struct LabelSlider : public juce::Component
+struct ParameterSlider : public juce::Component,
+                         private GlobalTimer::Listener,
+                         private juce::AudioProcessorParameter::Listener
 {
-    LabelSlider (juce::String labelText, juce::Range<double> range)
+    ParameterSlider (juce::AudioProcessorParameter* p, GlobalTimer& gt, juce::String labelText, juce::Range<double> range)
+      : parameter (p)
     {
         label.setText (labelText, juce::dontSendNotification);
         slider.setRange (range, 0.0);
         slider.setTextBoxStyle (juce::Slider::TextEntryBoxPosition::NoTextBox, true, 20, 20);
         addAndMakeVisible (label);
         addAndMakeVisible (slider);
+        p->addListener (this);
+        gt.addListener (*this);
     }
     void resized() override 
     {
@@ -100,11 +117,29 @@ struct LabelSlider : public juce::Component
         label.setBounds (b.removeFromLeft (20));
         slider.setBounds (b);
     }
+
     void setValue (double v) { slider.setValue (v, juce::NotificationType::dontSendNotification); }
     juce::Slider& getSlider() { return slider; }
 private:
+    juce::AudioProcessorParameter* parameter;
     juce::Label label;
     juce::Slider slider;
+    bool needsRepainted = true;
+    void onTimerCallback() override 
+    { 
+        if (needsRepainted)
+        {
+            slider.setValue (static_cast<double> (parameter->getValue()), juce::dontSendNotification);
+            repaint(); 
+            needsRepainted = false;
+        }
+    }
+    void parameterValueChanged (int parameterIndex, float newValue) override 
+    {
+        juce::ignoreUnused (parameterIndex, newValue);
+        needsRepainted = true;
+    }
+    void parameterGestureChanged (int parameterIndex, bool gestureIsStarting) override { juce::ignoreUnused (parameterIndex, gestureIsStarting); }
 };
 static juce::ValueTree getCurrentTrajectoryBranch (juce::ValueTree trajectoriesBranch)
 {
@@ -119,7 +154,6 @@ static juce::ValueTree getCurrentTrajectoryBranch (juce::ValueTree trajectoriesB
 }
 
 class ModifierArray : public juce::Component,
-                      private GlobalTimer::Listener, 
                       private juce::ValueTree::Listener
 {
 public:
@@ -130,15 +164,14 @@ public:
       : state (trajectoryState), 
         undoManager (um), 
         parameters (p), 
-        aModifier ("a", {0.0, 1.0}),
-        bModifier ("b", {0.0, 1.0}),
-        cModifier ("c", {0.0, 1.0}),
-        dModifier ("d", {0.0, 1.0})
+        aModifier (parameters.trajectoryModA, gt, "a", {0.0, 1.0}),
+        bModifier (parameters.trajectoryModB, gt, "b", {0.0, 1.0}),
+        cModifier (parameters.trajectoryModC, gt, "c", {0.0, 1.0}),
+        dModifier (parameters.trajectoryModD, gt, "d", {0.0, 1.0})
     {
         jassert (state.getType() == id::TRAJECTORIES);
         
         state.addListener (this);
-        gt.addListener (*this);
 
         aModifier.getSlider().onValueChange = [&]() {setModifier (id::mod_A, static_cast<float>(aModifier.getSlider().getValue())); };
         addAndMakeVisible (aModifier);
@@ -152,14 +185,6 @@ public:
         initializeState();
     }
 
-    void onTimerCallback() override 
-    { 
-        aModifier.getSlider().setValue (*parameters.trajectoryModA, juce::dontSendNotification);
-        bModifier.getSlider().setValue (*parameters.trajectoryModB, juce::dontSendNotification);
-        cModifier.getSlider().setValue (*parameters.trajectoryModC, juce::dontSendNotification);
-        dModifier.getSlider().setValue (*parameters.trajectoryModD, juce::dontSendNotification);
-        repaint(); 
-    }
     void resized() override 
     {
         auto b = getLocalBounds();
@@ -176,11 +201,11 @@ private:
 
     tp::Parameters parameters;
 
-    LabelSlider aModifier;
-    LabelSlider bModifier;
-    LabelSlider cModifier;
-    LabelSlider dModifier;
-    
+    ParameterSlider aModifier;
+    ParameterSlider bModifier;
+    ParameterSlider cModifier;
+    ParameterSlider dModifier;
+
     void setModifier (juce::Identifier mod, float value)
     {
         auto activeTrajectoryBranch = getCurrentTrajectoryBranch (state);
@@ -224,8 +249,7 @@ private:
         return false;
     }
 };
-class TrajectoryPanel : public Panel,
-                        private GlobalTimer::Listener
+class TrajectoryPanel : public Panel
 {
 public:
     TrajectoryPanel (juce::ValueTree trajectoryState, 
@@ -241,7 +265,6 @@ public:
         jassert (state.getType() == id::TRAJECTORIES);
         addAndMakeVisible (trajectorySelector);
         addAndMakeVisible (modifierArray);
-        gt.addListener (*this);
     }
 
     void resized () override 
@@ -252,7 +275,6 @@ public:
         modifierArray.setBounds (b.removeFromTop (80));
     }
 
-    void onTimerCallback() override { repaint(); }
 private:
     juce::ValueTree state;
     juce::UndoManager& undoManager;
