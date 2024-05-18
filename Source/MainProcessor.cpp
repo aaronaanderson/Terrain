@@ -19,8 +19,7 @@ const juce::String MainProcessor::trajectoryNameFromIndex (int i)
 //==============================================================================
 MainProcessor::MainProcessor()
      : AudioProcessor (BusesProperties().withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
-        state (DefaultTree::create()), 
-        synthesizer (parameters)
+        state (DefaultTree::create())
 {
     addParameter (parameters.currentTrajectoryParameter = new tp::ChoiceParameter ("Current Trajectory", 
         getTrajectoryChoices (state.getChildWithName (id::TRAJECTORIES)), 
@@ -32,6 +31,7 @@ MainProcessor::MainProcessor()
     addParameter (parameters.trajectoryModC = new tp::NormalizedFloatParameter ("Trajectory Mod C"));
     addParameter (parameters.trajectoryModD = new tp::NormalizedFloatParameter ("Trajectory Mod D"));
     
+    synthesizer = std::make_unique<tp::WaveTerrainSynthesizer> (parameters);
     state.addListener (this);
 }
 
@@ -57,7 +57,7 @@ void MainProcessor::changeProgramName (int index, const juce::String& newName) {
 void MainProcessor::prepareToPlay (double sampleRate, int samplesPerBlock) 
 { 
     juce::ignoreUnused (sampleRate, samplesPerBlock); 
-    synthesizer.setCurrentPlaybackSampleRate (sampleRate);
+    synthesizer->setCurrentPlaybackSampleRate (sampleRate);
 }
 void MainProcessor::releaseResources() {}
 bool MainProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
@@ -75,7 +75,7 @@ void MainProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     juce::ScopedNoDenormals noDenormals;
     for (int i = 0; i < buffer.getNumChannels(); i++)
         buffer.clear(i, 0, buffer.getNumSamples());
-    synthesizer.renderNextBlock (buffer, midiMessages, 0, buffer.getNumSamples());
+    synthesizer->renderNextBlock (buffer, midiMessages, 0, buffer.getNumSamples());
 }
 //==============================================================================
 bool MainProcessor::hasEditor() const { return true; }

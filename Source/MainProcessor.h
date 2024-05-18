@@ -47,8 +47,8 @@ public:
 private:
     juce::ValueTree state;
     juce::UndoManager undoManager;
-    tp::WaveTerrainSynthesizer synthesizer;
     tp::Parameters parameters;
+    std::unique_ptr<tp::WaveTerrainSynthesizer> synthesizer;
 
     const juce::String trajectoryNameFromIndex (int i);
 

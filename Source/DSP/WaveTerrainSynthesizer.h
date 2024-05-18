@@ -6,16 +6,57 @@
 
 namespace tp {
 
+struct InterpolatedParameter : private juce::AudioProcessorParameter::Listener
+{
+public:
+    InterpolatedParameter (juce::AudioProcessorParameter* p)
+      : parameter (p)
+    {
+        parameter->addListener (this);
+    }
+    ~InterpolatedParameter()
+    {
+        parameter->removeListener (this);
+    }
+    float getAt (int index) 
+    {
+        if (bufferSize == 0) return 0.0f; 
+        return previousValue + ((index / static_cast<float> (bufferSize)) * (targetValue - previousValue));
+    }
+    void prepare (int blockSize) { bufferSize = blockSize; }
+
+private:
+    juce::AudioProcessorParameter* parameter;
+    float previousValue = 0.0f;
+    float targetValue;
+    int bufferSize;
+
+    void parameterValueChanged (int parameterIndex, float newValue) override
+    {
+        juce::ignoreUnused (parameterIndex);
+        previousValue = targetValue;
+        targetValue = newValue;
+    }
+
+    void parameterGestureChanged (int parameterIndex, bool gestureIsStarting) override { juce::ignoreUnused (parameterIndex, gestureIsStarting); }
+};
 class Terrain : public juce::SynthesiserSound
 {
 public:
+    Terrain (Parameters& p)
+      : parameters (p)
+    {}
     bool appliesToNote (int midiNoteNumber) override { juce::ignoreUnused (midiNoteNumber); return true; }
     bool appliesToChannel (int midiChannel) override { juce::ignoreUnused (midiChannel); return true; }
+private:
+    Parameters& parameters;
 };
 class Trajectory : public juce::SynthesiserVoice
 {
 public:
-    Trajectory()
+    Trajectory (Parameters& p)
+      : parameters (p), 
+        mod_a (parameters.trajectoryModA)
     {
         envelope.prepare (sampleRate);
         envelope.setParameters ({200.0f, 20.0f, 0.7f, 1000.0f});
@@ -47,7 +88,7 @@ public:
         {
             if(!envelope.isActive()) break;
 
-            o[i] += static_cast<float>(std::sin(phase)) * amplitude * static_cast<float> (envelope.calculateNext());
+            o[i] += static_cast<float>(std::sin(phase)) * mod_a.getAt (i) * static_cast<float> (envelope.calculateNext());
             phase = std::fmod (phase + phaseIncrement, juce::MathConstants<double>::twoPi);
             if(!envelope.isActive())
                 clearCurrentNote();
@@ -59,7 +100,6 @@ public:
         if (newRate != 0.0)
         {
             sampleRate = newRate;
-            // envelope.setParameters ({200.0f, 20.0f, 0.7f, 1000.0f});
             envelope.prepare (sampleRate);
             setFrequency (frequency);
         }
@@ -67,6 +107,10 @@ public:
     }
 private:
     ADSR envelope;
+    Parameters& parameters;
+
+    InterpolatedParameter mod_a;
+
     float frequency, amplitude;
     double phase = 0.0;
     double phaseIncrement;
@@ -87,9 +131,8 @@ public:
       : parameters (p)
     {
         setPolyphony (24);
-        addSound (new Terrain());
+        addSound (new Terrain (parameters));
     }
-
 
 private:
     Parameters& parameters;
@@ -99,8 +142,7 @@ private:
         jassert (newPolyphony > 0);
         clearVoices();
         for (int i = 0; i < newPolyphony; i++)
-            addVoice (new Trajectory ());
-        
+            addVoice (new Trajectory (parameters));
     }
 };
 }
