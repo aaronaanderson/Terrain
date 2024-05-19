@@ -160,7 +160,8 @@ private:
     juce::Array<std::function<Point(float, ModSet)>> functions;
     InterpolatedParameter mod_a, mod_b, mod_c, mod_d;
 
-    float frequency, amplitude;
+    float frequency = 440.0f;
+    float amplitude;
     double phase = 0.0;
     double phaseIncrement;
     double sampleRate = 48000.0;
@@ -194,7 +195,8 @@ public:
         {
             auto v = getVoice (i);
             auto trajectory = dynamic_cast<Trajectory*> (v);
-            trajectory->prepareToPlay (sr, blockSize);
+            if (trajectory != nullptr)
+                trajectory->prepareToPlay (sr, blockSize);
         }
         setCurrentPlaybackSampleRate (sr);
     }

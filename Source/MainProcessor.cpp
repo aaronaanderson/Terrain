@@ -70,10 +70,12 @@ bool MainProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 void MainProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                                   juce::MidiBuffer& midiMessages)
 {
-    juce::ignoreUnused (midiMessages);
     juce::ScopedNoDenormals noDenormals;
-    for (int i = 0; i < buffer.getNumChannels(); i++)
-        buffer.clear(i, 0, buffer.getNumSamples());
+    auto totalNumInputChannels  = getTotalNumInputChannels();
+    auto totalNumOutputChannels = getTotalNumOutputChannels();
+
+    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
+        buffer.clear (i, 0, buffer.getNumSamples());
     
     synthesizer->renderNextBlock (buffer, midiMessages, 0, buffer.getNumSamples());
 }
