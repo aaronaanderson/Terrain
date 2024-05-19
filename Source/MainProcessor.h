@@ -60,15 +60,17 @@ private:
         if (tree.getType() == id::TRAJECTORIES)
         {
             if (property == id::currentTrajectory)
-            {
                 setCurrentTrajectoryParamFromString (tree.getProperty (property).toString());
-            }
         }else if (tree.getType() == id::MODIFIERS)
         {
             if      (property == id::mod_A) parameters.trajectoryModA->setValueNotifyingHost (tree.getProperty (property));
             else if (property == id::mod_B) parameters.trajectoryModB->setValueNotifyingHost (tree.getProperty (property));
             else if (property == id::mod_C) parameters.trajectoryModC->setValueNotifyingHost (tree.getProperty (property));
             else if (property == id::mod_D) parameters.trajectoryModD->setValueNotifyingHost (tree.getProperty (property));
+        }else if (tree.getType() == id::TRAJECTORY_VARIABLES)
+        {
+            if      (property == id::size) parameters.trajectorySize->setValueNotifyingHost (tree.getProperty (property));
+            else if (property == id::rotation) parameters.trajectoryRotation->setValueNotifyingHost (tree.getProperty (property));
         }
     }
     void setCurrentTrajectoryParamFromString (juce::String s) //Need something better here

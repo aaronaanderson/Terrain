@@ -10,10 +10,6 @@
 
 class TerrainLookAndFeel : public juce::LookAndFeel_V4 {};
 
-
-
-
-
 class MainEditor  : public juce::AudioProcessorEditor,
                     private juce::KeyListener
 {
@@ -36,7 +32,6 @@ private:
     ti::TerrainPanel    terrainPanel;
     ti::ControlPanel    controlPanel;
     ti::VisualiserPanel visualiserPanel;
-
 
     std::unique_ptr<ValueTreeViewWindow> valueTreeViewWindow;
     bool keyPressed (const juce::KeyPress& key,

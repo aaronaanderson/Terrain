@@ -31,8 +31,12 @@ MainProcessor::MainProcessor()
     addParameter (parameters.trajectoryModC = new tp::NormalizedFloatParameter ("Trajectory Mod C"));
     addParameter (parameters.trajectoryModD = new tp::NormalizedFloatParameter ("Trajectory Mod D"));
     
+    addParameter (parameters.trajectorySize = new tp::NormalizedFloatParameter ("Size"));
+    addParameter (parameters.trajectoryRotation = new tp::RangedFloatParameter ("Rotation", {0.0f, juce::MathConstants<float>::twoPi}));
+
     synthesizer = std::make_unique<tp::WaveTerrainSynthesizer> (parameters);
     state.addListener (this);
+    
 }
 
 MainProcessor::~MainProcessor() {}

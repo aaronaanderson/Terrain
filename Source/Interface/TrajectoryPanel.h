@@ -122,7 +122,11 @@ struct ParameterSlider : public juce::Component,
     void resized() override 
     {
         auto b = getLocalBounds();
-        label.setBounds (b.removeFromLeft (20));
+        if (label.getText().length() > 3)
+            label.setBounds (b.removeFromTop (20));
+        else
+            label.setBounds (b.removeFromLeft (20));
+        
         slider.setBounds (b);
     }
 
@@ -257,6 +261,39 @@ private:
         return false;
     }
 };
+class TrajectoryVariables : public juce::Component 
+{
+public:
+    TrajectoryVariables (juce::ValueTree trajectoryVariablesBranch, 
+                         juce::UndoManager& um, 
+                         GlobalTimer& gt, 
+                         const tp::Parameters& p)
+      : state (trajectoryVariablesBranch), 
+        undoManager (um),
+        globalTimer (gt),
+        parameters (p), 
+        size (parameters.trajectorySize, gt, "Size", {0.0, 1.0}),
+        rotation (parameters.trajectoryRotation, gt, "Rotation", {0.0, juce::MathConstants<double>::twoPi})
+    {
+        addAndMakeVisible (size);
+        addAndMakeVisible (rotation);
+    }
+
+    void resized() override 
+    {
+        auto b = getLocalBounds();
+        size.setBounds (b.removeFromTop (40));
+        rotation.setBounds (b.removeFromTop (40));
+    }
+private:
+    juce::ValueTree state;
+    juce::UndoManager& undoManager;
+    GlobalTimer& globalTimer;
+    const tp::Parameters& parameters;
+
+    ParameterSlider size;
+    ParameterSlider rotation;
+};
 class TrajectoryPanel : public Panel
 {
 public:
@@ -268,11 +305,13 @@ public:
         state (trajectoryState), 
         undoManager (um),
         trajectorySelector (state, undoManager, gt, p),
-        modifierArray      (state, undoManager, gt, p)
+        modifierArray      (state, undoManager, gt, p), 
+        trajectoryVariables(state, undoManager, gt, p)
     {
         jassert (state.getType() == id::TRAJECTORIES);
         addAndMakeVisible (trajectorySelector);
         addAndMakeVisible (modifierArray);
+        addAndMakeVisible (trajectoryVariables);
     }
 
     void resized () override 
@@ -281,6 +320,7 @@ public:
         auto b = getAdjustedBounds();
         trajectorySelector.setBounds (b.removeFromTop (40));
         modifierArray.setBounds (b.removeFromTop (80));
+        trajectoryVariables.setBounds (b);
     }
 
 private:
@@ -289,5 +329,6 @@ private:
     
     TrajectorySelector trajectorySelector;
     ModifierArray modifierArray;
+    TrajectoryVariables trajectoryVariables;
 };
 }

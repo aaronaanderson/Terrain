@@ -2,6 +2,18 @@
 
 #include <juce_data_structures/juce_data_structures.h>
 #include "Identifiers.h"
+
+struct TrajectoryVariablesTree
+{
+    static const juce::ValueTree create()
+    {
+        juce::ValueTree tree (id::TRAJECTORY_VARIABLES);
+        tree.setProperty (id::size, 0.5f, nullptr);
+        tree.setProperty (id::rotation, 0.0f, nullptr);
+
+        return tree;
+    }
+};
 struct TrajectoriesTree
 {
     static const juce::ValueTree create()
@@ -37,6 +49,7 @@ struct DefaultTree
     {
         auto tree = juce::ValueTree (id::TERRAINSYNTH);
         tree.addChild (TrajectoriesTree::create(), -1, nullptr);
+        tree.addChild (TrajectoryVariablesTree::create(), -1, nullptr);
         return tree;
     }
 };

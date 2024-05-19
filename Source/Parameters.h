@@ -20,7 +20,6 @@ public:
     {
         valueChanged (defaultChoice);
     }
-
     void valueChanged(int newValue) override
     {
         if (onNewValue == nullptr) return;
@@ -33,12 +32,10 @@ public:
         auto normalized = newIndex / static_cast<float> (choices.size() - 1);
         setValueNotifyingHost (normalized);
     }
-        
 private: 
     std::function<void(int)> onNewValue;
     juce::StringArray choices;
     int storedValue = -1;
-
 };
 class NormalizedFloatParameter : public juce::AudioParameterFloat
 {
@@ -65,7 +62,34 @@ private:
             onNewValue (newValue);
     }
     std::function<void(float)> onNewValue;
+};
 
+class RangedFloatParameter : public juce::AudioParameterFloat
+{
+public:
+    RangedFloatParameter (juce::String parameterName, 
+                          juce::Range<float> range,
+                              float defaultValue = 0.0f,
+                              juce::String label = "", 
+                              std::function<void(float)> newValueFunction = nullptr)
+    : onNewValue (newValueFunction), 
+      juce::AudioParameterFloat (parameterName.removeCharacters(" ") + juce::String("Choice"), 
+                                  parameterName,
+                                  range,  
+                                  defaultValue,
+                                  juce::AudioParameterFloatAttributes().withLabel (label)
+                                                                       .withStringFromValueFunction ([&](float v, int n){ juce::ignoreUnused (n); return juce::String (v, 3); }))
+    {
+        valueChanged (defaultValue);
+    }
+
+private:
+    void valueChanged (float newValue) override 
+    {
+        if (onNewValue != nullptr) 
+            onNewValue (newValue);
+    }
+    std::function<void(float)> onNewValue;
 };
 struct Parameters
 {
@@ -74,5 +98,8 @@ struct Parameters
     NormalizedFloatParameter* trajectoryModB;
     NormalizedFloatParameter* trajectoryModC;
     NormalizedFloatParameter* trajectoryModD;
+
+    NormalizedFloatParameter* trajectorySize;
+    RangedFloatParameter*     trajectoryRotation;
 };
 }

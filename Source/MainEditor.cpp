@@ -68,7 +68,7 @@ juce::ignoreUnused(originatingComponent);
         if (valueTreeViewWindow == nullptr)
             valueTreeViewWindow = std::make_unique<ValueTreeViewWindow> (state);
         valueTreeViewWindow->addToDesktop ();
-        valueTreeViewWindow->setSize (400, 800);
+        valueTreeViewWindow->setSize (600, 800);
         valueTreeViewWindow->setVisible (true);
         return true;
     }

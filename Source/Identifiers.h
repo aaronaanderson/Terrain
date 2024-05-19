@@ -17,4 +17,8 @@ namespace id
     static const juce::Identifier mod_C = "mod_C";
     static const juce::Identifier mod_D = "mod_D";
 
+    static const juce::Identifier TRAJECTORY_VARIABLES = "TRAJECTORY_VARIABLES";
+    static const juce::Identifier size = "size";
+    static const juce::Identifier rotation = "rotation";
+
 }

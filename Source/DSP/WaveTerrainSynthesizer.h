@@ -62,7 +62,7 @@ public:
     bool appliesToChannel (int midiChannel) override { juce::ignoreUnused (midiChannel); return true; }
     float sampleAt (Point p)
     {
-        return (std::sin (p.x * 8), std::cos (p.y * 12));
+        return (std::sin (p.x * 8.0f) * std::cos (p.y * 12.0f));
     }
 private:
     Parameters& parameters;
@@ -122,8 +122,9 @@ public:
         {
             if(!envelope.isActive()) break;
 
-            auto point = functions[*parameters.currentTrajectoryParameter](phase, getModSet (i)) * 0.2f;
-            
+            auto point = functions[*parameters.currentTrajectoryParameter](phase, getModSet (i));
+            point = point * (*parameters.trajectorySize);
+            point = rotate (point, *parameters.trajectoryRotation);
             if (terrain != nullptr)
             {
                 float outputSample = terrain->sampleAt (point);
@@ -171,6 +172,12 @@ private:
         jassert (newFrequency > 0.0f);
         frequency = newFrequency;
         phaseIncrement = (frequency * juce::MathConstants<float>::twoPi) / sampleRate;
+    }
+    Point rotate (const Point p, const float theta)
+    {
+        Point newPoint ((p.x * std::cos (theta)) - (p.y * std::sin (theta)), 
+                        (p.y * std::cos (theta)) + (p.x * std::sin (theta)));
+        return newPoint;
     }
     const ModSet getModSet (int sampleIndex)
     {

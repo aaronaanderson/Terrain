@@ -65,6 +65,7 @@ public:
                               juce::DocumentWindow::allButtons ), 
         valueTreeView (state) 
     {
+        setResizable (true, false);
         setContentNonOwned (&valueTreeView, true);
     }
 
