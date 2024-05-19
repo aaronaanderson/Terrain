@@ -141,7 +141,10 @@ private:
     { 
         if (needsRepainted)
         {
-            slider.setValue (static_cast<double> (parameter->getValue()), juce::dontSendNotification);
+            auto rangedParam = dynamic_cast<juce::RangedAudioParameter*> (parameter);
+            jassert (rangedParam != nullptr);
+            auto rangedValue = rangedParam->convertFrom0to1 (parameter->getValue());
+            slider.setValue (static_cast<double> (rangedValue), juce::dontSendNotification);
             repaint(); 
             needsRepainted = false;
         }
@@ -273,10 +276,14 @@ public:
         globalTimer (gt),
         parameters (p), 
         size (parameters.trajectorySize, gt, "Size", {0.0, 1.0}),
-        rotation (parameters.trajectoryRotation, gt, "Rotation", {0.0, juce::MathConstants<double>::twoPi})
+        rotation (parameters.trajectoryRotation, gt, "Rotation", {0.0, juce::MathConstants<double>::twoPi}),
+        translation_x (parameters.trajectoryTranslationX, gt, "Translation X", {-1.0f, 1.0f}),
+        translation_y (parameters.trajectoryTranslationY, gt, "Translation Y", {-1.0f, 1.0f})
     {
         addAndMakeVisible (size);
         addAndMakeVisible (rotation);
+        addAndMakeVisible (translation_x);
+        addAndMakeVisible (translation_y);
     }
 
     void resized() override 
@@ -284,6 +291,8 @@ public:
         auto b = getLocalBounds();
         size.setBounds (b.removeFromTop (40));
         rotation.setBounds (b.removeFromTop (40));
+        translation_x.setBounds (b.removeFromTop (40));
+        translation_y.setBounds (b.removeFromTop (40));
     }
 private:
     juce::ValueTree state;
@@ -293,6 +302,9 @@ private:
 
     ParameterSlider size;
     ParameterSlider rotation;
+    ParameterSlider translation_x;
+    ParameterSlider translation_y;
+
 };
 class TrajectoryPanel : public Panel
 {

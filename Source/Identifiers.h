@@ -20,5 +20,7 @@ namespace id
     static const juce::Identifier TRAJECTORY_VARIABLES = "TRAJECTORY_VARIABLES";
     static const juce::Identifier size = "size";
     static const juce::Identifier rotation = "rotation";
+    static const juce::Identifier translation_x = "translation_x";
+    static const juce::Identifier translation_y = "translation_y";
 
 }

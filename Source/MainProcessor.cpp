@@ -33,6 +33,9 @@ MainProcessor::MainProcessor()
     
     addParameter (parameters.trajectorySize = new tp::NormalizedFloatParameter ("Size"));
     addParameter (parameters.trajectoryRotation = new tp::RangedFloatParameter ("Rotation", {0.0f, juce::MathConstants<float>::twoPi}));
+    addParameter (parameters.trajectoryTranslationX = new tp::RangedFloatParameter ("Translation X", {-1.0f, 1.0f}));
+    addParameter (parameters.trajectoryTranslationY = new tp::RangedFloatParameter ("Translation Y", {-1.0f, 1.0f}));
+    
 
     synthesizer = std::make_unique<tp::WaveTerrainSynthesizer> (parameters);
     state.addListener (this);

@@ -75,7 +75,11 @@ public:
         mod_a (parameters.trajectoryModA),
         mod_b (parameters.trajectoryModB),
         mod_c (parameters.trajectoryModC),
-        mod_d (parameters.trajectoryModD)
+        mod_d (parameters.trajectoryModD), 
+        size (parameters.trajectorySize), 
+        rotation (parameters.trajectoryRotation), 
+        translationX (parameters.trajectoryTranslationX), 
+        translationY (parameters.trajectoryTranslationY)
     {
         envelope.prepare (sampleRate);
         envelope.setParameters ({200.0f, 20.0f, 0.7f, 1000.0f});
@@ -123,8 +127,11 @@ public:
             if(!envelope.isActive()) break;
 
             auto point = functions[*parameters.currentTrajectoryParameter](phase, getModSet (i));
-            point = point * (*parameters.trajectorySize);
-            point = rotate (point, *parameters.trajectoryRotation);
+            
+            point = point * (size.getAt (i));
+            point = rotate (point, rotation.getAt (i));
+            point = translate (point, translationX.getAt (i), translationY.getAt (i));
+
             if (terrain != nullptr)
             {
                 float outputSample = terrain->sampleAt (point);
@@ -153,6 +160,10 @@ public:
         mod_b.prepare (blockSize);
         mod_c.prepare (blockSize);
         mod_d.prepare (blockSize);
+        size.prepare (blockSize);
+        rotation.prepare (blockSize);
+        translationX.prepare (blockSize);
+        translationY.prepare (blockSize);
     }
 private:
     ADSR envelope;
@@ -160,6 +171,7 @@ private:
     Terrain* terrain;
     juce::Array<std::function<Point(float, ModSet)>> functions;
     InterpolatedParameter mod_a, mod_b, mod_c, mod_d;
+    InterpolatedParameter size, rotation, translationX, translationY;
 
     float frequency = 440.0f;
     float amplitude;
@@ -177,6 +189,11 @@ private:
     {
         Point newPoint ((p.x * std::cos (theta)) - (p.y * std::sin (theta)), 
                         (p.y * std::cos (theta)) + (p.x * std::sin (theta)));
+        return newPoint;
+    }
+    Point translate (const Point p, float x, float y)
+    {
+        Point newPoint (p.x + x, p.y + y);
         return newPoint;
     }
     const ModSet getModSet (int sampleIndex)

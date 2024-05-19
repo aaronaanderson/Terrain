@@ -10,6 +10,8 @@ struct TrajectoryVariablesTree
         juce::ValueTree tree (id::TRAJECTORY_VARIABLES);
         tree.setProperty (id::size, 0.5f, nullptr);
         tree.setProperty (id::rotation, 0.0f, nullptr);
+        tree.setProperty (id::translation_x, 0.0f, nullptr);
+        tree.setProperty (id::translation_y, 0.0f, nullptr);
 
         return tree;
     }

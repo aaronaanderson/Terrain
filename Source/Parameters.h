@@ -101,5 +101,8 @@ struct Parameters
 
     NormalizedFloatParameter* trajectorySize;
     RangedFloatParameter*     trajectoryRotation;
+    RangedFloatParameter*     trajectoryTranslationX;
+    RangedFloatParameter*     trajectoryTranslationY;
+
 };
 }
