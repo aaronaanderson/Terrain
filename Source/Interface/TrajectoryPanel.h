@@ -36,6 +36,10 @@ public:
         gt.addListener (*this);
         parameters.currentTrajectoryParameter->addListener (this);
     }
+    ~TrajectorySelector()
+    {
+        parameters.currentTrajectoryParameter->removeListener (this);
+    }
     void paint (juce::Graphics& g)
     {
         auto b = getLocalBounds();
@@ -108,8 +112,12 @@ struct ParameterSlider : public juce::Component,
         slider.setTextBoxStyle (juce::Slider::TextEntryBoxPosition::NoTextBox, true, 20, 20);
         addAndMakeVisible (label);
         addAndMakeVisible (slider);
-        p->addListener (this);
+        parameter->addListener (this);
         gt.addListener (*this);
+    }
+    ~ParameterSlider()
+    {
+        parameter->removeListener (this);
     }
     void resized() override 
     {
