@@ -188,13 +188,9 @@ public:
         
         state.addListener (this);
 
-        aModifier.getSlider().onValueChange = [&]() {setModifier (id::mod_A, static_cast<float>(aModifier.getSlider().getValue())); };
         addAndMakeVisible (aModifier);
-        bModifier.getSlider().onValueChange = [&]() {setModifier (id::mod_B, static_cast<float>(bModifier.getSlider().getValue())); };
         addAndMakeVisible (bModifier);
-        cModifier.getSlider().onValueChange = [&]() {setModifier (id::mod_C, static_cast<float>(cModifier.getSlider().getValue())); };
         addAndMakeVisible (cModifier);
-        dModifier.getSlider().onValueChange = [&]() {setModifier (id::mod_D, static_cast<float>(dModifier.getSlider().getValue())); };
         addAndMakeVisible (dModifier);
 
         initializeState();
@@ -209,7 +205,6 @@ public:
         cModifier.setBounds (b.removeFromTop (quarterHeight));
         dModifier.setBounds (b.removeFromTop (quarterHeight));
     }
-
 private:
     juce::ValueTree state;
     juce::UndoManager& undoManager;
