@@ -104,5 +104,6 @@ struct Parameters
     RangedFloatParameter*     trajectoryTranslationX;
     RangedFloatParameter*     trajectoryTranslationY;
 
+    ChoiceParameter* currentTerrain;
 };
 }

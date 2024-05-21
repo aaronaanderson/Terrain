@@ -3,12 +3,13 @@
 
 #include "DefaultTreeGenerator.h"
 
-juce::StringArray getTrajectoryChoices(juce::ValueTree trajectoriesTree)
+juce::StringArray getChoices(juce::ValueTree tree)
 {
     juce::StringArray sa;
-    jassert (trajectoriesTree.getType() == id::TRAJECTORIES);
-    for (int i = 0; i < trajectoriesTree.getNumChildren(); i++)
-        sa.add (trajectoriesTree.getChild (i).getProperty (id::type).toString());
+    jassert (tree.getType() == id::TRAJECTORIES ||
+             tree.getType() == id::TERRAINS);
+    for (int i = 0; i < tree.getNumChildren(); i++)
+        sa.add (tree.getChild (i).getProperty (id::type).toString());
     return sa;
 }
 const juce::String MainProcessor::trajectoryNameFromIndex (int i)
@@ -22,7 +23,7 @@ MainProcessor::MainProcessor()
         state (DefaultTree::create())
 {
     addParameter (parameters.currentTrajectoryParameter = new tp::ChoiceParameter ("Current Trajectory", 
-        getTrajectoryChoices (state.getChildWithName (id::TRAJECTORIES)), 
+        getChoices (state.getChildWithName (id::TRAJECTORIES)), 
         "", 
         {}));
 
@@ -36,14 +37,18 @@ MainProcessor::MainProcessor()
     addParameter (parameters.trajectoryTranslationX = new tp::RangedFloatParameter ("Translation X", {-1.0f, 1.0f}));
     addParameter (parameters.trajectoryTranslationY = new tp::RangedFloatParameter ("Translation Y", {-1.0f, 1.0f}));
     
+    addParameter (parameters.currentTerrain = new tp::ChoiceParameter ("Current Terrain", 
+        getChoices (state.getChildWithName (id::TERRAINS)), 
+        "", 
+        {}));
 
     synthesizer = std::make_unique<tp::WaveTerrainSynthesizer> (parameters);
-    state.addListener (this);
     
+    state.addListener (this);
+    initializeState();
 }
 
 MainProcessor::~MainProcessor() {}
-
 //==============================================================================
 const juce::String MainProcessor::getName() const  { return JucePlugin_Name; }
 bool MainProcessor::acceptsMidi() const            { return true; }

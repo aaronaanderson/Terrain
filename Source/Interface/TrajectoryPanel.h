@@ -6,6 +6,8 @@
 #include "GlobalTimer.h"
 #include "../Parameters.h"
 #include "ParameterSlider.h"
+
+#include "StateHelpers.h"
 namespace ti
 {
 class TrajectorySelector : public juce::Component,
@@ -102,17 +104,6 @@ private:
     void parameterGestureChanged (int parameterIndex, bool gestureIsStarting) override { juce::ignoreUnused (parameterIndex, gestureIsStarting); }          
 };
 
-static juce::ValueTree getCurrentTrajectoryBranch (juce::ValueTree trajectoriesBranch)
-{
-    jassert (trajectoriesBranch.getType() == id::TRAJECTORIES);
-    auto trajectoryType = trajectoriesBranch.getProperty (id::currentTrajectory).toString();
-    for (int i = 0; i < trajectoriesBranch.getNumChildren(); i++)
-        if (trajectoriesBranch.getChild (i).getProperty (id::type).toString() == trajectoryType)
-            return trajectoriesBranch.getChild (i);
-
-    jassertfalse;
-    return {};
-}
 
 class ModifierArray : public juce::Component,
                       private juce::ValueTree::Listener
@@ -134,9 +125,13 @@ public:
         
         state.addListener (this);
 
+        aModifier.getSlider().onValueChange = [&](){modifierBranch.setProperty (id::mod_A, aModifier.getSlider().getValue(), &undoManager);};
         addAndMakeVisible (aModifier);
+        bModifier.getSlider().onValueChange = [&](){modifierBranch.setProperty (id::mod_B, aModifier.getSlider().getValue(), &undoManager);};
         addAndMakeVisible (bModifier);
+        cModifier.getSlider().onValueChange = [&](){modifierBranch.setProperty (id::mod_C, aModifier.getSlider().getValue(), &undoManager);};
         addAndMakeVisible (cModifier);
+        dModifier.getSlider().onValueChange = [&](){modifierBranch.setProperty (id::mod_D, aModifier.getSlider().getValue(), &undoManager);};
         addAndMakeVisible (dModifier);
 
         initializeState();
@@ -153,6 +148,7 @@ public:
     }
 private:
     juce::ValueTree state;
+    juce::ValueTree modifierBranch;
     juce::UndoManager& undoManager;
 
     tp::Parameters parameters;
@@ -171,7 +167,7 @@ private:
     void initializeState()
     {
         auto activeTrajectoryBranch = getCurrentTrajectoryBranch (state);
-        auto modifierBranch = activeTrajectoryBranch.getChildWithName (id::MODIFIERS);
+        modifierBranch = activeTrajectoryBranch.getChildWithName (id::MODIFIERS);
         aModifier.setValue (modifierBranch.getProperty (id::mod_A));
         bModifier.setValue (modifierBranch.getProperty (id::mod_B));
         cModifier.setValue (modifierBranch.getProperty (id::mod_C));
@@ -221,9 +217,16 @@ public:
         translation_x (parameters.trajectoryTranslationX, gt, "Translation X", {-1.0f, 1.0f}),
         translation_y (parameters.trajectoryTranslationY, gt, "Translation Y", {-1.0f, 1.0f})
     {
+        jassert (state.getType() == id::TRAJECTORY_VARIABLES);
+        std::cout << state.toXmlString() ;
+
+        size.getSlider().onValueChange = [&](){ state.setProperty (id::size, size.getSlider().getValue(), &undoManager); };
         addAndMakeVisible (size);
+        rotation.getSlider().onValueChange = [&](){ state.setProperty (id::rotation, rotation.getSlider().getValue(), &undoManager); };
         addAndMakeVisible (rotation);
+        translation_x.getSlider().onValueChange = [&](){ state.setProperty (id::translation_x, translation_x.getSlider().getValue(), &undoManager); };
         addAndMakeVisible (translation_x);
+        translation_y.getSlider().onValueChange = [&](){ state.setProperty (id::translation_y, translation_y.getSlider().getValue(), &undoManager); };
         addAndMakeVisible (translation_y);
     }
 
@@ -257,11 +260,11 @@ public:
       : Panel ("Trajectory"), 
         state (trajectoryState), 
         undoManager (um),
-        trajectorySelector (state, undoManager, gt, p),
-        modifierArray      (state, undoManager, gt, p), 
-        trajectoryVariables(state, undoManager, gt, p)
+        trajectorySelector (state.getChildWithName (id::TRAJECTORIES), undoManager, gt, p),
+        modifierArray (state.getChildWithName (id::TRAJECTORIES), undoManager, gt, p), 
+        trajectoryVariables (state.getChildWithName (id::TRAJECTORY_VARIABLES), undoManager, gt, p)
     {
-        jassert (state.getType() == id::TRAJECTORIES);
+        jassert (state.getType() == id::TERRAINSYNTH);
         addAndMakeVisible (trajectorySelector);
         addAndMakeVisible (modifierArray);
         addAndMakeVisible (trajectoryVariables);

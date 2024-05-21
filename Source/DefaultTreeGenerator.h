@@ -45,6 +45,33 @@ private:
     }
 
 };
+struct TerrainsTree
+{
+    static juce::ValueTree create()
+    {
+        juce::ValueTree tree (id::TERRAINS);
+        tree.setProperty (id::currentTerrain, "sinusoidal", nullptr);
+        tree.addChild (createTerrainType ("Sinusoidal", {0.5f, 0.5f}), -1, nullptr);
+        tree.addChild (createTerrainType ("Wiggly", {0.5f, 0.5f}), -1, nullptr);
+        tree.addChild (createTerrainType ("Wobbly", {0.5f}), -1, nullptr);
+        tree.addChild (createTerrainType ("system 9", {0.5f, 0.5f, 0.5f, 0.5f}), -1, nullptr);
+        return tree;
+    }
+    static const juce::ValueTree createTerrainType (juce::String name, const juce::Array<float> mods)
+    {
+        jassert (mods.size() <= 4);
+        auto tree = juce::ValueTree (id::TERRAIN);
+        tree.setProperty (id::type, name, nullptr);
+        
+        auto modifiersBranch = juce::ValueTree (id::MODIFIERS);
+        juce::Array<juce::Identifier> modIDArray = {id::mod_A, id::mod_B, id::mod_C, id::mod_D};
+        for (int i = 0; i < mods.size(); i++)
+            modifiersBranch.setProperty (modIDArray[i], mods[i], nullptr);
+
+        tree.addChild (modifiersBranch, -1, nullptr);
+        return tree;
+    }
+};
 struct DefaultTree
 {
     static const juce::ValueTree create()
@@ -52,6 +79,7 @@ struct DefaultTree
         auto tree = juce::ValueTree (id::TERRAINSYNTH);
         tree.addChild (TrajectoriesTree::create(), -1, nullptr);
         tree.addChild (TrajectoryVariablesTree::create(), -1, nullptr);
+        tree.addChild (TerrainsTree::create(), -1, nullptr);
         return tree;
     }
 };

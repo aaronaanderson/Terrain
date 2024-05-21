@@ -4,7 +4,8 @@ MainEditor::MainEditor (MainProcessor& p)
     : AudioProcessorEditor (&p), processorRef (p), 
       state(processorRef.getState()), 
       undoManager (processorRef.getUndoManager()),
-      trajectoryPanel (state.getChildWithName (id::TRAJECTORIES), undoManager, globalTimer, processorRef.getParameters())
+      trajectoryPanel (state, undoManager, globalTimer, processorRef.getParameters()), 
+      terrainPanel (state.getChildWithName (id::TERRAINS), undoManager, globalTimer, processorRef.getParameters())
 {
     jassert (state.getType() == id::TERRAINSYNTH);
     setLookAndFeel (&lookAndFeel);

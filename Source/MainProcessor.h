@@ -4,6 +4,7 @@
 #include "Parameters.h"
 #include "Identifiers.h"
 #include "DSP/WaveTerrainSynthesizer.h"
+#include "StateHelpers.h"
 
 //==============================================================================
 class MainProcessor  : public juce::AudioProcessor, 
@@ -69,10 +70,37 @@ private:
             else if (property == id::mod_D) parameters.trajectoryModD->setValueNotifyingHost (tree.getProperty (property));
         }else if (tree.getType() == id::TRAJECTORY_VARIABLES)
         {
-            if      (property == id::size) parameters.trajectorySize->setValueNotifyingHost (tree.getProperty (property));
-            else if (property == id::rotation) parameters.trajectoryRotation->setValueNotifyingHost (tree.getProperty (property));
+            if      (property == id::size) 
+                parameters.trajectorySize->setValueNotifyingHost (tree.getProperty (property));
+            else if (property == id::rotation) 
+                parameters.trajectoryRotation->setValueNotifyingHost (parameters.trajectoryRotation->convertTo0to1 (tree.getProperty (property)));
+            else if (property == id::translation_x)  
+                parameters.trajectoryTranslationX->setValueNotifyingHost (parameters.trajectoryTranslationX->convertTo0to1 (tree.getProperty (property)));
+            else if (property == id::translation_y) 
+                parameters.trajectoryTranslationY->setValueNotifyingHost (parameters.trajectoryTranslationY->convertTo0to1 (tree.getProperty (property)));
         }
     }
+    void initializeState()
+    {
+        auto trajectoriesBranch = state.getChildWithName (id::TRAJECTORIES);
+        jassert (trajectoriesBranch.getType() == id::TRAJECTORIES);
+        setCurrentTrajectoryParamFromString (trajectoriesBranch.getProperty (id::currentTerrain).toString());
+        
+        auto modifiersBranch = getCurrentTrajectoryBranch (trajectoriesBranch).getChildWithName (id::MODIFIERS);
+        jassert (modifiersBranch.getType() == id::MODIFIERS);
+        parameters.trajectoryModA->setValueNotifyingHost (modifiersBranch.getProperty (id::mod_A));
+        parameters.trajectoryModB->setValueNotifyingHost (modifiersBranch.getProperty (id::mod_B));
+        parameters.trajectoryModC->setValueNotifyingHost (modifiersBranch.getProperty (id::mod_C));
+        parameters.trajectoryModD->setValueNotifyingHost (modifiersBranch.getProperty (id::mod_D));
+
+        auto trajectoryVariablesBranch = state.getChildWithName (id::TRAJECTORY_VARIABLES);
+        jassert (trajectoryVariablesBranch.getType() == id::TRAJECTORY_VARIABLES);
+        parameters.trajectorySize->setValueNotifyingHost (trajectoryVariablesBranch.getProperty (id::size));
+        parameters.trajectoryRotation->setValueNotifyingHost (parameters.trajectoryRotation->convertTo0to1 (trajectoryVariablesBranch.getProperty (id::rotation)));            
+        parameters.trajectoryTranslationX->setValueNotifyingHost (parameters.trajectoryTranslationX->convertTo0to1 (trajectoryVariablesBranch.getProperty (id::translation_x)));
+        parameters.trajectoryTranslationY->setValueNotifyingHost (parameters.trajectoryTranslationY->convertTo0to1 (trajectoryVariablesBranch.getProperty (id::translation_y)));
+    }
+
     void setCurrentTrajectoryParamFromString (juce::String s) //Need something better here
     {
         auto p = parameters.currentTrajectoryParameter;

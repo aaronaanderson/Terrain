@@ -1,6 +1,7 @@
 #pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
+
 #include "GlobalTimer.h"
 #include "../Parameters.h"
 
@@ -10,12 +11,16 @@ struct ParameterSlider : public juce::Component,
                          private GlobalTimer::Listener,
                          private juce::AudioProcessorParameter::Listener
 {
-    ParameterSlider (juce::AudioProcessorParameter* p, GlobalTimer& gt, juce::String labelText, juce::Range<double> range)
+    ParameterSlider (juce::AudioProcessorParameter* p, 
+                     GlobalTimer& gt, 
+                     juce::String labelText, 
+                     juce::Range<double> range)
       : parameter (p)
     {
         label.setText (labelText, juce::dontSendNotification);
         slider.setRange (range, 0.0);
         slider.setTextBoxStyle (juce::Slider::TextEntryBoxPosition::NoTextBox, true, 20, 20);
+
         addAndMakeVisible (label);
         addAndMakeVisible (slider);
         parameter->addListener (this);
@@ -40,6 +45,7 @@ struct ParameterSlider : public juce::Component,
     juce::Slider& getSlider() { return slider; }
 private:
     juce::AudioProcessorParameter* parameter;
+
     juce::Label label;
     juce::Slider slider;
     bool needsRepainted = true;

@@ -22,13 +22,15 @@ struct InterpolatedParameter : private juce::AudioProcessorParameter::Listener
 {
 public:
     InterpolatedParameter (juce::AudioProcessorParameter* p)
-      : parameter (p)
     {
-        parameter->addListener (this);
+        rangedParameter = dynamic_cast<juce::RangedAudioParameter*> (p);
+        jassert (rangedParameter != nullptr);
+
+        rangedParameter->addListener (this);
     }
     ~InterpolatedParameter()
     {
-        parameter->removeListener (this);
+        rangedParameter->removeListener (this);
     }
     float getAt (int index) 
     {
@@ -38,7 +40,7 @@ public:
     void prepare (int blockSize) { bufferSize = blockSize; }
 
 private:
-    juce::AudioProcessorParameter* parameter;
+    juce::RangedAudioParameter* rangedParameter;
     float previousValue = 0.0f;
     float targetValue = 0.0f;
     int bufferSize = 0;
@@ -47,7 +49,7 @@ private:
     {
         juce::ignoreUnused (parameterIndex);
         previousValue = targetValue;
-        targetValue = newValue;
+        targetValue = rangedParameter->convertFrom0to1 (newValue);
     }
 
     void parameterGestureChanged (int parameterIndex, bool gestureIsStarting) override { juce::ignoreUnused (parameterIndex, gestureIsStarting); }
@@ -104,7 +106,7 @@ public:
                     juce::SynthesiserSound* sound,
                     int currentPitchWheelPosition) override 
     {
-        juce::ignoreUnused (currentPitchWheelPosition, sound);
+        juce::ignoreUnused (currentPitchWheelPosition);
         
         setFrequency (static_cast<float> (juce::MidiMessage::getMidiNoteInHertz (midiNoteNumber)));
         amplitude = velocity;
@@ -174,7 +176,7 @@ private:
     InterpolatedParameter size, rotation, translationX, translationY;
 
     float frequency = 440.0f;
-    float amplitude;
+    float amplitude = 1.0;
     double phase = 0.0;
     double phaseIncrement;
     double sampleRate = 48000.0;

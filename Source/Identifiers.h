@@ -23,4 +23,7 @@ namespace id
     static const juce::Identifier translation_x = "translation_x";
     static const juce::Identifier translation_y = "translation_y";
 
+    static const juce::Identifier TERRAINS = "TERRAINS";
+    static const juce::Identifier TERRAIN = "TERRAIN";
+    static const juce::Identifier currentTerrain = "currentTerrain";
 }
