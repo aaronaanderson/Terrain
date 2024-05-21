@@ -22,30 +22,44 @@ MainProcessor::MainProcessor()
      : AudioProcessor (BusesProperties().withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
         state (DefaultTree::create())
 {
-    addParameter (parameters.currentTrajectoryParameter = new tp::ChoiceParameter ("Current Trajectory", 
+
+    auto trajectoriesBranch = state.getChildWithName (id::TRAJECTORIES);
+    jassert (trajectoriesBranch.getType() == id::TRAJECTORIES);
+    addParameter (parameters.currentTrajectory = new tp::ChoiceParameter ("Current Trajectory", 
         getChoices (state.getChildWithName (id::TRAJECTORIES)), 
         "", 
-        {}));
+        {},
+        getCurrentTrajectoryIndexFromString (trajectoriesBranch.getProperty (id::currentTrajectory).toString())));
 
-    addParameter (parameters.trajectoryModA = new tp::NormalizedFloatParameter ("Trajectory Mod A"));
-    addParameter (parameters.trajectoryModB = new tp::NormalizedFloatParameter ("Trajectory Mod B"));
-    addParameter (parameters.trajectoryModC = new tp::NormalizedFloatParameter ("Trajectory Mod C"));
-    addParameter (parameters.trajectoryModD = new tp::NormalizedFloatParameter ("Trajectory Mod D"));
+    auto modifiersBranch = getCurrentTrajectoryBranch (trajectoriesBranch).getChildWithName (id::MODIFIERS);
+    jassert (modifiersBranch.getType() == id::MODIFIERS);
+    addParameter (parameters.trajectoryModA = new tp::NormalizedFloatParameter ("Trajectory Mod A", modifiersBranch.getProperty (id::mod_A)));
+    addParameter (parameters.trajectoryModB = new tp::NormalizedFloatParameter ("Trajectory Mod B", modifiersBranch.getProperty (id::mod_B)));
+    addParameter (parameters.trajectoryModC = new tp::NormalizedFloatParameter ("Trajectory Mod C", modifiersBranch.getProperty (id::mod_C)));
+    addParameter (parameters.trajectoryModD = new tp::NormalizedFloatParameter ("Trajectory Mod D", modifiersBranch.getProperty (id::mod_D)));
     
-    addParameter (parameters.trajectorySize = new tp::NormalizedFloatParameter ("Size"));
-    addParameter (parameters.trajectoryRotation = new tp::RangedFloatParameter ("Rotation", {0.0f, juce::MathConstants<float>::twoPi}));
-    addParameter (parameters.trajectoryTranslationX = new tp::RangedFloatParameter ("Translation X", {-1.0f, 1.0f}));
-    addParameter (parameters.trajectoryTranslationY = new tp::RangedFloatParameter ("Translation Y", {-1.0f, 1.0f}));
+    auto trajectoryVariablesBranch = state.getChildWithName (id::TRAJECTORY_VARIABLES);
+    jassert (trajectoryVariablesBranch.getType() == id::TRAJECTORY_VARIABLES);
+    addParameter (parameters.trajectorySize = new tp::NormalizedFloatParameter ("Size", trajectoryVariablesBranch.getProperty (id::size)));
+    addParameter (parameters.trajectoryRotation = new tp::RangedFloatParameter ("Rotation", 
+                                                                                {0.0f, juce::MathConstants<float>::twoPi}, 
+                                                                                trajectoryVariablesBranch.getProperty (id::rotation)));
+    addParameter (parameters.trajectoryTranslationX = new tp::RangedFloatParameter ("Translation X", 
+                                                                                    {-1.0f, 1.0f}, 
+                                                                                    (trajectoryVariablesBranch.getProperty (id::translation_x))));
+    addParameter (parameters.trajectoryTranslationY = new tp::RangedFloatParameter ("Translation Y", 
+                                                                                    {-1.0f, 1.0f},
+                                                                                    (trajectoryVariablesBranch.getProperty (id::translation_y))));
     
     addParameter (parameters.currentTerrain = new tp::ChoiceParameter ("Current Terrain", 
         getChoices (state.getChildWithName (id::TERRAINS)), 
         "", 
         {}));
 
-    synthesizer = std::make_unique<tp::WaveTerrainSynthesizer> (parameters);
-    
     state.addListener (this);
-    initializeState();
+    // initializeState();
+
+    synthesizer = std::make_unique<tp::WaveTerrainSynthesizer> (parameters);
 }
 
 MainProcessor::~MainProcessor() {}

@@ -37,11 +37,11 @@ public:
         addAndMakeVisible (trajectoryListLabel);
 
         gt.addListener (*this);
-        parameters.currentTrajectoryParameter->addListener (this);
+        parameters.currentTrajectory->addListener (this);
     }
     ~TrajectorySelector()
     {
-        parameters.currentTrajectoryParameter->removeListener (this);
+        parameters.currentTrajectory->removeListener (this);
     }
     void paint (juce::Graphics& g)
     {
@@ -58,7 +58,7 @@ public:
     {
         if (needsRepainted)
         {
-            trajectoryList.setSelectedItemIndex (parameters.currentTrajectoryParameter->getIndex(), juce::dontSendNotification);
+            trajectoryList.setSelectedItemIndex (parameters.currentTrajectory->getIndex(), juce::dontSendNotification);
             repaint();
             needsRepainted = false;
         }
@@ -116,10 +116,10 @@ public:
       : state (trajectoryState), 
         undoManager (um), 
         parameters (p), 
-        aModifier (parameters.trajectoryModA, gt, "a", {0.0, 1.0}),
-        bModifier (parameters.trajectoryModB, gt, "b", {0.0, 1.0}),
-        cModifier (parameters.trajectoryModC, gt, "c", {0.0, 1.0}),
-        dModifier (parameters.trajectoryModD, gt, "d", {0.0, 1.0})
+        aModifier (parameters.trajectoryModA, um, gt, "a", {0.0, 1.0}),
+        bModifier (parameters.trajectoryModB, um, gt, "b", {0.0, 1.0}),
+        cModifier (parameters.trajectoryModC, um, gt, "c", {0.0, 1.0}),
+        dModifier (parameters.trajectoryModD, um, gt, "d", {0.0, 1.0})
     {
         jassert (state.getType() == id::TRAJECTORIES);
         
@@ -161,7 +161,7 @@ private:
     void setModifier (juce::Identifier mod, float value)
     {
         auto activeTrajectoryBranch = getCurrentTrajectoryBranch (state);
-        auto modifierBranch = activeTrajectoryBranch.getChildWithName (id::MODIFIERS);
+        modifierBranch = activeTrajectoryBranch.getChildWithName (id::MODIFIERS);
         modifierBranch.setProperty (mod, value, &undoManager);
     }
     void initializeState()
@@ -212,13 +212,12 @@ public:
         undoManager (um),
         globalTimer (gt),
         parameters (p), 
-        size (parameters.trajectorySize, gt, "Size", {0.0, 1.0}),
-        rotation (parameters.trajectoryRotation, gt, "Rotation", {0.0, juce::MathConstants<double>::twoPi}),
-        translation_x (parameters.trajectoryTranslationX, gt, "Translation X", {-1.0f, 1.0f}),
-        translation_y (parameters.trajectoryTranslationY, gt, "Translation Y", {-1.0f, 1.0f})
+        size (parameters.trajectorySize, um, gt, "Size", {0.0, 1.0}),
+        rotation (parameters.trajectoryRotation, um, gt, "Rotation", {0.0, juce::MathConstants<double>::twoPi}),
+        translation_x (parameters.trajectoryTranslationX, um, gt, "Translation X", {-1.0f, 1.0f}),
+        translation_y (parameters.trajectoryTranslationY, um, gt, "Translation Y", {-1.0f, 1.0f})
     {
         jassert (state.getType() == id::TRAJECTORY_VARIABLES);
-        std::cout << state.toXmlString() ;
 
         size.getSlider().onValueChange = [&](){ state.setProperty (id::size, size.getSlider().getValue(), &undoManager); };
         addAndMakeVisible (size);
@@ -228,6 +227,8 @@ public:
         addAndMakeVisible (translation_x);
         translation_y.getSlider().onValueChange = [&](){ state.setProperty (id::translation_y, translation_y.getSlider().getValue(), &undoManager); };
         addAndMakeVisible (translation_y);
+
+        initializeState();
     }
 
     void resized() override 
@@ -249,6 +250,13 @@ private:
     ParameterSlider translation_x;
     ParameterSlider translation_y;
 
+    void initializeState()
+    {
+        size.setValue (state.getProperty (id::size));
+        rotation.setValue (state.getProperty (id::rotation));
+        translation_x.setValue (state.getProperty (id::translation_x));
+        translation_y.setValue (state.getProperty (id::translation_y));
+    }
 };
 class TrajectoryPanel : public Panel
 {

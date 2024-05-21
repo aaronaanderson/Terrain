@@ -93,7 +93,7 @@ private:
 };
 struct Parameters
 {
-    ChoiceParameter* currentTrajectoryParameter;
+    ChoiceParameter* currentTrajectory;
     NormalizedFloatParameter* trajectoryModA;
     NormalizedFloatParameter* trajectoryModB;
     NormalizedFloatParameter* trajectoryModC;

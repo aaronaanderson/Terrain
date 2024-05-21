@@ -103,11 +103,21 @@ private:
 
     void setCurrentTrajectoryParamFromString (juce::String s) //Need something better here
     {
-        auto p = parameters.currentTrajectoryParameter;
+        auto p = parameters.currentTrajectory;
         if (s == "Ellipse") p->setIndex (0);
         else if (s == "Limacon") p->setIndex (1);
         else if (s == "Butterfly") p->setIndex (2);
         else if (s == "Scarabaeus") p->setIndex (3);
+    }
+    int getCurrentTrajectoryIndexFromString (juce::String trajectory)
+    {
+        juce::Array<juce::String> ss {"Ellipse", "Limacon", "Butterfly", "Scarabaeus"};
+        for (int i = 0; i < ss.size(); i++)
+            if (ss[i] == trajectory)
+                return i;
+
+        jassertfalse;
+        return 0;
     }
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainProcessor)

@@ -12,10 +12,12 @@ struct ParameterSlider : public juce::Component,
                          private juce::AudioProcessorParameter::Listener
 {
     ParameterSlider (juce::AudioProcessorParameter* p, 
+                     juce::UndoManager& um,
                      GlobalTimer& gt, 
                      juce::String labelText, 
                      juce::Range<double> range)
-      : parameter (p)
+      : parameter (p), 
+        attachment (*dynamic_cast<juce::RangedAudioParameter*> (p), slider, &um)
     {
         label.setText (labelText, juce::dontSendNotification);
         slider.setRange (range, 0.0);
@@ -25,6 +27,7 @@ struct ParameterSlider : public juce::Component,
         addAndMakeVisible (slider);
         parameter->addListener (this);
         gt.addListener (*this);
+        attachment.sendInitialUpdate();
     }
     ~ParameterSlider()
     {
@@ -45,9 +48,10 @@ struct ParameterSlider : public juce::Component,
     juce::Slider& getSlider() { return slider; }
 private:
     juce::AudioProcessorParameter* parameter;
+    juce::Slider slider;
+    juce::SliderParameterAttachment attachment;
 
     juce::Label label;
-    juce::Slider slider;
     bool needsRepainted = true;
     void onTimerCallback() override 
     { 

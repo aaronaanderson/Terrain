@@ -27,6 +27,7 @@ public:
         jassert (rangedParameter != nullptr);
 
         rangedParameter->addListener (this);
+        targetValue = rangedParameter->convertFrom0to1 (p->getValue());
     }
     ~InterpolatedParameter()
     {
@@ -123,12 +124,12 @@ public:
     void renderNextBlock (juce::AudioBuffer<float>& outputBuffer, 
                           int startSample, int numSamples) override 
     {
-        auto* o = outputBuffer.getWritePointer(0);
+         auto* o = outputBuffer.getWritePointer(0);
         for(int i = startSample; i < startSample + numSamples; i++)
         {
             if(!envelope.isActive()) break;
 
-            auto point = functions[*parameters.currentTrajectoryParameter](phase, getModSet (i));
+            auto point = functions[*parameters.currentTrajectory](phase, getModSet (i));
             
             point = point * (size.getAt (i));
             point = rotate (point, rotation.getAt (i));
@@ -138,7 +139,6 @@ public:
             {
                 float outputSample = terrain->sampleAt (point);
                 o[i] += outputSample * static_cast<float> (envelope.calculateNext()) * 0.1f;
-
             }
             phase = std::fmod (phase + phaseIncrement, juce::MathConstants<double>::twoPi);
             if(!envelope.isActive())
