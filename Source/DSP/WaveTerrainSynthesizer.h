@@ -18,30 +18,35 @@ struct ModSet
     ModSet (float ia = 0.0f, float ib = 0.0f, float ic = 0.0f, float id = 0.0f) : a(ia), b(ib), c(ic), d(id) {}
     float a, b, c, d;
 };
-struct InterpolatedParameter : private juce::AudioProcessorParameter::Listener
+struct SmoothedParameter : private juce::AudioProcessorParameter::Listener
 {
 public:
-    InterpolatedParameter (juce::AudioProcessorParameter* p)
+    SmoothedParameter (juce::RangedAudioParameter* p)
+      : rangedParameter (p), 
+        smoothedValue (p->convertFrom0to1 (p->getValue()))
     {
-        rangedParameter = dynamic_cast<juce::RangedAudioParameter*> (p);
-        jassert (rangedParameter != nullptr);
-
         rangedParameter->addListener (this);
-        targetValue = rangedParameter->convertFrom0to1 (p->getValue());
     }
-    ~InterpolatedParameter()
+    ~SmoothedParameter()
     {
         rangedParameter->removeListener (this);
     }
-    float getAt (int index) 
+    void noteOn() 
     {
-        if (bufferSize == 0) return 0.0f; 
-        return previousValue + ((index / static_cast<float> (bufferSize)) * (targetValue - previousValue));
+        smoothedValue.setCurrentAndTargetValue (rangedParameter->convertFrom0to1 (rangedParameter->getValue())); 
     }
-    void prepare (int blockSize) { bufferSize = blockSize; }
+    float getNext() 
+    {
+        return smoothedValue.getNextValue();
+    }
+    void prepare (double sampleRate) 
+    { 
+        smoothedValue.reset (sampleRate, 0.02f);
+    }
 
 private:
     juce::RangedAudioParameter* rangedParameter;
+    juce::SmoothedValue<float> smoothedValue;
     float previousValue = 0.0f;
     float targetValue = 0.0f;
     int bufferSize = 0;
@@ -49,8 +54,7 @@ private:
     void parameterValueChanged (int parameterIndex, float newValue) override
     {
         juce::ignoreUnused (parameterIndex);
-        previousValue = targetValue;
-        targetValue = rangedParameter->convertFrom0to1 (newValue);
+        smoothedValue.setTargetValue (rangedParameter->convertFrom0to1 (newValue));
     }
 
     void parameterGestureChanged (int parameterIndex, bool gestureIsStarting) override { juce::ignoreUnused (parameterIndex, gestureIsStarting); }
@@ -74,15 +78,7 @@ class Trajectory : public juce::SynthesiserVoice
 {
 public:
     Trajectory (Parameters& p)
-      : parameters (p), 
-        mod_a (parameters.trajectoryModA),
-        mod_b (parameters.trajectoryModB),
-        mod_c (parameters.trajectoryModC),
-        mod_d (parameters.trajectoryModD), 
-        size (parameters.trajectorySize), 
-        rotation (parameters.trajectoryRotation), 
-        translationX (parameters.trajectoryTranslationX), 
-        translationY (parameters.trajectoryTranslationY)
+      : voiceParameters (p)
     {
         envelope.prepare (sampleRate);
         envelope.setParameters ({200.0f, 20.0f, 0.7f, 1000.0f});
@@ -113,6 +109,7 @@ public:
         amplitude = velocity;
         terrain = dynamic_cast<Terrain*> (sound);
         envelope.noteOn();
+        voiceParameters.noteOn();
     }
     void stopNote (float velocity, bool allowTailOff) override 
     { 
@@ -129,11 +126,11 @@ public:
         {
             if(!envelope.isActive()) break;
 
-            auto point = functions[*parameters.currentTrajectory](phase, getModSet (i));
+            auto point = functions[*voiceParameters.currentTrajectory](static_cast<float> (phase), getModSet (i));
             
-            point = point * (size.getAt (i));
-            point = rotate (point, rotation.getAt (i));
-            point = translate (point, translationX.getAt (i), translationY.getAt (i));
+            point = point * (voiceParameters.size.getNext());
+            point = rotate (point, voiceParameters.rotation.getNext());
+            point = translate (point, voiceParameters.translationX.getNext(), voiceParameters.translationY.getNext());
 
             if (terrain != nullptr)
             {
@@ -158,22 +155,55 @@ public:
     void prepareToPlay (double newRate, int blockSize)
     {
         juce::ignoreUnused (newRate);
-        mod_a.prepare (blockSize);
-        mod_b.prepare (blockSize);
-        mod_c.prepare (blockSize);
-        mod_d.prepare (blockSize);
-        size.prepare (blockSize);
-        rotation.prepare (blockSize);
-        translationX.prepare (blockSize);
-        translationY.prepare (blockSize);
+        voiceParameters.resetSampleRate (newRate);
     }
 private:
     ADSR envelope;
-    Parameters& parameters;
     Terrain* terrain;
     juce::Array<std::function<Point(float, ModSet)>> functions;
-    InterpolatedParameter mod_a, mod_b, mod_c, mod_d;
-    InterpolatedParameter size, rotation, translationX, translationY;
+    struct VoiceParameters
+    {
+        VoiceParameters (Parameters& p)
+          : currentTrajectory (p.currentTrajectory),
+            mod_a (p.trajectoryModA),
+            mod_b (p.trajectoryModB),
+            mod_c (p.trajectoryModC),
+            mod_d (p.trajectoryModD), 
+            size (p.trajectorySize), 
+            rotation (p.trajectoryRotation), 
+            translationX (p.trajectoryTranslationX), 
+            translationY (p.trajectoryTranslationY)
+        {}
+
+        void noteOn()
+        {
+            mod_a.noteOn();
+            mod_b.noteOn();
+            mod_c.noteOn();
+            mod_d.noteOn();
+            size.noteOn();
+            rotation.noteOn();
+            translationX.noteOn();
+            translationY.noteOn();
+        }
+
+        void resetSampleRate(double newSampleRate)
+        {
+            mod_a.prepare (newSampleRate);
+            mod_b.prepare (newSampleRate);
+            mod_c.prepare (newSampleRate);
+            mod_d.prepare (newSampleRate);
+            size.prepare (newSampleRate);
+            rotation.prepare (newSampleRate);
+            translationX.prepare (newSampleRate); 
+            translationY.prepare (newSampleRate);
+        }
+
+        SmoothedParameter mod_a, mod_b, mod_c, mod_d;
+        SmoothedParameter size, rotation, translationX, translationY;
+        tp::ChoiceParameter* currentTrajectory;
+    };
+    VoiceParameters voiceParameters;
 
     float frequency = 440.0f;
     float amplitude = 1.0;
@@ -200,8 +230,8 @@ private:
     }
     const ModSet getModSet (int sampleIndex)
     {
-        return ModSet (mod_a.getAt (sampleIndex), mod_b.getAt (sampleIndex), 
-                       mod_c.getAt (sampleIndex), mod_d.getAt (sampleIndex));
+        return ModSet (voiceParameters.mod_a.getNext(), voiceParameters.mod_b.getNext(), 
+                       voiceParameters.mod_c.getNext(), voiceParameters.mod_d.getNext());
     }
 };
 class WaveTerrainSynthesizer : public juce::Synthesiser, 

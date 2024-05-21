@@ -50,11 +50,11 @@ struct TerrainsTree
     static juce::ValueTree create()
     {
         juce::ValueTree tree (id::TERRAINS);
-        tree.setProperty (id::currentTerrain, "sinusoidal", nullptr);
+        tree.setProperty (id::currentTerrain, "Sinusoidal", nullptr);
         tree.addChild (createTerrainType ("Sinusoidal", {0.5f, 0.5f}), -1, nullptr);
         tree.addChild (createTerrainType ("Wiggly", {0.5f, 0.5f}), -1, nullptr);
         tree.addChild (createTerrainType ("Wobbly", {0.5f}), -1, nullptr);
-        tree.addChild (createTerrainType ("system 9", {0.5f, 0.5f, 0.5f, 0.5f}), -1, nullptr);
+        tree.addChild (createTerrainType ("System 9", {0.5f, 0.5f, 0.5f, 0.5f}), -1, nullptr);
         return tree;
     }
     static const juce::ValueTree createTerrainType (juce::String name, const juce::Array<float> mods)

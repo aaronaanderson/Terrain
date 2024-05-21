@@ -53,7 +53,6 @@ private:
 
     const juce::String trajectoryNameFromIndex (int i);
 
-
     void valueTreePropertyChanged (juce::ValueTree& treeWhosePropertyHasChanged,
                                    const juce::Identifier& property) override 
     {
@@ -80,26 +79,6 @@ private:
                 parameters.trajectoryTranslationY->setValueNotifyingHost (parameters.trajectoryTranslationY->convertTo0to1 (tree.getProperty (property)));
         }
     }
-    void initializeState()
-    {
-        auto trajectoriesBranch = state.getChildWithName (id::TRAJECTORIES);
-        jassert (trajectoriesBranch.getType() == id::TRAJECTORIES);
-        setCurrentTrajectoryParamFromString (trajectoriesBranch.getProperty (id::currentTerrain).toString());
-        
-        auto modifiersBranch = getCurrentTrajectoryBranch (trajectoriesBranch).getChildWithName (id::MODIFIERS);
-        jassert (modifiersBranch.getType() == id::MODIFIERS);
-        parameters.trajectoryModA->setValueNotifyingHost (modifiersBranch.getProperty (id::mod_A));
-        parameters.trajectoryModB->setValueNotifyingHost (modifiersBranch.getProperty (id::mod_B));
-        parameters.trajectoryModC->setValueNotifyingHost (modifiersBranch.getProperty (id::mod_C));
-        parameters.trajectoryModD->setValueNotifyingHost (modifiersBranch.getProperty (id::mod_D));
-
-        auto trajectoryVariablesBranch = state.getChildWithName (id::TRAJECTORY_VARIABLES);
-        jassert (trajectoryVariablesBranch.getType() == id::TRAJECTORY_VARIABLES);
-        parameters.trajectorySize->setValueNotifyingHost (trajectoryVariablesBranch.getProperty (id::size));
-        parameters.trajectoryRotation->setValueNotifyingHost (parameters.trajectoryRotation->convertTo0to1 (trajectoryVariablesBranch.getProperty (id::rotation)));            
-        parameters.trajectoryTranslationX->setValueNotifyingHost (parameters.trajectoryTranslationX->convertTo0to1 (trajectoryVariablesBranch.getProperty (id::translation_x)));
-        parameters.trajectoryTranslationY->setValueNotifyingHost (parameters.trajectoryTranslationY->convertTo0to1 (trajectoryVariablesBranch.getProperty (id::translation_y)));
-    }
 
     void setCurrentTrajectoryParamFromString (juce::String s) //Need something better here
     {
@@ -114,6 +93,16 @@ private:
         juce::Array<juce::String> ss {"Ellipse", "Limacon", "Butterfly", "Scarabaeus"};
         for (int i = 0; i < ss.size(); i++)
             if (ss[i] == trajectory)
+                return i;
+
+        jassertfalse;
+        return 0;
+    }
+    int getCurrentTerrainIndexFromString (juce::String terrain)
+    {
+        juce::Array<juce::String> ss {"Sinusoidal", "Wiggly", "Wobbly", "System 9"};
+        for (int i = 0; i < ss.size(); i++)
+            if (ss[i] == terrain)
                 return i;
 
         jassertfalse;

@@ -51,13 +51,15 @@ MainProcessor::MainProcessor()
                                                                                     {-1.0f, 1.0f},
                                                                                     (trajectoryVariablesBranch.getProperty (id::translation_y))));
     
+    auto terrainsBranch = state.getChildWithName (id::TERRAINS);
+    jassert (terrainsBranch.getType() == id::TERRAINS);
     addParameter (parameters.currentTerrain = new tp::ChoiceParameter ("Current Terrain", 
         getChoices (state.getChildWithName (id::TERRAINS)), 
         "", 
-        {}));
+        {}, 
+        getCurrentTerrainIndexFromString (terrainsBranch.getProperty (id::currentTerrain).toString())));
 
     state.addListener (this);
-    // initializeState();
 
     synthesizer = std::make_unique<tp::WaveTerrainSynthesizer> (parameters);
 }

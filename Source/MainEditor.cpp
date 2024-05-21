@@ -66,10 +66,10 @@ juce::ignoreUnused(originatingComponent);
         
     if(key.getModifiers().isCommandDown() && (key.getKeyCode() == 'v' || key.getKeyCode() == 'V'))
     {
-        if (valueTreeViewWindow == nullptr)
-            valueTreeViewWindow = std::make_unique<ValueTreeViewWindow> (state);
-        valueTreeViewWindow->addToDesktop ();
+        //if (valueTreeViewWindow == nullptr)
+        valueTreeViewWindow = std::make_unique<ValueTreeViewWindow> (state);
         valueTreeViewWindow->setSize (600, 800);
+        valueTreeViewWindow->addToDesktop ();
         valueTreeViewWindow->setVisible (true);
         return true;
     }
