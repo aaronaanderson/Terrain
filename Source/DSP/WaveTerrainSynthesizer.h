@@ -56,7 +56,6 @@ private:
         juce::ignoreUnused (parameterIndex);
         smoothedValue.setTargetValue (rangedParameter->convertFrom0to1 (newValue));
     }
-
     void parameterGestureChanged (int parameterIndex, bool gestureIsStarting) override { juce::ignoreUnused (parameterIndex, gestureIsStarting); }
 };
 class BufferedSmoothParameter
@@ -64,9 +63,7 @@ class BufferedSmoothParameter
 public:
     BufferedSmoothParameter (juce::RangedAudioParameter* p)
       : smoothedParameter (p)
-    {
-
-    }
+    {}
     void prepareToPlay (double sr, int blockSize)
     {
         smoothedParameter.prepare (sr);
@@ -132,7 +129,6 @@ public:
     {
         envelope.prepare (sampleRate);
         envelope.setParameters ({200.0f, 20.0f, 0.7f, 1000.0f});
-
         functions = 
         {
             [&](float theta, ModSet m){ return Point(std::sin(theta) * m.a, std::cos(theta));} 
@@ -224,7 +220,6 @@ private:
             translationX (p.trajectoryTranslationX), 
             translationY (p.trajectoryTranslationY)
         {}
-
         void noteOn()
         {
             mod_a.noteOn();
@@ -236,7 +231,6 @@ private:
             translationX.noteOn();
             translationY.noteOn();
         }
-
         void resetSampleRate(double newSampleRate)
         {
             mod_a.prepare (newSampleRate);
@@ -248,7 +242,6 @@ private:
             translationX.prepare (newSampleRate); 
             translationY.prepare (newSampleRate);
         }
-
         SmoothedParameter mod_a, mod_b, mod_c, mod_d;
         SmoothedParameter size, rotation, translationX, translationY;
         tp::ChoiceParameter* currentTrajectory;

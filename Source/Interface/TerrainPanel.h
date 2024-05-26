@@ -123,11 +123,11 @@ public:
 
         aModifier.getSlider().onValueChange = [&](){modifierBranch.setProperty (id::mod_A, aModifier.getSlider().getValue(), &undoManager);};
         addAndMakeVisible (aModifier);
-        bModifier.getSlider().onValueChange = [&](){modifierBranch.setProperty (id::mod_B, aModifier.getSlider().getValue(), &undoManager);};
+        bModifier.getSlider().onValueChange = [&](){modifierBranch.setProperty (id::mod_B, bModifier.getSlider().getValue(), &undoManager);};
         addAndMakeVisible (bModifier);
-        cModifier.getSlider().onValueChange = [&](){modifierBranch.setProperty (id::mod_C, aModifier.getSlider().getValue(), &undoManager);};
+        cModifier.getSlider().onValueChange = [&](){modifierBranch.setProperty (id::mod_C, cModifier.getSlider().getValue(), &undoManager);};
         addAndMakeVisible (cModifier);
-        dModifier.getSlider().onValueChange = [&](){modifierBranch.setProperty (id::mod_D, aModifier.getSlider().getValue(), &undoManager);};
+        dModifier.getSlider().onValueChange = [&](){modifierBranch.setProperty (id::mod_D, dModifier.getSlider().getValue(), &undoManager);};
         addAndMakeVisible (dModifier);
 
         initializeState();
@@ -147,7 +147,7 @@ private:
     juce::ValueTree modifierBranch;
     juce::UndoManager& undoManager;
 
-    tp::Parameters parameters;
+    const tp::Parameters& parameters;
 
     ParameterSlider aModifier;
     ParameterSlider bModifier;
