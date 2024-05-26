@@ -212,7 +212,8 @@ public:
         undoManager (um), 
         parameters (p),
         time (parameters.feedbackTime, um, gt, "Time", {0.0, 2000.0}, 250.0), 
-        feedback (parameters.feedbackScalar, um, gt, "Feedback", {0.0, 0.9999}, 0.9)
+        feedback (parameters.feedbackScalar, um, gt, "Feedback", {0.0, 0.9999}, 0.8), 
+        mix (parameters.feedbackMix, um, gt, "Mix", {0.0, 1.0})
     {
         jassert (state.getType() == id::FEEDBACK);
         label.setText ("Trajectory Feedback", juce::dontSendNotification);
@@ -223,6 +224,8 @@ public:
         addAndMakeVisible (time);
         feedback.getSlider().onValueChange = [&]() { state.setProperty (id::feedbackScalar, feedback.getSlider().getValue(), &undoManager); };
         addAndMakeVisible (feedback);
+        mix.getSlider().onValueChange = [&]() { state.setProperty (id::feedbackMix, mix.getSlider().getValue(), &undoManager); };
+        addAndMakeVisible (mix);
 
         initializeState();
     }
@@ -233,6 +236,7 @@ public:
 
         time.setBounds (b.removeFromTop (40));
         feedback.setBounds (b.removeFromTop (40));
+        mix.setBounds (b.removeFromTop (40));
     }
 private:
     juce::ValueTree state;
@@ -242,11 +246,13 @@ private:
     juce::Label label;
     ParameterSlider time;
     ParameterSlider feedback;
+    ParameterSlider mix;
 
     void initializeState()
     {
         time.setValue (state.getProperty (id::feedbackTime));
         feedback.setValue (state.getProperty (id::feedbackScalar));
+        mix.setValue (state.getProperty (id::feedbackMix));
     }
 };
 class TrajectoryVariables : public juce::Component 
@@ -335,7 +341,7 @@ public:
         trajectorySelector.setBounds (b.removeFromTop (40));
         modifierArray.setBounds (b.removeFromTop (80));
         trajectoryVariables.setBounds (b.removeFromTop (160));
-        feedbackPanel.setBounds (b.removeFromTop (100));
+        feedbackPanel.setBounds (b.removeFromTop (180));
     }
 
 private:

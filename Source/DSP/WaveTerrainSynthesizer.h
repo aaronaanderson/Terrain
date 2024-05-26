@@ -109,7 +109,7 @@ public:
     float sampleAt (Point p, int bufferIndex)
     {
         auto m = getModSet (bufferIndex);
-        return (std::sin (p.x * 16.0f * m.a) * std::cos (p.y * 12.0f * m.b));
+        return (std::sin (p.x * 16.0f * (m.a + 1.0f)) * std::cos (p.y * 12.0f * (m.b + 1.0f)));
     }
 private:
     Parameters& parameters;
@@ -156,6 +156,7 @@ public:
         terrain = dynamic_cast<Terrain*> (sound);
         envelope.noteOn();
         voiceParameters.noteOn();
+        feedbackBuffer.fill (Point(0.0f, 0.0f));
     }
     void stopNote (float velocity, bool allowTailOff) override 
     { 
@@ -177,6 +178,10 @@ public:
             point = point * (voiceParameters.size.getNext());
             point = rotate (point, voiceParameters.rotation.getNext());
             point = translate (point, voiceParameters.translationX.getNext(), voiceParameters.translationY.getNext());
+            point = feedback (point, 
+                              voiceParameters.feedbackTime.getNext(), 
+                              voiceParameters.feedbackScalar.getNext(), 
+                              voiceParameters.feedbackMix.getNext());
 
             if (terrain != nullptr)
             {
@@ -196,7 +201,9 @@ public:
             envelope.prepare (sampleRate);
             setFrequency (frequency);
         }
-        juce::SynthesiserVoice::setCurrentPlaybackSampleRate (newRate);
+        // two second max delay
+        feedbackBuffer.resize (static_cast<int> (sampleRate) * 2);
+        feedbackBuffer.fill (Point(0.0f, 0.0f));
     }
     void prepareToPlay (double newRate, int blockSize)
     {
@@ -218,7 +225,10 @@ private:
             size (p.trajectorySize), 
             rotation (p.trajectoryRotation), 
             translationX (p.trajectoryTranslationX), 
-            translationY (p.trajectoryTranslationY)
+            translationY (p.trajectoryTranslationY), 
+            feedbackScalar (p.feedbackScalar), 
+            feedbackTime (p.feedbackTime), 
+            feedbackMix (p.feedbackMix)
         {}
         void noteOn()
         {
@@ -230,8 +240,11 @@ private:
             rotation.noteOn();
             translationX.noteOn();
             translationY.noteOn();
+            feedbackScalar.noteOn();
+            feedbackTime.noteOn();
+            feedbackMix.noteOn();
         }
-        void resetSampleRate(double newSampleRate)
+        void resetSampleRate (double newSampleRate)
         {
             mod_a.prepare (newSampleRate);
             mod_b.prepare (newSampleRate);
@@ -241,10 +254,14 @@ private:
             rotation.prepare (newSampleRate);
             translationX.prepare (newSampleRate); 
             translationY.prepare (newSampleRate);
+            feedbackScalar.prepare (newSampleRate);
+            feedbackTime.prepare (newSampleRate);
+            feedbackMix.prepare (newSampleRate);
         }
         SmoothedParameter mod_a, mod_b, mod_c, mod_d;
         SmoothedParameter size, rotation, translationX, translationY;
         tp::ChoiceParameter* currentTrajectory;
+        SmoothedParameter feedbackScalar, feedbackTime, feedbackMix;
     };
     VoiceParameters voiceParameters;
 
@@ -253,6 +270,10 @@ private:
     double phase = 0.0;
     double phaseIncrement;
     double sampleRate = 48000.0;
+
+    juce::Array<Point> feedbackBuffer;
+    int feedbackWriteIndex = 0;
+    int feedbackReadIndex;
 
     void setFrequency (float newFrequency)
     {
@@ -271,10 +292,20 @@ private:
         Point newPoint (p.x + x, p.y + y);
         return newPoint;
     }
-    const ModSet getModSet()
+    Point feedback (Point input, float feedbackTime, float feedback, float mix)
     {
-        return ModSet (voiceParameters.mod_a.getNext(), voiceParameters.mod_b.getNext(), 
-                       voiceParameters.mod_c.getNext(), voiceParameters.mod_d.getNext());
+        feedbackReadIndex = feedbackWriteIndex - static_cast<int> ((feedbackTime * 0.001f) * sampleRate);
+        if (feedbackReadIndex < 0) feedbackReadIndex += feedbackBuffer.size();
+        auto scaledHistory = feedbackBuffer[feedbackReadIndex] * feedback;
+        feedbackBuffer.setUnchecked (feedbackWriteIndex, input + scaledHistory);
+        feedbackWriteIndex = (feedbackWriteIndex + 1) % feedbackBuffer.size();
+
+        return input + (scaledHistory * mix);
+    }
+    const ModSet getModSet()
+     {
+         return ModSet (voiceParameters.mod_a.getNext(), voiceParameters.mod_b.getNext(), 
+                        voiceParameters.mod_c.getNext(), voiceParameters.mod_d.getNext());
     }
 };
 class WaveTerrainSynthesizer : public juce::Synthesiser, 

@@ -38,7 +38,7 @@ struct ParameterSlider : public juce::Component,
     void resized() override 
     {
         auto b = getLocalBounds();
-        if (label.getText().length() > 3)
+        if (label.getText().length() > 1)
             label.setBounds (b.removeFromTop (20));
         else
             label.setBounds (b.removeFromLeft (20));

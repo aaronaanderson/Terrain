@@ -22,6 +22,7 @@ private:
         juce::ValueTree tree (id::FEEDBACK);
         tree.setProperty (id::feedbackScalar, 0.0, nullptr);
         tree.setProperty (id::feedbackTime, 200.0, nullptr);
+        tree.setProperty (id::feedbackMix, 0.0, nullptr);
 
         return tree;
     }
