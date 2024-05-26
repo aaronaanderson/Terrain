@@ -164,7 +164,7 @@ private:
     {
         auto activeTerrainBranch = getCurrentTerrainBranch (state);
         modifierBranch = activeTerrainBranch.getChildWithName (id::MODIFIERS);
-        std::cout << activeTerrainBranch.toXmlString() << std::endl;
+
         aModifier.setValue (modifierBranch.getProperty (id::mod_A));
         bModifier.setValue (modifierBranch.getProperty (id::mod_B));
         cModifier.setValue (modifierBranch.getProperty (id::mod_C));

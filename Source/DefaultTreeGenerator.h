@@ -13,6 +13,16 @@ struct TrajectoryVariablesTree
         tree.setProperty (id::translation_x, 0.0f, nullptr);
         tree.setProperty (id::translation_y, 0.0f, nullptr);
 
+        tree.addChild (createFeedbackBranch(), -1, nullptr);
+        return tree;
+    }
+private:
+    static const juce::ValueTree createFeedbackBranch()
+    {
+        juce::ValueTree tree (id::FEEDBACK);
+        tree.setProperty (id::feedbackScalar, 0.0, nullptr);
+        tree.setProperty (id::feedbackTime, 200.0, nullptr);
+
         return tree;
     }
 };

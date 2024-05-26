@@ -68,7 +68,7 @@ class RangedFloatParameter : public juce::AudioParameterFloat
 {
 public:
     RangedFloatParameter (juce::String parameterName, 
-                          juce::Range<float> range,
+                          juce::NormalisableRange<float> range,
                               float defaultValue = 0.0f,
                               juce::String label = "", 
                               std::function<void(float)> newValueFunction = nullptr)
@@ -103,6 +103,9 @@ struct Parameters
     RangedFloatParameter*     trajectoryRotation;
     RangedFloatParameter*     trajectoryTranslationX;
     RangedFloatParameter*     trajectoryTranslationY;
+
+    RangedFloatParameter*     feedbackTime;
+    RangedFloatParameter*     feedbackScalar;
 
     ChoiceParameter* currentTerrain;
     NormalizedFloatParameter* terrainModA;

@@ -23,6 +23,7 @@ MainProcessor::MainProcessor()
         state (DefaultTree::create())
 {
 
+    //======================================Trajectory Parameters
     auto trajectoriesBranch = state.getChildWithName (id::TRAJECTORIES);
     jassert (trajectoriesBranch.getType() == id::TRAJECTORIES);
     addParameter (parameters.currentTrajectory = new tp::ChoiceParameter ("Current Trajectory", 
@@ -51,6 +52,18 @@ MainProcessor::MainProcessor()
                                                                                     {-1.0f, 1.0f},
                                                                                     (trajectoryVariablesBranch.getProperty (id::translation_y))));
     
+    auto trajectoryFeedbackBranch = trajectoryVariablesBranch.getChildWithName (id::FEEDBACK);
+    jassert (trajectoryFeedbackBranch.getType() == id::FEEDBACK);
+    auto range = juce::NormalisableRange<float> (0.0, 2000.0); range.setSkewForCentre (250.0);
+    addParameter (parameters.feedbackTime = new tp::RangedFloatParameter ("Feedback Time", 
+                                                                          range,
+                                                                          (trajectoryFeedbackBranch.getProperty (id::feedbackTime))));
+    range = juce::NormalisableRange<float> (0.0f, 0.9999f); range.setSkewForCentre (0.9f);
+    addParameter (parameters.feedbackScalar = new tp::RangedFloatParameter ("Feedback", 
+                                                                            range,
+                                                                            (trajectoryVariablesBranch.getProperty (id::feedbackScalar))));
+
+    //=======================================Terrain Parameters
     auto terrainsBranch = state.getChildWithName (id::TERRAINS);
     jassert (terrainsBranch.getType() == id::TERRAINS);
     addParameter (parameters.currentTerrain = new tp::ChoiceParameter ("Current Terrain", 
@@ -124,11 +137,11 @@ void MainProcessor::getStateInformation (juce::MemoryBlock& destData)
 }
 void MainProcessor::setStateInformation (const void* data, int sizeInBytes)
 { 
-    std::unique_ptr<juce::XmlElement> xml (getXmlFromBinary (data, sizeInBytes));
-    if (xml.get() == nullptr) return; // make sure we have data
-    if (!xml->hasTagName (state.getType())) return; // make sure it's the right data
+    // std::unique_ptr<juce::XmlElement> xml (getXmlFromBinary (data, sizeInBytes));
+    // if (xml.get() == nullptr) return; // make sure we have data
+    // if (!xml->hasTagName (state.getType())) return; // make sure it's the right data
 
-    state = juce::ValueTree::fromXml (*xml);
+    // state = juce::ValueTree::fromXml (*xml);
 }
 //==============================================================================
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter() { return new MainProcessor(); }

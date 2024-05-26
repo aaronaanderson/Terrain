@@ -15,12 +15,14 @@ struct ParameterSlider : public juce::Component,
                      juce::UndoManager& um,
                      GlobalTimer& gt, 
                      juce::String labelText, 
-                     juce::Range<double> range)
+                     juce::Range<double> range, 
+                     std::optional<double> midPoint = std::optional<double>())
       : parameter (p), 
         attachment (*dynamic_cast<juce::RangedAudioParameter*> (p), slider, &um)
     {
         label.setText (labelText, juce::dontSendNotification);
         slider.setRange (range, 0.0);
+        if (midPoint.has_value()) slider.setSkewFactorFromMidPoint (midPoint.value());
         slider.setTextBoxStyle (juce::Slider::TextEntryBoxPosition::NoTextBox, true, 20, 20);
 
         addAndMakeVisible (label);

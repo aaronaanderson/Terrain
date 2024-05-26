@@ -86,6 +86,12 @@ private:
                 parameters.trajectoryTranslationX->setValueNotifyingHost (parameters.trajectoryTranslationX->convertTo0to1 (tree.getProperty (property)));
             else if (property == id::translation_y) 
                 parameters.trajectoryTranslationY->setValueNotifyingHost (parameters.trajectoryTranslationY->convertTo0to1 (tree.getProperty (property)));
+        }else if (tree.getType() == id::FEEDBACK)
+        {
+            if      (property == id::feedbackTime)
+                parameters.feedbackTime->setValueNotifyingHost (parameters.feedbackTime->convertTo0to1 (tree.getProperty (property)));
+            else if (property == id::feedbackTime)
+                parameters.feedbackScalar->setValueNotifyingHost (parameters.feedbackScalar->convertTo0to1 (tree.getProperty (property)));
         }
     }
 

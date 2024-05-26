@@ -201,6 +201,54 @@ private:
         return false;
     }
 };
+class FeedbackPanel : public juce::Component
+{
+public:
+    FeedbackPanel (juce::ValueTree feedbackBranch, 
+                   juce::UndoManager& um, 
+                   GlobalTimer& gt, 
+                   const tp::Parameters& p)
+      : state (feedbackBranch), 
+        undoManager (um), 
+        parameters (p),
+        time (parameters.feedbackTime, um, gt, "Time", {0.0, 2000.0}, 250.0), 
+        feedback (parameters.feedbackScalar, um, gt, "Feedback", {0.0, 0.9999}, 0.9)
+    {
+        jassert (state.getType() == id::FEEDBACK);
+        label.setText ("Trajectory Feedback", juce::dontSendNotification);
+        label.setJustificationType (juce::Justification::centred);
+        addAndMakeVisible (label);
+        
+        time.getSlider().onValueChange = [&]() { state.setProperty (id::feedbackTime, time.getSlider().getValue(), &undoManager); };
+        addAndMakeVisible (time);
+        feedback.getSlider().onValueChange = [&]() { state.setProperty (id::feedbackScalar, feedback.getSlider().getValue(), &undoManager); };
+        addAndMakeVisible (feedback);
+
+        initializeState();
+    }
+    void resized() override 
+    {
+        auto b = getLocalBounds();
+        label.setBounds (b.removeFromTop(20));
+
+        time.setBounds (b.removeFromTop (40));
+        feedback.setBounds (b.removeFromTop (40));
+    }
+private:
+    juce::ValueTree state;
+    juce::UndoManager& undoManager;
+    const tp::Parameters& parameters;
+
+    juce::Label label;
+    ParameterSlider time;
+    ParameterSlider feedback;
+
+    void initializeState()
+    {
+        time.setValue (state.getProperty (id::feedbackTime));
+        feedback.setValue (state.getProperty (id::feedbackScalar));
+    }
+};
 class TrajectoryVariables : public juce::Component 
 {
 public:
@@ -270,12 +318,14 @@ public:
         undoManager (um),
         trajectorySelector (state.getChildWithName (id::TRAJECTORIES), undoManager, gt, p),
         modifierArray (state.getChildWithName (id::TRAJECTORIES), undoManager, gt, p), 
-        trajectoryVariables (state.getChildWithName (id::TRAJECTORY_VARIABLES), undoManager, gt, p)
+        trajectoryVariables (state.getChildWithName (id::TRAJECTORY_VARIABLES), undoManager, gt, p),
+        feedbackPanel (state.getChildWithName (id::TRAJECTORY_VARIABLES).getChildWithName (id::FEEDBACK), undoManager, gt, p)
     {
         jassert (state.getType() == id::TERRAINSYNTH);
         addAndMakeVisible (trajectorySelector);
         addAndMakeVisible (modifierArray);
         addAndMakeVisible (trajectoryVariables);
+        addAndMakeVisible (feedbackPanel);
     }
 
     void resized () override 
@@ -284,7 +334,8 @@ public:
         auto b = getAdjustedBounds();
         trajectorySelector.setBounds (b.removeFromTop (40));
         modifierArray.setBounds (b.removeFromTop (80));
-        trajectoryVariables.setBounds (b);
+        trajectoryVariables.setBounds (b.removeFromTop (160));
+        feedbackPanel.setBounds (b.removeFromTop (100));
     }
 
 private:
@@ -294,5 +345,6 @@ private:
     TrajectorySelector trajectorySelector;
     ModifierArray modifierArray;
     TrajectoryVariables trajectoryVariables;
+    FeedbackPanel feedbackPanel;
 };
 }
