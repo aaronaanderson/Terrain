@@ -58,6 +58,11 @@ MainProcessor::MainProcessor()
         "", 
         {}, 
         getCurrentTerrainIndexFromString (terrainsBranch.getProperty (id::currentTerrain).toString())));
+    modifiersBranch = terrainsBranch.getChildWithName (id::MODIFIERS);
+    addParameter (parameters.terrainModA = new tp::NormalizedFloatParameter ("Terrain Mod A", modifiersBranch.getProperty (id::mod_A)));
+    addParameter (parameters.terrainModB = new tp::NormalizedFloatParameter ("Terrain Mod B", modifiersBranch.getProperty (id::mod_B)));
+    addParameter (parameters.terrainModC = new tp::NormalizedFloatParameter ("Terrain Mod C", modifiersBranch.getProperty (id::mod_C)));
+    addParameter (parameters.terrainModD = new tp::NormalizedFloatParameter ("Terrain Mod D", modifiersBranch.getProperty (id::mod_D)));
 
     state.addListener (this);
 

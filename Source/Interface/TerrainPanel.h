@@ -101,25 +101,134 @@ private:
     void parameterGestureChanged (int parameterIndex, bool gestureIsStarting) override { juce::ignoreUnused (parameterIndex, gestureIsStarting); }          
 };
 
+class TerrainModifierArray : public juce::Component,
+                             private juce::ValueTree::Listener
+{
+public:
+    TerrainModifierArray (juce::ValueTree terrainState, 
+                          juce::UndoManager& um, 
+                          GlobalTimer& gt, 
+                          const tp::Parameters& p)
+      : state (terrainState), 
+        undoManager (um), 
+        parameters (p), 
+        aModifier (parameters.terrainModA, um, gt, "a", {0.0, 1.0}),
+        bModifier (parameters.terrainModB, um, gt, "b", {0.0, 1.0}),
+        cModifier (parameters.terrainModC, um, gt, "c", {0.0, 1.0}),
+        dModifier (parameters.terrainModD, um, gt, "d", {0.0, 1.0})
+    {
+        jassert (state.getType() == id::TERRAINS);
+        
+        state.addListener (this);
+
+        aModifier.getSlider().onValueChange = [&](){modifierBranch.setProperty (id::mod_A, aModifier.getSlider().getValue(), &undoManager);};
+        addAndMakeVisible (aModifier);
+        bModifier.getSlider().onValueChange = [&](){modifierBranch.setProperty (id::mod_B, aModifier.getSlider().getValue(), &undoManager);};
+        addAndMakeVisible (bModifier);
+        cModifier.getSlider().onValueChange = [&](){modifierBranch.setProperty (id::mod_C, aModifier.getSlider().getValue(), &undoManager);};
+        addAndMakeVisible (cModifier);
+        dModifier.getSlider().onValueChange = [&](){modifierBranch.setProperty (id::mod_D, aModifier.getSlider().getValue(), &undoManager);};
+        addAndMakeVisible (dModifier);
+
+        initializeState();
+    }
+
+    void resized() override 
+    {
+        auto b = getLocalBounds();
+        auto quarterHeight = b.getHeight() / 4;
+        aModifier.setBounds (b.removeFromTop (quarterHeight));
+        bModifier.setBounds (b.removeFromTop (quarterHeight));
+        cModifier.setBounds (b.removeFromTop (quarterHeight));
+        dModifier.setBounds (b.removeFromTop (quarterHeight));
+    }
+private:
+    juce::ValueTree state;
+    juce::ValueTree modifierBranch;
+    juce::UndoManager& undoManager;
+
+    tp::Parameters parameters;
+
+    ParameterSlider aModifier;
+    ParameterSlider bModifier;
+    ParameterSlider cModifier;
+    ParameterSlider dModifier;
+
+    void setModifier (juce::Identifier mod, float value)
+    {
+        auto activeTerrainBranch = getCurrentTerrainBranch (state);
+        modifierBranch = activeTerrainBranch.getChildWithName (id::MODIFIERS);
+        modifierBranch.setProperty (mod, value, &undoManager);
+    }
+    void initializeState()
+    {
+        auto activeTerrainBranch = getCurrentTerrainBranch (state);
+        modifierBranch = activeTerrainBranch.getChildWithName (id::MODIFIERS);
+        std::cout << activeTerrainBranch.toXmlString() << std::endl;
+        aModifier.setValue (modifierBranch.getProperty (id::mod_A));
+        bModifier.setValue (modifierBranch.getProperty (id::mod_B));
+        cModifier.setValue (modifierBranch.getProperty (id::mod_C));
+        dModifier.setValue (modifierBranch.getProperty (id::mod_D));
+
+        resetLayout();
+    }
+    void valueTreePropertyChanged (juce::ValueTree& treeWhosePropertyHasChanged,
+                                   const juce::Identifier& property) override 
+    {
+        auto tree = treeWhosePropertyHasChanged;
+        if (tree.getType() == id::TERRAINS)
+            if (property == id::currentTerrain)
+                initializeState();
+    }
+    void resetLayout()
+    {
+        scanForMod (id::mod_A) ? aModifier.setVisible (true) : aModifier.setVisible (false);
+        scanForMod (id::mod_B) ? bModifier.setVisible (true) : bModifier.setVisible (false);
+        scanForMod (id::mod_C) ? cModifier.setVisible (true) : cModifier.setVisible (false);
+        scanForMod (id::mod_D) ? dModifier.setVisible (true) : dModifier.setVisible (false);
+    }
+    bool scanForMod (juce::Identifier mod)
+    {
+        juce::ValueTree activeTerrain = getCurrentTerrainBranch (state);
+        
+        auto modifiersBranch = activeTerrain.getChildWithName (id::MODIFIERS);
+        if (modifiersBranch.getProperty (mod) != juce::var()) // if the property is present
+            return true;
+        
+        return false;
+    }
+};
+
 class TerrainPanel : public Panel
 {
 public:
-    TerrainPanel (juce::ValueTree terrainBranch,
+    TerrainPanel (juce::ValueTree terrainSynthTree,
                   juce::UndoManager& um, 
                   GlobalTimer& gt, 
                   const tp::Parameters& p)
       : Panel ("Terrain"), 
-        terrainSelector (terrainBranch, um, gt, p)
+        state (terrainSynthTree), 
+        undoManager (um),
+        terrainSelector (state.getChildWithName (id::TERRAINS), um, gt, p), 
+        modifierArray (state.getChildWithName (id::TERRAINS), um, gt, p)
     {
+        jassert (state.getType() == id::TERRAINSYNTH);
+
         addAndMakeVisible (terrainSelector);
+        addAndMakeVisible (modifierArray);
     }
     void resized() override
     {
         Panel::resized();
         auto b = getAdjustedBounds();
         terrainSelector.setBounds (b.removeFromTop (40));
+        modifierArray.setBounds (b.removeFromTop (80));
     }
 private:
+    juce::ValueTree state;
+    juce::UndoManager& undoManager;
+
     TerrainSelector terrainSelector;
+    TerrainModifierArray modifierArray;
 };
 }

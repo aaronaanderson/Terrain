@@ -87,13 +87,13 @@ public:
         {
             [&](float theta, ModSet m){ return Point(std::sin(theta) * m.a, std::cos(theta));} 
             ,[&](float theta, ModSet m)
-                {   auto r = m.b + m.a * std::sin (theta);
+                {   float r = m.b + m.a * std::sin (theta);
                     return Point(r * std::cos(theta), r * std::sin(theta)); }
             ,[&](float theta, ModSet m)
-                {   auto r = std::pow (juce::MathConstants<float>::euler, std::cos (theta + (m.a * juce::MathConstants<float>::twoPi))) - 2.0f * std::cos (4.0f * theta) + std::pow(std::sin((2.0f * theta - juce::MathConstants<float>::pi) / 24.0f), 5);
+                {   float r = std::pow (juce::MathConstants<float>::euler, std::cos (theta + (m.a * juce::MathConstants<float>::twoPi))) - 2.0f * std::cos (4.0f * theta) + std::pow(std::sin((2.0f * theta - juce::MathConstants<float>::pi) / 24.0f), 5);
                     return Point(r * std::cos(phase), r * std::sin(theta)); }
             ,[&](float theta, ModSet m)
-                {   auto r = (m.b * std::cos (2.0f * theta) - m.a * std::cos (theta));
+                {   float r = (m.b * std::cos (2.0f * theta) - m.a * std::cos (theta));
                     return Point(r * std::cos(theta), r * std::sin(theta)); }
         };
     }
@@ -126,7 +126,7 @@ public:
         {
             if(!envelope.isActive()) break;
 
-            auto point = functions[*voiceParameters.currentTrajectory](static_cast<float> (phase), getModSet (i));
+            auto point = functions[*voiceParameters.currentTrajectory](static_cast<float> (phase), getModSet());
             
             point = point * (voiceParameters.size.getNext());
             point = rotate (point, voiceParameters.rotation.getNext());
@@ -154,7 +154,7 @@ public:
     }
     void prepareToPlay (double newRate, int blockSize)
     {
-        juce::ignoreUnused (newRate);
+        juce::ignoreUnused (blockSize);
         voiceParameters.resetSampleRate (newRate);
     }
 private:
@@ -228,7 +228,7 @@ private:
         Point newPoint (p.x + x, p.y + y);
         return newPoint;
     }
-    const ModSet getModSet (int sampleIndex)
+    const ModSet getModSet()
     {
         return ModSet (voiceParameters.mod_a.getNext(), voiceParameters.mod_b.getNext(), 
                        voiceParameters.mod_c.getNext(), voiceParameters.mod_d.getNext());

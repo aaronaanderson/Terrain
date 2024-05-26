@@ -105,5 +105,9 @@ struct Parameters
     RangedFloatParameter*     trajectoryTranslationY;
 
     ChoiceParameter* currentTerrain;
+    NormalizedFloatParameter* terrainModA;
+    NormalizedFloatParameter* terrainModB;
+    NormalizedFloatParameter* terrainModC;
+    NormalizedFloatParameter* terrainModD;
 };
 }

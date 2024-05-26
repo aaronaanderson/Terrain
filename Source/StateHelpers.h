@@ -13,3 +13,14 @@ static juce::ValueTree getCurrentTrajectoryBranch (juce::ValueTree trajectoriesB
     jassertfalse;
     return {};
 }
+static juce::ValueTree getCurrentTerrainBranch (juce::ValueTree terrainsBranch)
+{
+    jassert (terrainsBranch.getType() == id::TERRAINS);
+    auto trajectoryType = terrainsBranch.getProperty (id::currentTerrain).toString();
+    for (int i = 0; i < terrainsBranch.getNumChildren(); i++)
+        if (terrainsBranch.getChild (i).getProperty (id::type).toString() == trajectoryType)
+            return terrainsBranch.getChild (i);
+
+    jassertfalse;
+    return {};
+}
