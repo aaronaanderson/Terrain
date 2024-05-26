@@ -59,20 +59,70 @@ private:
 
     void parameterGestureChanged (int parameterIndex, bool gestureIsStarting) override { juce::ignoreUnused (parameterIndex, gestureIsStarting); }
 };
+class BufferedSmoothParameter
+{
+public:
+    BufferedSmoothParameter (juce::RangedAudioParameter* p)
+      : smoothedParameter (p)
+    {
+
+    }
+    void prepareToPlay (double sr, int blockSize)
+    {
+        smoothedParameter.prepare (sr);
+        buffer.resize (blockSize);
+    }
+    // call once per audio block
+    void updateBuffer()
+    {
+        for (auto& s : buffer)
+            s = smoothedParameter.getNext();
+    }
+    float getAt (int bufferIndex) { return buffer[bufferIndex]; }
+private:
+    SmoothedParameter smoothedParameter;
+    juce::Array<float> buffer;
+};
 class Terrain : public juce::SynthesiserSound
 {
 public:
     Terrain (Parameters& p)
-      : parameters (p)
+      : parameters (p), 
+        modA (p.terrainModA), 
+        modB (p.terrainModB), 
+        modC (p.terrainModC), 
+        modD (p.terrainModD)
     {}
     bool appliesToNote (int midiNoteNumber) override { juce::ignoreUnused (midiNoteNumber); return true; }
     bool appliesToChannel (int midiChannel) override { juce::ignoreUnused (midiChannel); return true; }
-    float sampleAt (Point p)
+    void prepareToPlay(double sampleRate, int blockSize)
     {
-        return (std::sin (p.x * 8.0f) * std::cos (p.y * 12.0f));
+        modA.prepareToPlay (sampleRate, blockSize);
+        modB.prepareToPlay (sampleRate, blockSize);
+        modC.prepareToPlay (sampleRate, blockSize);
+        modD.prepareToPlay (sampleRate, blockSize);
+    }
+    void updateParameterBuffers()
+    {
+        modA.updateBuffer();
+        modB.updateBuffer();
+        modC.updateBuffer();
+        modD.updateBuffer();
+    }
+    float sampleAt (Point p, int bufferIndex)
+    {
+        auto m = getModSet (bufferIndex);
+        return (std::sin (p.x * 16.0f * m.a) * std::cos (p.y * 12.0f * m.b));
     }
 private:
     Parameters& parameters;
+    BufferedSmoothParameter modA, modB, modC, modD;
+
+    const ModSet getModSet (int index)
+    {
+        return ModSet (modA.getAt (index), modB.getAt (index), 
+                       modC.getAt (index), modD.getAt (index));
+    }
 };
 class Trajectory : public juce::SynthesiserVoice
 {
@@ -134,7 +184,7 @@ public:
 
             if (terrain != nullptr)
             {
-                float outputSample = terrain->sampleAt (point);
+                float outputSample = terrain->sampleAt (point, i);
                 o[i] += outputSample * static_cast<float> (envelope.calculateNext()) * 0.1f;
             }
             phase = std::fmod (phase + phaseIncrement, juce::MathConstants<double>::twoPi);
@@ -239,12 +289,10 @@ class WaveTerrainSynthesizer : public juce::Synthesiser,
 {
 public:
     WaveTerrainSynthesizer (Parameters& p)
-      : parameters (p)
     {
-        setPolyphony (24);
-        addSound (new Terrain (parameters));
+        setPolyphony (24, p);
+        addSound (new Terrain (p));
     }
-
     void prepareToPlay (double sr, int blockSize)
     {
         for (int i = 0; i < getNumVoices(); i++)
@@ -255,17 +303,27 @@ public:
                 trajectory->prepareToPlay (sr, blockSize);
         }
         setCurrentPlaybackSampleRate (sr);
+        
+        jassert (getNumSounds() == 1);
+        auto terrain = dynamic_cast<Terrain*> (getSound (0).get());
+        jassert (terrain != nullptr);
+        terrain->prepareToPlay (sr, blockSize);
     }
-
+    // must be called once per buffer
+    void updateTerrain()
+    {
+        jassert (getNumSounds() == 1);
+        auto terrain = dynamic_cast<Terrain*> (getSound (0).get());
+        jassert (terrain != nullptr);
+        terrain->updateParameterBuffers();
+    }
 private:
-    Parameters& parameters;
-
-    void setPolyphony (int newPolyphony)
+    void setPolyphony (int newPolyphony, Parameters& p)
     {
         jassert (newPolyphony > 0);
         clearVoices();
         for (int i = 0; i < newPolyphony; i++)
-            addVoice (new Trajectory (parameters));
+            addVoice (new Trajectory (p));
     }
 };
 }

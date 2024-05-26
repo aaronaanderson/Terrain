@@ -110,6 +110,7 @@ void MainProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
     
+    synthesizer->updateTerrain();
     synthesizer->renderNextBlock (buffer, midiMessages, 0, buffer.getNumSamples());
 }
 //==============================================================================
