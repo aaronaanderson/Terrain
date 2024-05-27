@@ -174,9 +174,9 @@ public:
                 {   float r = m.b + m.a * std::sin (theta);
                     return Point(r * std::cos(theta), r * std::sin(theta)); }
             ,[&](float theta, ModSet m)
-                {   float r = std::powf (juce::MathConstants<float>::euler, std::cos (theta + (m.a * juce::MathConstants<float>::twoPi)))
+                {   float r = powf (juce::MathConstants<float>::euler, std::cos (theta + (m.a * juce::MathConstants<float>::twoPi)))
                               - 2.0f * std::cos (4.0f * theta) 
-                              + std::powf (std::sin((2.0f * theta - juce::MathConstants<float>::pi) / 24.0f), 5);
+                              + powf (std::sin((2.0f * theta - juce::MathConstants<float>::pi) / 24.0f), 5);
                     return Point(r * std::cos(theta), r * std::sin(theta)); }
             ,[&](float theta, ModSet m)
                 {   float r = (m.b * std::cos (2.0f * theta) - m.a * std::cos (theta));
@@ -205,6 +205,7 @@ public:
     }
     void pitchWheelMoved (int newPitchWheelValue) override { juce::ignoreUnused (newPitchWheelValue); }
     void controllerMoved (int controllerNumber, int newControllerValue) override { juce::ignoreUnused (controllerNumber, newControllerValue); }
+    void renderNextBlock (juce::AudioBuffer<double>& ob, int ss, int nums) override { juce::ignoreUnused (ob, ss, nums); }
     void renderNextBlock (juce::AudioBuffer<float>& outputBuffer, 
                           int startSample, int numSamples) override 
     {
@@ -235,7 +236,7 @@ public:
     } 
     void setCurrentPlaybackSampleRate (double newRate) override 
     {
-        if (newRate != 0.0)
+        if (newRate > 0.0)
         {
             sampleRate = newRate;
             envelope.prepare (sampleRate);
