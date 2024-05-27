@@ -90,20 +90,20 @@ public:
         modC (p.terrainModC), 
         modD (p.terrainModD)
     {
-        functions = 
-        {
-            [&](Point p, ModSet m){ return std::sin(p.x * 6.0f * (m.a + 0.5)) * std::sin(p.y * 6.0f * (m.a + 0.5)); }
-           ,[&](Point p, ModSet m){ return std::sin((p.x * juce::MathConstants<float>::twoPi) * (p.x * 3.0 * m.a) + (m.b * juce::MathConstants<float>::twoPi)) * 
-                                           std::sin((p.y * juce::MathConstants<float>::twoPi) * (p.y * 3.0 * m.a) + (m.b * -juce::MathConstants<float>::twoPi)); }
-           ,[&](Point p, ModSet m){ return std::cos(dfc (p) * juce::MathConstants<float>::twoPi * (m.a * 5.0f + 1.0f) + (m.b * juce::MathConstants<float>::twoPi)); }
-           ,[&](Point p, ModSet m){ return (1.0f - (p.x * p.y)) * std::cos((m.a * 14.0f + 1.0f) * (1.0f - p.x * p.y)); }
-           ,[&](Point p, ModSet m)
-                {
-                    float c = m.a * 0.5f + 0.25f;
-                    float d = m.b * 16.0f + 4.0f;  
-                    return c * p.x * std::cos((1.0f - c) * d * juce::MathConstants<float>::pi * p.x * p.y)  +  (1.0f - c) * p.y * cos(c * d * juce::MathConstants<float>::pi * p.x * p.y);
-                }
-        };
+        // functions = 
+        // {
+        //     [&](Point p, ModSet m){ return std::sin(p.x * 6.0f * (m.a + 0.5)) * std::sin(p.y * 6.0f * (m.a + 0.5)); }
+        //    ,[&](Point p, ModSet m){ return std::sin((p.x * juce::MathConstants<float>::twoPi) * (p.x * 3.0 * m.a) + (m.b * juce::MathConstants<float>::twoPi)) * 
+        //                                    std::sin((p.y * juce::MathConstants<float>::twoPi) * (p.y * 3.0 * m.a) + (m.b * -juce::MathConstants<float>::twoPi)); }
+        //    ,[&](Point p, ModSet m){ return std::cos(dfc (p) * juce::MathConstants<float>::twoPi * (m.a * 5.0f + 1.0f) + (m.b * juce::MathConstants<float>::twoPi)); }
+        //    ,[&](Point p, ModSet m){ return (1.0f - (p.x * p.y)) * std::cos((m.a * 14.0f + 1.0f) * (1.0f - p.x * p.y)); }
+        //    ,[&](Point p, ModSet m)
+        //         {
+        //             float c = m.a * 0.5f + 0.25f;
+        //             float d = m.b * 16.0f + 4.0f;  
+        //             return c * p.x * std::cos((1.0f - c) * d * juce::MathConstants<float>::pi * p.x * p.y)  +  (1.0f - c) * p.y * cos(c * d * juce::MathConstants<float>::pi * p.x * p.y);
+        //         }
+        // };
     }
     bool appliesToNote (int midiNoteNumber) override { juce::ignoreUnused (midiNoteNumber); return true; }
     bool appliesToChannel (int midiChannel) override { juce::ignoreUnused (midiChannel); return true; }
@@ -124,12 +124,33 @@ public:
     float sampleAt (Point p, int bufferIndex)
     {
         auto m = getModSet (bufferIndex);
-        // return (std::sin (p.x * 16.0f * (m.a + 1.0f)) * std::cos (p.y * 12.0f * (m.b + 1.0f)));
-        return functions[*parameters.currentTerrain](p, m);
+        // return functions[*parameters.currentTerrain](p, m); //sadly this gives compiler warnings ) :
+        switch (*parameters.currentTerrain)
+        {
+            case 0:
+                return std::sin(p.x * 6.0f * (m.a + 0.5f)) * std::sin(p.y * 6.0f * (m.a + 0.5f));
+            case 1:
+                return std::sin((p.x * juce::MathConstants<float>::twoPi) * (p.x * 3.0f * m.a) + (m.b * juce::MathConstants<float>::twoPi)) * 
+                       std::sin((p.y * juce::MathConstants<float>::twoPi) * (p.y * 3.0f * m.a) + (m.b * -juce::MathConstants<float>::twoPi));
+            case 2:
+                return std::cos(dfc (p) * juce::MathConstants<float>::twoPi * (m.a * 5.0f + 1.0f) + (m.b * juce::MathConstants<float>::twoPi));
+            case 3:
+                return (1.0f - (p.x * p.y)) * std::cos((m.a * 14.0f + 1.0f) * (1.0f - p.x * p.y));
+            case 4:
+            {
+                float c = m.a * 0.5f + 0.25f;
+                float d = m.b * 16.0f + 4.0f;  
+                return c * p.x * std::cos((1.0f - c) * d * juce::MathConstants<float>::pi * p.x * p.y)  +  (1.0f - c) * p.y * cos(c * d * juce::MathConstants<float>::pi * p.x * p.y);
+            }
+            default:
+            jassertfalse;
+        }
+        jassertfalse;
+        return 0.0f;
     }
 private:
     Parameters& parameters;
-    juce::Array<std::function<float(Point, ModSet)>> functions;
+    // juce::Array<std::function<float(Point, ModSet)>> functions;
     BufferedSmoothParameter modA, modB, modC, modD;
 
     const ModSet getModSet (int index)
@@ -139,6 +160,7 @@ private:
     }
     // distance from center
     inline float dfc (Point p) { return std::sqrt (p.x * p.x + p.y * p.y); }
+
 };
 class Trajectory : public juce::SynthesiserVoice
 {
@@ -155,8 +177,10 @@ public:
                 {   float r = m.b + m.a * std::sin (theta);
                     return Point(r * std::cos(theta), r * std::sin(theta)); }
             ,[&](float theta, ModSet m)
-                {   float r = std::pow (juce::MathConstants<float>::euler, std::cos (theta + (m.a * juce::MathConstants<float>::twoPi))) - 2.0f * std::cos (4.0f * theta) + std::pow(std::sin((2.0f * theta - juce::MathConstants<float>::pi) / 24.0f), 5);
-                    return Point(r * std::cos(phase), r * std::sin(theta)); }
+                {   float r = std::powf (juce::MathConstants<float>::euler, std::cos (theta + (m.a * juce::MathConstants<float>::twoPi)))
+                              - 2.0f * std::cos (4.0f * theta) 
+                              + std::powf (std::sin((2.0f * theta - juce::MathConstants<float>::pi) / 24.0f), 5);
+                    return Point(r * std::cos(theta), r * std::sin(theta)); }
             ,[&](float theta, ModSet m)
                 {   float r = (m.b * std::cos (2.0f * theta) - m.a * std::cos (theta));
                     return Point(r * std::cos(theta), r * std::sin(theta)); }
