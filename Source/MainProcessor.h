@@ -61,6 +61,10 @@ private:
         {
             if (property == id::currentTrajectory)
                 setCurrentTrajectoryParamFromString (tree.getProperty (property).toString());
+        }else if (tree.getType() == id::TERRAINS)
+        {
+            if (property == id::currentTerrain)
+                setCurrentTerrainFromString (tree.getProperty (property).toString());   
         }else if (tree.getType() == id::MODIFIERS)
         {
             if (tree.getParent().getType() == id::TRAJECTORY)
@@ -115,11 +119,18 @@ private:
         jassertfalse;
         return 0;
     }
+    juce::Array<juce::String> terrainStrings = {"Sinusoidal", "Wiggly", "Wobbly", "System 3", "System 9"};
+    void setCurrentTerrainFromString (juce::String s)
+    {
+        for (int i = 0; i < terrainStrings.size(); i++)
+            if (terrainStrings[i] == s)
+                parameters.currentTerrain->setIndex (i);
+    }
     int getCurrentTerrainIndexFromString (juce::String terrain)
     {
-        juce::Array<juce::String> ss {"Sinusoidal", "Wiggly", "Wobbly", "System 9"};
-        for (int i = 0; i < ss.size(); i++)
-            if (ss[i] == terrain)
+       
+        for (int i = 0; i < terrainStrings.size(); i++)
+            if (terrainStrings[i] == terrain)
                 return i;
 
         jassertfalse;
