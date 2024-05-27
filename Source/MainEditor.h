@@ -10,8 +10,7 @@
 
 class TerrainLookAndFeel : public juce::LookAndFeel_V4 {};
 
-class MainEditor  : public juce::AudioProcessorEditor,
-                    private juce::KeyListener
+class MainEditor  : public juce::AudioProcessorEditor
 {
 public:
     explicit MainEditor (MainProcessor&);
@@ -34,8 +33,7 @@ private:
     ti::VisualiserPanel visualiserPanel;
 
     std::unique_ptr<ValueTreeViewWindow> valueTreeViewWindow;
-    bool keyPressed (const juce::KeyPress& key,
-                     juce::Component* originatingComponent) override;
+    bool keyPressed (const juce::KeyPress& key) override;
 
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainEditor)

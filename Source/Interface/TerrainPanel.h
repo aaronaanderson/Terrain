@@ -130,7 +130,7 @@ public:
         gt.addListener (*this);
         parameters.currentTerrain->addListener (this);
     }
-    ~TerrainSelector()
+    ~TerrainSelector() override
     {
         parameters.currentTerrain->removeListener (this);
     }
@@ -200,8 +200,7 @@ public:
                   GlobalTimer& gt, 
                   const tp::Parameters& p)
       : Panel ("Terrain"), 
-        state (terrainSynthTree), 
-        undoManager (um),
+        state (terrainSynthTree),
         terrainSelector (state.getChildWithName (id::TERRAINS), um, gt, p)
     {
         jassert (state.getType() == id::TERRAINSYNTH);
@@ -216,7 +215,6 @@ public:
     }
 private:
     juce::ValueTree state;
-    juce::UndoManager& undoManager;
 
     TerrainSelector terrainSelector;
 };

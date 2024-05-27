@@ -3,7 +3,7 @@
 
 #include "DefaultTreeGenerator.h"
 
-juce::StringArray getChoices(juce::ValueTree tree)
+static juce::StringArray getChoices (juce::ValueTree tree)
 {
     juce::StringArray sa;
     jassert (tree.getType() == id::TRAJECTORIES ||
@@ -29,7 +29,6 @@ MainProcessor::MainProcessor()
     addParameter (parameters.currentTrajectory = new tp::ChoiceParameter ("Current Trajectory", 
         getChoices (state.getChildWithName (id::TRAJECTORIES)), 
         "", 
-        {},
         getCurrentTrajectoryIndexFromString (trajectoriesBranch.getProperty (id::currentTrajectory).toString())));
 
     auto modifiersBranch = getCurrentTrajectoryBranch (trajectoriesBranch).getChildWithName (id::MODIFIERS);
@@ -71,8 +70,7 @@ MainProcessor::MainProcessor()
     jassert (terrainsBranch.getType() == id::TERRAINS);
     addParameter (parameters.currentTerrain = new tp::ChoiceParameter ("Current Terrain", 
         getChoices (state.getChildWithName (id::TERRAINS)), 
-        "", 
-        {}, 
+        "",  
         getCurrentTerrainIndexFromString (terrainsBranch.getProperty (id::currentTerrain).toString())));
     modifiersBranch = terrainsBranch.getChildWithName (id::MODIFIERS);
     addParameter (parameters.terrainModA = new tp::NormalizedFloatParameter ("Terrain Mod A", modifiersBranch.getProperty (id::mod_A)));

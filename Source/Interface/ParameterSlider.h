@@ -28,7 +28,7 @@ struct ParameterSlider : public juce::Component,
         parameter->addListener (this);
         gt.addListener (*this);
     }
-    ~ParameterSlider()
+    ~ParameterSlider() override
     {
         parameter->removeListener (this);
     }

@@ -49,14 +49,12 @@ target_compile_definitions(WaveTerrainSynth
 #     Source/Interface/Renderer/shaders/Terrain.vert
 # )
 
-# including glu32.lib on mac will cause it to screech 
 if(WIN32) 
     target_link_libraries(WaveTerrainSynth 
     PRIVATE
         glu32.lib   
     )
 endif()
-
 
 target_link_libraries(WaveTerrainSynth
     PRIVATE

@@ -31,7 +31,7 @@ public:
     {
         auto b = getLocalBounds();
         auto leftOverBounds = b.removeFromTop (labelHeight);
-        return b;
+        return leftOverBounds;
     }
 private:
     juce::String name;

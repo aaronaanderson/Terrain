@@ -7,7 +7,7 @@
 #include "../Parameters.h"
 #include "ParameterSlider.h"
 
-#include "StateHelpers.h"
+#include "../StateHelpers.h"
 namespace ti
 {
 class ModifierArray : public juce::Component,
@@ -40,9 +40,6 @@ public:
 
         initializeState();
     }
-    ~ModifierArray()
-    {}
-
     void resized() override 
     {
         auto b = getLocalBounds();
@@ -133,7 +130,7 @@ public:
         parameters.currentTrajectory->addListener (this);
         initializeState();
     }
-    ~TrajectorySelector()
+    ~TrajectorySelector() override
     {
         parameters.currentTrajectory->removeListener (this);
     }
@@ -258,7 +255,6 @@ public:
                          const tp::Parameters& p)
       : state (trajectoryVariablesBranch), 
         undoManager (um),
-        globalTimer (gt),
         parameters (p), 
         size (parameters.trajectorySize, gt, "Size", {0.0, 1.0}),
         rotation (parameters.trajectoryRotation, gt, "Rotation", {0.0, juce::MathConstants<double>::twoPi}),
@@ -290,7 +286,6 @@ public:
 private:
     juce::ValueTree state;
     juce::UndoManager& undoManager;
-    GlobalTimer& globalTimer;
     const tp::Parameters& parameters;
 
     ParameterSlider size;

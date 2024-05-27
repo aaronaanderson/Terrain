@@ -27,7 +27,7 @@ public:
     {
         rangedParameter->addListener (this);
     }
-    ~SmoothedParameter()
+    ~SmoothedParameter() override
     {
         rangedParameter->removeListener (this);
     }
@@ -47,9 +47,6 @@ public:
 private:
     juce::RangedAudioParameter* rangedParameter;
     juce::SmoothedValue<float> smoothedValue;
-    float previousValue = 0.0f;
-    float targetValue = 0.0f;
-    int bufferSize = 0;
 
     void parameterValueChanged (int parameterIndex, float newValue) override
     {
@@ -301,9 +298,9 @@ private:
             feedbackTime.prepare (newSampleRate);
             feedbackMix.prepare (newSampleRate);
         }
+        tp::ChoiceParameter* currentTrajectory;
         SmoothedParameter mod_a, mod_b, mod_c, mod_d;
         SmoothedParameter size, rotation, translationX, translationY;
-        tp::ChoiceParameter* currentTrajectory;
         SmoothedParameter feedbackScalar, feedbackTime, feedbackMix;
     };
     VoiceParameters voiceParameters;

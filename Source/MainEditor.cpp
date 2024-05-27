@@ -10,7 +10,6 @@ MainEditor::MainEditor (MainProcessor& p)
     jassert (state.getType() == id::TERRAINSYNTH);
     setLookAndFeel (&lookAndFeel);
 
-    setSize (1200, 800);
     setResizable (true, false);
     setResizeLimits (300, 200, 2400, 1600);
 
@@ -19,9 +18,8 @@ MainEditor::MainEditor (MainProcessor& p)
     addAndMakeVisible (controlPanel);
     addAndMakeVisible (visualiserPanel);
 
+    setSize (1200, 800);
     setWantsKeyboardFocus (true);
-    addKeyListener (this);
-
 }
 MainEditor::~MainEditor() 
 {
@@ -30,7 +28,9 @@ MainEditor::~MainEditor()
 void MainEditor::paint (juce::Graphics& g)
 {
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
-
+}
+void MainEditor::resized() 
+{
     auto b = getLocalBounds();
     
     if (b.getHeight() > 500)
@@ -58,12 +58,8 @@ void MainEditor::paint (juce::Graphics& g)
     }
     visualiserPanel.setBounds (b);
 }
-void MainEditor::resized() {}
-bool MainEditor::keyPressed (const juce::KeyPress& key,
-                             juce::Component* originatingComponent) 
-{
-juce::ignoreUnused(originatingComponent);
-        
+bool MainEditor::keyPressed (const juce::KeyPress& key) 
+{   
     if(key.getModifiers().isCommandDown() && (key.getKeyCode() == 'v' || key.getKeyCode() == 'V'))
     {
         //if (valueTreeViewWindow == nullptr)
