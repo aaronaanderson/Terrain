@@ -30,8 +30,8 @@ public:
     juce::Rectangle<int> getAdjustedBounds() const noexcept  
     {
         auto b = getLocalBounds();
-        auto leftOverBounds = b.removeFromTop (labelHeight);
-        return leftOverBounds;
+        b.removeFromTop (labelHeight);
+        return b;
     }
 private:
     juce::String name;

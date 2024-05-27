@@ -62,7 +62,6 @@ bool MainEditor::keyPressed (const juce::KeyPress& key)
 {   
     if(key.getModifiers().isCommandDown() && (key.getKeyCode() == 'v' || key.getKeyCode() == 'V'))
     {
-        //if (valueTreeViewWindow == nullptr)
         valueTreeViewWindow = std::make_unique<ValueTreeViewWindow> (state);
         valueTreeViewWindow->setSize (600, 800);
         valueTreeViewWindow->addToDesktop ();
