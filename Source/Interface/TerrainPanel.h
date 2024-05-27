@@ -8,99 +8,6 @@
 #include "ParameterSlider.h"
 namespace ti
 {
-class TerrainSelector : public juce::Component,
-                        private GlobalTimer::Listener, 
-                        private juce::AudioProcessorParameter::Listener
-{
-public:
-    TerrainSelector (juce::ValueTree terrainBranch, 
-                     juce::UndoManager& um, 
-                     GlobalTimer& gt, 
-                     const tp::Parameters p)
-      : state (terrainBranch),
-        undoManager (um),
-        parameters (p)
-    {
-        initializeState();
-
-        addAndMakeVisible (terrainList);
-        terrainListLabel.setText ("Current Terrain", juce::NotificationType::dontSendNotification);
-        terrainListLabel.setJustificationType (juce::Justification::centred);
-        terrainList.onChange = [&]()
-        {
-            auto selectedName = terrainList.getItemText (terrainList.getSelectedId() - 1);
-            state.setProperty (id::currentTerrain, selectedName, &undoManager);
-        };
-        addAndMakeVisible (terrainListLabel);
-
-        gt.addListener (*this);
-        parameters.currentTerrain->addListener (this);
-    }
-    ~TerrainSelector()
-    {
-        parameters.currentTerrain->removeListener (this);
-    }
-    void paint (juce::Graphics& g)
-    {
-        auto b = getLocalBounds();
-        g.drawRect (b);
-    }
-    void resized() override 
-    {
-        auto b = getLocalBounds();
-        terrainListLabel.setBounds (b.removeFromTop (20));
-        terrainList.setBounds (b.removeFromTop (20));
-    }
-    void onTimerCallback() override 
-    {
-        if (needsRepainted)
-        {
-            terrainList.setSelectedItemIndex (parameters.currentTerrain->getIndex(), juce::dontSendNotification);
-            repaint();
-            needsRepainted = false;
-        }
-    }
-
-private:
-    juce::ValueTree state;
-    juce::UndoManager& undoManager;
-    const tp::Parameters parameters;
-
-    juce::ComboBox terrainList;
-    juce::Label terrainListLabel;
-    
-    bool needsRepainted = true;
-
-    void initializeState()
-    {
-        populateMenu();
-
-        auto name = state.getProperty (id::currentTerrain).toString();
-        setItemByName (name);
-    }
-    void populateMenu()
-    {
-        for (int i = 0; i < state.getNumChildren(); i++)
-        {
-            auto terrainBranch = state.getChild (i);
-            auto name = terrainBranch.getProperty (id::type).toString();
-            terrainList.addItem (name, i + 1);
-        }
-    }
-    void setItemByName (juce::String name)
-    {
-        for (int i = 0; i < terrainList.getNumItems(); i++)
-            if (terrainList.getItemText (i) == name)
-                terrainList.setSelectedId (i + 1);
-    }                
-    void parameterValueChanged (int parameterIndex, float newValue) override 
-    {
-        juce::ignoreUnused (parameterIndex, newValue);
-        needsRepainted = true;
-    }
-    void parameterGestureChanged (int parameterIndex, bool gestureIsStarting) override { juce::ignoreUnused (parameterIndex, gestureIsStarting); }          
-};
-
 class TerrainModifierArray : public juce::Component,
                              private juce::ValueTree::Listener
 {
@@ -142,6 +49,12 @@ public:
         cModifier.setBounds (b.removeFromTop (quarterHeight));
         dModifier.setBounds (b.removeFromTop (quarterHeight));
     }
+    void setFromIndex (int index)
+    {
+        auto activeTrajectoryBranch = state.getChild (index);
+        modifierBranch = activeTrajectoryBranch.getChildWithName (id::MODIFIERS);
+        resetLayout();
+    }
 private:
     juce::ValueTree state;
     juce::ValueTree modifierBranch;
@@ -172,14 +85,6 @@ private:
 
         resetLayout();
     }
-    void valueTreePropertyChanged (juce::ValueTree& treeWhosePropertyHasChanged,
-                                   const juce::Identifier& property) override 
-    {
-        auto tree = treeWhosePropertyHasChanged;
-        if (tree.getType() == id::TERRAINS)
-            if (property == id::currentTerrain)
-                initializeState();
-    }
     void resetLayout()
     {
         scanForMod (id::mod_A) ? aModifier.setVisible (true) : aModifier.setVisible (false);
@@ -189,16 +94,104 @@ private:
     }
     bool scanForMod (juce::Identifier mod)
     {
-        juce::ValueTree activeTerrain = getCurrentTerrainBranch (state);
-        
-        auto modifiersBranch = activeTerrain.getChildWithName (id::MODIFIERS);
-        if (modifiersBranch.getProperty (mod) != juce::var()) // if the property is present
+        if (modifierBranch.getProperty (mod) != juce::var()) // if the property is present
             return true;
         
         return false;
     }
 };
+class TerrainSelector : public juce::Component,
+                        private GlobalTimer::Listener, 
+                        private juce::AudioProcessorParameter::Listener
+{
+public:
+    TerrainSelector (juce::ValueTree terrainBranch, 
+                     juce::UndoManager& um, 
+                     GlobalTimer& gt, 
+                     const tp::Parameters p)
+      : state (terrainBranch),
+        undoManager (um),
+        parameters (p),
+        modifierArray (state, undoManager, gt, parameters)
+    {
+        initializeState();
 
+        addAndMakeVisible (terrainList);
+        terrainListLabel.setText ("Current Terrain", juce::NotificationType::dontSendNotification);
+        terrainListLabel.setJustificationType (juce::Justification::centred);
+        terrainList.onChange = [&]()
+        {
+            auto selectedName = terrainList.getItemText (terrainList.getSelectedId() - 1);
+            state.setProperty (id::currentTerrain, selectedName, &undoManager);
+        };
+        addAndMakeVisible (terrainListLabel);
+        addAndMakeVisible (modifierArray);
+
+        gt.addListener (*this);
+        parameters.currentTerrain->addListener (this);
+    }
+    ~TerrainSelector()
+    {
+        parameters.currentTerrain->removeListener (this);
+    }
+    void resized() override 
+    {
+        auto b = getLocalBounds();
+        terrainListLabel.setBounds (b.removeFromTop (20));
+        terrainList.setBounds (b.removeFromTop (20));
+        modifierArray.setBounds (b.removeFromTop (80));
+    }
+    void onTimerCallback() override 
+    {
+        if (needsRepainted)
+        {
+            terrainList.setSelectedItemIndex (parameters.currentTerrain->getIndex(), juce::dontSendNotification);
+            modifierArray.setFromIndex (parameters.currentTerrain->getIndex());
+            repaint();
+            needsRepainted = false;
+        }
+    }
+
+private:
+    juce::ValueTree state;
+    juce::UndoManager& undoManager;
+    const tp::Parameters parameters;
+
+    juce::ComboBox terrainList;
+    juce::Label terrainListLabel;
+    TerrainModifierArray modifierArray;
+    
+    bool needsRepainted = true;
+
+    void initializeState()
+    {
+        populateMenu();
+
+        auto name = state.getProperty (id::currentTerrain).toString();
+        setItemByName (name);
+    }
+    void populateMenu()
+    {
+        for (int i = 0; i < state.getNumChildren(); i++)
+        {
+            auto terrainBranch = state.getChild (i);
+            auto name = terrainBranch.getProperty (id::type).toString();
+            terrainList.addItem (name, i + 1);
+        }
+    }
+    void setItemByName (juce::String name)
+    {
+        for (int i = 0; i < terrainList.getNumItems(); i++)
+            if (terrainList.getItemText (i) == name)
+                terrainList.setSelectedId (i + 1);
+    }                
+    void parameterValueChanged (int parameterIndex, float newValue) override 
+    {
+        juce::ignoreUnused (parameterIndex, newValue);
+        needsRepainted = true;
+    }
+    void parameterGestureChanged (int parameterIndex, bool gestureIsStarting) override { juce::ignoreUnused (parameterIndex, gestureIsStarting); }          
+};
 class TerrainPanel : public Panel
 {
 public:
@@ -209,26 +202,22 @@ public:
       : Panel ("Terrain"), 
         state (terrainSynthTree), 
         undoManager (um),
-        terrainSelector (state.getChildWithName (id::TERRAINS), um, gt, p), 
-        modifierArray (state.getChildWithName (id::TERRAINS), um, gt, p)
+        terrainSelector (state.getChildWithName (id::TERRAINS), um, gt, p)
     {
         jassert (state.getType() == id::TERRAINSYNTH);
 
         addAndMakeVisible (terrainSelector);
-        addAndMakeVisible (modifierArray);
     }
     void resized() override
     {
         Panel::resized();
         auto b = getAdjustedBounds();
-        terrainSelector.setBounds (b.removeFromTop (40));
-        modifierArray.setBounds (b.removeFromTop (80));
+        terrainSelector.setBounds (b.removeFromTop (120));
     }
 private:
     juce::ValueTree state;
     juce::UndoManager& undoManager;
 
     TerrainSelector terrainSelector;
-    TerrainModifierArray modifierArray;
 };
 }

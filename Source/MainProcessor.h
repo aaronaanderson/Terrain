@@ -94,7 +94,7 @@ private:
         {
             if      (property == id::feedbackTime)
                 parameters.feedbackTime->setValueNotifyingHost (parameters.feedbackTime->convertTo0to1 (tree.getProperty (property)));
-            else if (property == id::feedbackTime)
+            else if (property == id::feedbackScalar)
                 parameters.feedbackScalar->setValueNotifyingHost (parameters.feedbackScalar->convertTo0to1 (tree.getProperty (property)));
             else if (property == id::feedbackMix)
                 parameters.feedbackMix->setValueNotifyingHost (parameters.feedbackMix->convertTo0to1 (tree.getProperty (property)));
@@ -109,7 +109,7 @@ private:
             if (trajectoryStrings[i] == s)
             {
                 parameters.currentTrajectory->setIndex (i);
-                break;
+                return;
             }
         }
         jassertfalse; // Didn't find option
@@ -131,7 +131,7 @@ private:
             if (terrainStrings[i] == s)
             {
                 parameters.currentTerrain->setIndex (i);
-                break;
+                return;
             }
         }
         jassertfalse; // Didn't find option;
