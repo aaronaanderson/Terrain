@@ -11,14 +11,12 @@ struct ParameterSlider : public juce::Component,
                          private GlobalTimer::Listener,
                          private juce::AudioProcessorParameter::Listener
 {
-    ParameterSlider (juce::AudioProcessorParameter* p, 
-                     juce::UndoManager& um,
+    ParameterSlider (juce::AudioProcessorParameter* p,
                      GlobalTimer& gt, 
                      juce::String labelText, 
                      juce::Range<double> range, 
                      std::optional<double> midPoint = std::optional<double>())
-      : parameter (p), 
-        attachment (*dynamic_cast<juce::RangedAudioParameter*> (p), slider, &um)
+      : parameter (p)
     {
         label.setText (labelText, juce::dontSendNotification);
         slider.setRange (range, 0.0);
@@ -29,7 +27,6 @@ struct ParameterSlider : public juce::Component,
         addAndMakeVisible (slider);
         parameter->addListener (this);
         gt.addListener (*this);
-        attachment.sendInitialUpdate();
     }
     ~ParameterSlider()
     {
@@ -51,7 +48,6 @@ struct ParameterSlider : public juce::Component,
 private:
     juce::AudioProcessorParameter* parameter;
     juce::Slider slider;
-    juce::SliderParameterAttachment attachment;
 
     juce::Label label;
     bool needsRepainted = true;

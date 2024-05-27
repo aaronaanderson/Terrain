@@ -116,10 +116,10 @@ public:
       : state (trajectoryState), 
         undoManager (um), 
         parameters (p), 
-        aModifier (parameters.trajectoryModA, um, gt, "a", {0.0, 1.0}),
-        bModifier (parameters.trajectoryModB, um, gt, "b", {0.0, 1.0}),
-        cModifier (parameters.trajectoryModC, um, gt, "c", {0.0, 1.0}),
-        dModifier (parameters.trajectoryModD, um, gt, "d", {0.0, 1.0})
+        aModifier (parameters.trajectoryModA, gt, "a", {0.0, 1.0}),
+        bModifier (parameters.trajectoryModB, gt, "b", {0.0, 1.0}),
+        cModifier (parameters.trajectoryModC, gt, "c", {0.0, 1.0}),
+        dModifier (parameters.trajectoryModD, gt, "d", {0.0, 1.0})
     {
         jassert (state.getType() == id::TRAJECTORIES);
         
@@ -211,9 +211,9 @@ public:
       : state (feedbackBranch), 
         undoManager (um), 
         parameters (p),
-        time (parameters.feedbackTime, um, gt, "Time", {0.0, 2000.0}, 250.0), 
-        feedback (parameters.feedbackScalar, um, gt, "Feedback", {0.0, 0.9999}, 0.8), 
-        mix (parameters.feedbackMix, um, gt, "Mix", {0.0, 1.0})
+        time (parameters.feedbackTime, gt, "Time", {0.0, 2000.0}, 250.0), 
+        feedback (parameters.feedbackScalar, gt, "Feedback", {0.0, 0.9999}, 0.8), 
+        mix (parameters.feedbackMix, gt, "Mix", {0.0, 1.0})
     {
         jassert (state.getType() == id::FEEDBACK);
         label.setText ("Trajectory Feedback", juce::dontSendNotification);
@@ -266,10 +266,10 @@ public:
         undoManager (um),
         globalTimer (gt),
         parameters (p), 
-        size (parameters.trajectorySize, um, gt, "Size", {0.0, 1.0}),
-        rotation (parameters.trajectoryRotation, um, gt, "Rotation", {0.0, juce::MathConstants<double>::twoPi}),
-        translation_x (parameters.trajectoryTranslationX, um, gt, "Translation X", {-1.0f, 1.0f}),
-        translation_y (parameters.trajectoryTranslationY, um, gt, "Translation Y", {-1.0f, 1.0f})
+        size (parameters.trajectorySize, gt, "Size", {0.0, 1.0}),
+        rotation (parameters.trajectoryRotation, gt, "Rotation", {0.0, juce::MathConstants<double>::twoPi}),
+        translation_x (parameters.trajectoryTranslationX, gt, "Translation X", {-1.0f, 1.0f}),
+        translation_y (parameters.trajectoryTranslationY, gt, "Translation Y", {-1.0f, 1.0f})
     {
         jassert (state.getType() == id::TRAJECTORY_VARIABLES);
 

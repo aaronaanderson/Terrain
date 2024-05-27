@@ -112,10 +112,10 @@ public:
       : state (terrainState), 
         undoManager (um), 
         parameters (p), 
-        aModifier (parameters.terrainModA, um, gt, "a", {0.0, 1.0}),
-        bModifier (parameters.terrainModB, um, gt, "b", {0.0, 1.0}),
-        cModifier (parameters.terrainModC, um, gt, "c", {0.0, 1.0}),
-        dModifier (parameters.terrainModD, um, gt, "d", {0.0, 1.0})
+        aModifier (parameters.terrainModA, gt, "a", {0.0, 1.0}),
+        bModifier (parameters.terrainModB, gt, "b", {0.0, 1.0}),
+        cModifier (parameters.terrainModC, gt, "c", {0.0, 1.0}),
+        dModifier (parameters.terrainModD, gt, "d", {0.0, 1.0})
     {
         jassert (state.getType() == id::TERRAINS);
         
