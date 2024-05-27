@@ -101,19 +101,23 @@ private:
         }
     }
 
+    juce::Array<juce::String> trajectoryStrings {"Ellipse", "Limacon", "Butterfly", "Scarabaeus"};
     void setCurrentTrajectoryParamFromString (juce::String s) //Need something better here
     {
-        auto p = parameters.currentTrajectory;
-        if (s == "Ellipse") p->setIndex (0);
-        else if (s == "Limacon") p->setIndex (1);
-        else if (s == "Butterfly") p->setIndex (2);
-        else if (s == "Scarabaeus") p->setIndex (3);
+        for (int i = 0; i < trajectoryStrings.size(); i++)
+        {
+            if (trajectoryStrings[i] == s)
+            {
+                parameters.currentTrajectory->setIndex (i);
+                break;
+            }
+        }
+        jassertfalse; // Didn't find option
     }
     int getCurrentTrajectoryIndexFromString (juce::String trajectory)
     {
-        juce::Array<juce::String> ss {"Ellipse", "Limacon", "Butterfly", "Scarabaeus"};
-        for (int i = 0; i < ss.size(); i++)
-            if (ss[i] == trajectory)
+        for (int i = 0; i < trajectoryStrings.size(); i++)
+            if (trajectoryStrings[i] == trajectory)
                 return i;
 
         jassertfalse;
@@ -123,8 +127,14 @@ private:
     void setCurrentTerrainFromString (juce::String s)
     {
         for (int i = 0; i < terrainStrings.size(); i++)
+        {
             if (terrainStrings[i] == s)
+            {
                 parameters.currentTerrain->setIndex (i);
+                break;
+            }
+        }
+        jassertfalse; // Didn't find option;
     }
     int getCurrentTerrainIndexFromString (juce::String terrain)
     {
