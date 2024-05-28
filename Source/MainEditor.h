@@ -30,7 +30,7 @@ private:
     ti::TrajectoryPanel trajectoryPanel;    
     ti::TerrainPanel    terrainPanel;
     ti::ControlPanel    controlPanel;
-    ti::VisualiserPanel visualiserPanel;
+    ti::VisualizerPanel visualizerPanel;
 
     std::unique_ptr<ValueTreeViewWindow> valueTreeViewWindow;
     bool keyPressed (const juce::KeyPress& key) override;

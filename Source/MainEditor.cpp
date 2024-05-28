@@ -13,12 +13,12 @@ MainEditor::MainEditor (MainProcessor& p)
     setResizable (true, false);
     setResizeLimits (300, 200, 2400, 1600);
 
+    setSize (1200, 800);
     addAndMakeVisible (trajectoryPanel);
     addAndMakeVisible (terrainPanel);
     addAndMakeVisible (controlPanel);
-    addAndMakeVisible (visualiserPanel);
+    addAndMakeVisible (visualizerPanel);
 
-    setSize (1200, 800);
     setWantsKeyboardFocus (true);
 }
 MainEditor::~MainEditor() 
@@ -56,7 +56,7 @@ void MainEditor::resized()
         trajectoryPanel.setVisible (false);
         terrainPanel.setVisible (false);
     }
-    visualiserPanel.setBounds (b);
+    visualizerPanel.setBounds (b);
 }
 bool MainEditor::keyPressed (const juce::KeyPress& key) 
 {   
