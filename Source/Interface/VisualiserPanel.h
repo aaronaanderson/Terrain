@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Panel.h"
-#include "Visualiser.h"
+#include "Visualizer.h"
 namespace ti
 {
 class VisualizerPanel : public Panel
