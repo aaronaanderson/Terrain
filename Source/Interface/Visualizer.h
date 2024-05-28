@@ -3,12 +3,16 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <juce_opengl/juce_opengl.h>
 
+#include "Renderer/Camera.h"
+#include "Renderer/Terrain.h"
+
 class Visualizer : public juce::Component, 
                    private juce::OpenGLRenderer, 
                    private juce::Timer
 {
 public:
     Visualizer()
+      : camera (mutex)
     {
 #ifdef JUCE_MAC
         glContext.setOpenGLVersionRequired (juce::OpenGLContext::OpenGLVersion::openGL4_1);
@@ -31,12 +35,23 @@ public:
     void resized() override 
     {
         bounds = getLocalBounds();
+        camera.setTargetBounds (bounds);
     }
 
+    void mouseDown (const juce::MouseEvent& e) override { camera.mouseDown(e); }
+    void mouseDrag (const juce::MouseEvent& e) override { camera.mouseDrag(e); }
+    void mouseWheelMove (const juce::MouseEvent& event,
+                         const juce::MouseWheelDetails& wheel) override 
+    { 
+        juce::ignoreUnused (event);
+        camera.mouseWheelMoved (wheel); 
+    };
 private:
     juce::OpenGLContext glContext;
     juce::CriticalSection mutex;
     juce::Rectangle<int> bounds;
+    Camera camera;
+    std::unique_ptr<Terrain> terrain;
 
     void timerCallback() override 
     {
@@ -45,6 +60,7 @@ private:
     void newOpenGLContextCreated() override 
     {
         std::cout << juce::gl::glGetString (juce::gl::GL_VERSION) << std::endl;
+        terrain = std::make_unique<Terrain> (glContext);
     }
     void renderOpenGL() override 
     {
@@ -58,9 +74,10 @@ private:
         juce::gl::glViewport (0, 0, 
                               juce::roundToInt(desktopScale * static_cast<float>(bounds.getWidth())), 
                               juce::roundToInt(desktopScale * static_cast<float>(bounds.getHeight())));    
+        terrain->render(camera, 0, 0.0f, 0.0f, 0.0f, 0.0f);
     }
     void openGLContextClosing() override 
     {
-
+        terrain.reset();
     }
 };

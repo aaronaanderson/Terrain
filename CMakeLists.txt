@@ -30,6 +30,8 @@ set_target_properties(WaveTerrainSynth PROPERTIES
     COMPILE_WARNING_AS_ERROR ON
 )
 
+add_subdirectory(glm)
+
 target_sources(WaveTerrainSynth
     PRIVATE
         Source/MainEditor.cpp
@@ -43,12 +45,12 @@ target_compile_definitions(WaveTerrainSynth
         JUCE_VST3_CAN_REPLACE_VST2=0
         JUCE_DISPLAY_SPLASH_SCREEN=0)
         
-# juce_add_binary_data(BinaryData SOURCES
-#     Source/Interface/Renderer/shaders/TrajectoryPoint.frag 
-#     Source/Interface/Renderer/shaders/TrajectoryPoint.vert
-#     Source/Interface/Renderer/shaders/Terrain.frag 
-#     Source/Interface/Renderer/shaders/Terrain.vert
-# )
+juce_add_binary_data(BinaryData SOURCES
+    # Source/Interface/Renderer/shaders/TrajectoryPoint.frag 
+    # Source/Interface/Renderer/shaders/TrajectoryPoint.vert
+    Source/Interface/Renderer/shaders/Terrain.frag 
+    Source/Interface/Renderer/shaders/Terrain.vert
+)
 
 if(WIN32) 
     target_link_libraries(WaveTerrainSynth 
@@ -56,12 +58,14 @@ if(WIN32)
         glu32.lib   
     )
 endif()
-
+target_include_directories(WaveTerrainSynth PRIVATE glm/glm)
 target_link_libraries(WaveTerrainSynth
     PRIVATE
+        BinaryData
         juce::juce_audio_utils
         juce::juce_dsp
         juce::juce_opengl
+        glm::glm
     PUBLIC
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
