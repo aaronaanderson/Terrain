@@ -30,11 +30,14 @@ private:
     struct WatchedParameter : private juce::AudioProcessorParameter::Listener
     {
         WatchedParameter (juce::AudioProcessorParameter* p)
+          :  parameter (p)
         {
-            p->addListener (this);
+            parameter->addListener (this);
         }
+        ~WatchedParameter() override { parameter->removeListener (this); }
         float getValue() { return value.load(); }
     private:
+        juce::AudioProcessorParameter* parameter;
         std::atomic<float> value;
         void parameterValueChanged (int parameterIndex, float newValue) override
         {
