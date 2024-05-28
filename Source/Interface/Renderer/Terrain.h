@@ -156,7 +156,7 @@ private:
         int numVertices;
         int numIndices;
         juce::Colour color;
-        JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VertexBuffer);
+        JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VertexBuffer)
     };
     std::unique_ptr<VertexBuffer> vertexBuffer;    
 };
