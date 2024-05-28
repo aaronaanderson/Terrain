@@ -2,7 +2,6 @@
 #include <glm.hpp>
 #include <glm/ext.hpp>
 
-
 class Camera
 {
 public:

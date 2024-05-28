@@ -21,7 +21,7 @@ float calculateDepth (int index, vec2 p)
     switch (index)
     {
         case 0:
-            return sin(p.x * 6.0 * (a + 0.5)) * sin(p.y * 6.0 * (a + 0.5));
+            return sin(p.x * 6.0 * (a + 0.5)) * sin(p.y * 6.0 * (b + 0.5));
         break;
         case 1:
             return sin((p.x * pi * 2.0) * (p.x * 3.0 * a) + (b * pi * 2.0)) * sin((p.y * pi * 2.0) * (p.y * 3.0 * a) + (b * -pi * 2));       

@@ -5,14 +5,55 @@
 
 #include "Renderer/Camera.h"
 #include "Renderer/Terrain.h"
+#include "../Parameters.h"
+struct UBO
+{
+    int index;
+    float a;
+    float b;
+    float c;
+    float d;
+};
+struct ParameterWatcher 
+{
+    ParameterWatcher (tp::Parameters& parameters)
+      : a (parameters.terrainModA), 
+        b (parameters.terrainModB),
+        c (parameters.terrainModC), 
+        d (parameters.terrainModD), 
+        index (parameters.currentTerrain)
+    {}
+    UBO getUBO() { return {static_cast<int> (index.getValue() * 5), 
+                           a.getValue(), b.getValue(), c.getValue(), d.getValue()};}
+
+private:
+    struct WatchedParameter : private juce::AudioProcessorParameter::Listener
+    {
+        WatchedParameter (juce::AudioProcessorParameter* p)
+        {
+            p->addListener (this);
+        }
+        float getValue() { return value.load(); }
+    private:
+        std::atomic<float> value;
+        void parameterValueChanged (int parameterIndex, float newValue) override
+        {
+            juce::ignoreUnused (parameterIndex);
+            value.store (newValue);
+        }
+        virtual void parameterGestureChanged (int pi, bool gis) override { juce::ignoreUnused (pi, gis); }; 
+    };
+    WatchedParameter a, b, c, d, index;
+};
 
 class Visualizer : public juce::Component, 
                    private juce::OpenGLRenderer, 
                    private juce::Timer
 {
 public:
-    Visualizer()
-      : camera (mutex)
+    Visualizer (tp::Parameters parameters)
+      : camera (mutex), 
+        parameterWatcher (parameters)
     {
 #ifdef JUCE_MAC
         glContext.setOpenGLVersionRequired (juce::OpenGLContext::OpenGLVersion::openGL4_1);
@@ -61,6 +102,7 @@ private:
     juce::Rectangle<int> bounds;
     Camera camera;
     std::unique_ptr<Terrain> terrain;
+    ParameterWatcher parameterWatcher;
 
     void timerCallback() override 
     {
@@ -83,7 +125,8 @@ private:
         juce::gl::glViewport (0, 0, 
                               juce::roundToInt(desktopScale * static_cast<float>(bounds.getWidth())), 
                               juce::roundToInt(desktopScale * static_cast<float>(bounds.getHeight())));    
-        terrain->render(camera, 0, 0.0f, 0.0f, 0.0f, 0.0f);
+        auto ubo = parameterWatcher.getUBO();
+        terrain->render(camera, ubo.index, ubo.a, ubo.b, ubo.c, ubo.d);
     }
     void openGLContextClosing() override 
     {

@@ -2,13 +2,15 @@
 
 #include "Panel.h"
 #include "Visualizer.h"
+#include "../Parameters.h"
 namespace ti
 {
 class VisualizerPanel : public Panel
 {
 public:
-    VisualizerPanel ()
-      : Panel ("Visualizer")
+    VisualizerPanel (const tp::Parameters& parameters)
+      : Panel ("Visualizer"), 
+        visualizer (parameters)
     {
         addAndMakeVisible (visualizer);
     }
