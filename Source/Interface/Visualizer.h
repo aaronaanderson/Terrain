@@ -38,7 +38,11 @@ public:
         camera.setTargetBounds (bounds);
     }
 
-    void mouseDown (const juce::MouseEvent& e) override { camera.mouseDown(e); }
+    void mouseDown (const juce::MouseEvent& e) override 
+    { 
+        setMouseCursor (juce::MouseCursor::NoCursor);
+        camera.mouseDown(e); 
+    }
     void mouseDrag (const juce::MouseEvent& e) override { camera.mouseDrag(e); }
     void mouseWheelMove (const juce::MouseEvent& event,
                          const juce::MouseWheelDetails& wheel) override 
@@ -46,6 +50,11 @@ public:
         juce::ignoreUnused (event);
         camera.mouseWheelMoved (wheel); 
     };
+    void mouseUp (const juce::MouseEvent& e)
+    {
+        juce::ignoreUnused (e);
+        setMouseCursor (juce::MouseCursor::NormalCursor);
+    }
 private:
     juce::OpenGLContext glContext;
     juce::CriticalSection mutex;

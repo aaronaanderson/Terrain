@@ -32,7 +32,7 @@ public:
     void mouseWheelMoved (const juce::MouseWheelDetails& wheel) 
     {
         fieldOfView -= wheel.deltaY;
-        if (fieldOfView < 2.0f) fieldOfView = 45.0f;
+        if (fieldOfView < 45.0f) fieldOfView = 45.0f;
         if (fieldOfView > 120.0f) fieldOfView = 120.0f;
         updateProjectionMatrix();
     }
