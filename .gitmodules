@@ -2,5 +2,5 @@
 	path = JUCE
 	url = https://github.com/juce-framework/JUCE.git
 [submodule "glm"]
-	path = glm
+	path = glm/glm
 	url = https://github.com/g-truc/glm.git

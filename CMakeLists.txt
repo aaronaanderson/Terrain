@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.22)
 project(TERRAIN VERSION 0.0.1)
 
 find_package(OpenGL REQUIRED)
+
 add_subdirectory(JUCE)                    # If you've put JUCE in a subdirectory called JUCE
 
 juce_add_plugin(WaveTerrainSynth
@@ -30,7 +31,7 @@ set_target_properties(WaveTerrainSynth PROPERTIES
     COMPILE_WARNING_AS_ERROR ON
 )
 
-add_subdirectory(glm)
+juce_add_module(glm)
 
 target_sources(WaveTerrainSynth
     PRIVATE
@@ -62,10 +63,10 @@ target_include_directories(WaveTerrainSynth PRIVATE glm/glm)
 target_link_libraries(WaveTerrainSynth
     PRIVATE
         BinaryData
+        glm
         juce::juce_audio_utils
         juce::juce_dsp
         juce::juce_opengl
-        glm::glm
     PUBLIC
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags

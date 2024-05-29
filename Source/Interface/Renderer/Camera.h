@@ -1,6 +1,11 @@
 #pragma once
-#include <glm.hpp>
-#include <glm/ext.hpp>
+
+
+// #define GLM_FORCE_CTOR_INIT
+#include <glm/vec3.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/ext/matrix_transform.hpp>
+#include <glm/ext/matrix_clip_space.hpp>
 
 class Camera
 {
@@ -47,8 +52,6 @@ private:
     glm::vec3 cameraUp = glm::vec3 (0.0f, 0.0f, 1.0f);
     glm::mat4 viewMatrix;
 
-    glm::vec2 mouseDownPosition;
-
     float theta = 0.0f;
     float thetaStart = 0.0f;
 
@@ -62,8 +65,6 @@ private:
     {
         const juce::ScopedLock lock (mutex);
         cameraPosition = glm::vec3 (std::sin (theta) * 2.0f, std::cos (theta) * 2.0f, 1.5f);
-        viewMatrix = glm::lookAt(cameraPosition,  
-  		                         cameraTarget,
-  		                         cameraUp);
+        viewMatrix = glm::lookAt(cameraPosition, cameraTarget, cameraUp);
     }
 };

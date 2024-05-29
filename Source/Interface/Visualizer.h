@@ -44,7 +44,7 @@ private:
             juce::ignoreUnused (parameterIndex);
             value.store (newValue);
         }
-        virtual void parameterGestureChanged (int pi, bool gis) override { juce::ignoreUnused (pi, gis); }; 
+        virtual void parameterGestureChanged (int pi, bool gis) override { juce::ignoreUnused (pi, gis); }
     };
     WatchedParameter a, b, c, d, index;
 };
@@ -93,8 +93,8 @@ public:
     { 
         juce::ignoreUnused (event);
         camera.mouseWheelMoved (wheel); 
-    };
-    void mouseUp (const juce::MouseEvent& e)
+    }
+    void mouseUp (const juce::MouseEvent& e) override
     {
         juce::ignoreUnused (e);
         setMouseCursor (juce::MouseCursor::NormalCursor);
