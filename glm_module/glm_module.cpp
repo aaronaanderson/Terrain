@@ -3,7 +3,6 @@
  #error "Incorrect use of glm.cpp"
 #endif
 
-#include "glm.hpp"
+#include "glm_module.hpp"
 
-#include "glm/glm/glm.hpp"
-#include "glm/glm/ext.hpp"
+

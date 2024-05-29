@@ -22,3 +22,6 @@
 
 #pragma once
 #define GLM_INCLUDED
+
+#include "glm/glm/glm.hpp"
+#include "glm/glm/ext.hpp"

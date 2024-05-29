@@ -63,7 +63,7 @@ target_include_directories(WaveTerrainSynth PRIVATE glm/glm)
 target_link_libraries(WaveTerrainSynth
     PRIVATE
         BinaryData
-        glm
+        glm_module
         juce::juce_audio_utils
         juce::juce_dsp
         juce::juce_opengl
