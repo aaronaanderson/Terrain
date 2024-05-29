@@ -10,11 +10,11 @@ void main()
     
     gl_PointSize = 15.0;
     vec4 adjustedPosition = position;
-    if (adjustedPosition == vec4(0.0, 0.0, 0.0, 0.0))
+    if (length (adjustedPosition) < 1.000001) // if point is exactly center
     {
-        adjustedPosition = vec4(0.0, 0.0, 40.0, 0.0);
+        adjustedPosition = vec4(0.0, 0.0, 400.0, 0.0);
     }
-    adjustedPosition.z = (position.z /* 0.5 + 1.0*/) * 0.3 + 0.21;
+    adjustedPosition.z = (position.z /* 0.5 + 1.0*/) * 0.3 + 0.11;
     
     gl_Position = projectionMatrix * viewMatrix * adjustedPosition;
 }
