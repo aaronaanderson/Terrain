@@ -5,7 +5,9 @@
 
 #include "Renderer/Camera.h"
 #include "Renderer/Terrain.h"
+#include "Renderer/Trajectories.h"
 #include "../Parameters.h"
+#include "../DSP/WaveTerrainSynthesizer.h"
 struct UBO
 {
     int index;
@@ -24,7 +26,7 @@ struct ParameterWatcher
         index (parameters.currentTerrain)
     {}
     UBO getUBO() { return { (juce::roundToInt (index.getValue() * 4.0f)), 
-                           a.getValue(), b.getValue(), c.getValue(), d.getValue()};}
+                             a.getValue(), b.getValue(), c.getValue(), d.getValue()};}
 
 private:
     struct WatchedParameter : private juce::AudioProcessorParameter::Listener
@@ -48,15 +50,15 @@ private:
     };
     WatchedParameter a, b, c, d, index;
 };
-
 class Visualizer : public juce::Component, 
                    private juce::OpenGLRenderer, 
                    private juce::Timer
 {
 public:
-    Visualizer (tp::Parameters parameters)
+    Visualizer (tp::WaveTerrainSynthesizer& wts, tp::Parameters parameters)
       : camera (mutex), 
-        parameterWatcher (parameters)
+        parameterWatcher (parameters), 
+        waveTerrainSynthesizer (wts)
     {
 #ifdef JUCE_MAC
         glContext.setOpenGLVersionRequired (juce::OpenGLContext::OpenGLVersion::openGL4_1);
@@ -106,6 +108,8 @@ private:
     Camera camera;
     std::unique_ptr<Terrain> terrain;
     ParameterWatcher parameterWatcher;
+    std::unique_ptr<Trajectories> trajectories;
+    tp::WaveTerrainSynthesizer& waveTerrainSynthesizer;
 
     void timerCallback() override 
     {
@@ -115,6 +119,7 @@ private:
     {
         std::cout << juce::gl::glGetString (juce::gl::GL_VERSION) << std::endl;
         terrain = std::make_unique<Terrain> (glContext);
+        trajectories = std::make_unique<Trajectories> (glContext, waveTerrainSynthesizer);
     }
     void renderOpenGL() override 
     {
@@ -130,9 +135,11 @@ private:
                               juce::roundToInt(desktopScale * static_cast<float>(bounds.getHeight())));    
         auto ubo = parameterWatcher.getUBO();
         terrain->render(camera, ubo.index, ubo.a, ubo.b, ubo.c, ubo.d);
+        trajectories->render (camera);
     }
     void openGLContextClosing() override 
     {
         terrain.reset();
+        trajectories.reset();
     }
 };

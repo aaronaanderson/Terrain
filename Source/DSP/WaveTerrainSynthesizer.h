@@ -227,11 +227,15 @@ public:
             if (terrain != nullptr)
             {
                 float outputSample = terrain->sampleAt (point, i);
+                history.feedNext (point, outputSample);
                 o[i] += outputSample * static_cast<float> (envelope.calculateNext()) * 0.1f;
             }
             phase = std::fmod (phase + phaseIncrement, juce::MathConstants<double>::twoPi);
             if(!envelope.isActive())
+            {
+                history.clear();
                 clearCurrentNote();
+            }
         }
     } 
     void setCurrentPlaybackSampleRate (double newRate) override 
@@ -251,6 +255,7 @@ public:
         juce::ignoreUnused (blockSize);
         voiceParameters.resetSampleRate (newRate);
     }
+    const float* getRawData() { return history.getRawData(); }
 private:
     ADSR envelope;
     Terrain* terrain;
@@ -315,6 +320,33 @@ private:
     juce::Array<Point> feedbackBuffer;
     int feedbackWriteIndex = 0;
     int feedbackReadIndex;
+    class History
+    {
+    public:
+        History (int size = 4096) 
+        {
+            bufferSize = size * 3;
+            buffer.allocate (bufferSize, true);
+            index = 0;
+        }
+    
+        void feedNext (Point p, float o)
+        {   
+            buffer[index++] = p.x;
+            buffer[index++] = p.y;
+            buffer[index++] = o;
+            index = index % bufferSize;
+        }
+        int size() { return bufferSize; }
+        const float* getRawData() { return buffer.getData(); }
+        void clear () { buffer.clear (bufferSize); }
+    private:
+        // juce::Array<Position> buffer;
+        juce::HeapBlock<float> buffer;
+        int bufferSize;
+        int index;
+    }; 
+    History history;
 
     void setFrequency (float newFrequency)
     {
@@ -382,13 +414,31 @@ public:
         jassert (terrain != nullptr);
         terrain->updateParameterBuffers();
     }
+    struct VoiceListener
+    {
+        virtual void voicesReset (juce::Array<juce::SynthesiserVoice*> newVoice) = 0;
+    };
+    void setVoiceListener(VoiceListener* vl) { voiceListener = vl; }
+    juce::Array<juce::SynthesiserVoice*> getVoices()
+    {
+        juce::Array<juce::SynthesiserVoice*> v;
+        for(int i = 0; i < getNumVoices(); i++)
+            v.add (getVoice (i));
+
+        return v;
+    }
 private:
+    VoiceListener* voiceListener = nullptr;
     void setPolyphony (int newPolyphony, Parameters& p)
     {
         jassert (newPolyphony > 0);
         clearVoices();
+        juce::Array<juce::SynthesiserVoice*> v;
         for (int i = 0; i < newPolyphony; i++)
-            addVoice (new Trajectory (p));
+            v.add (addVoice (new Trajectory (p)));
+
+        if (voiceListener != nullptr)
+            voiceListener->voicesReset (v);
     }
 };
 }

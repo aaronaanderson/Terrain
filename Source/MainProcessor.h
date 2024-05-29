@@ -45,6 +45,7 @@ public:
     juce::UndoManager& getUndoManager() { return undoManager; }
 
     const tp::Parameters& getParameters() const { return parameters; }
+    tp::WaveTerrainSynthesizer& getWaveTerrainSynthesizer() { return *synthesizer.get(); }
 private:
     juce::ValueTree state;
     juce::UndoManager undoManager;

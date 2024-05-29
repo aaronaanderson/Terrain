@@ -8,9 +8,9 @@ namespace ti
 class VisualizerPanel : public Panel
 {
 public:
-    VisualizerPanel (const tp::Parameters& parameters)
+    VisualizerPanel (tp::WaveTerrainSynthesizer& wts, const tp::Parameters& parameters)
       : Panel ("Visualizer"), 
-        visualizer (parameters)
+        visualizer (wts, parameters)
     {
         addAndMakeVisible (visualizer);
     }

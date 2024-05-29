@@ -6,7 +6,7 @@ MainEditor::MainEditor (MainProcessor& p)
       undoManager (processorRef.getUndoManager()),
       trajectoryPanel (state, undoManager, globalTimer, processorRef.getParameters()), 
       terrainPanel (state, undoManager, globalTimer, processorRef.getParameters()), 
-      visualizerPanel (processorRef.getParameters())
+      visualizerPanel (processorRef.getWaveTerrainSynthesizer(), processorRef.getParameters())
 {
     jassert (state.getType() == id::TERRAINSYNTH);
     setLookAndFeel (&lookAndFeel);
