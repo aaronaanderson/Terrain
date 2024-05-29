@@ -5,7 +5,7 @@
 
  BEGIN_JUCE_MODULE_DECLARATION
 
-  ID:                 glm
+  ID:                 glm_module
   vendor:             Aaron
   version:            6.0.7
   name:               JUCE glm

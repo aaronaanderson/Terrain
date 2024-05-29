@@ -31,7 +31,7 @@ set_target_properties(WaveTerrainSynth PROPERTIES
     COMPILE_WARNING_AS_ERROR ON
 )
 
-juce_add_module(glm)
+juce_add_module(glm_module)
 
 target_sources(WaveTerrainSynth
     PRIVATE
