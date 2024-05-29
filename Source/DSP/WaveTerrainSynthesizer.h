@@ -339,7 +339,11 @@ private:
         }
         int size() { return bufferSize; }
         const float* getRawData() { return buffer.getData(); }
-        void clear () { buffer.clear (bufferSize); }
+        void clear () 
+        { 
+            buffer.clear (bufferSize); 
+            // std::memset (buffer.getData(), 1200, bufferSize * sizeof(float));
+        }
     private:
         // juce::Array<Position> buffer;
         juce::HeapBlock<float> buffer;
