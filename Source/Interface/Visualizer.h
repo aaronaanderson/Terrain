@@ -23,7 +23,7 @@ struct ParameterWatcher
         d (parameters.terrainModD), 
         index (parameters.currentTerrain)
     {}
-    UBO getUBO() { return {static_cast<int> (index.getValue() * 5), 
+    UBO getUBO() { return { (juce::roundToInt (index.getValue() * 4.0f)), 
                            a.getValue(), b.getValue(), c.getValue(), d.getValue()};}
 
 private:
