@@ -47,8 +47,8 @@ target_compile_definitions(WaveTerrainSynth
         JUCE_DISPLAY_SPLASH_SCREEN=0)
         
 juce_add_binary_data(BinaryData SOURCES
-    Source/Interface/Renderer/shaders/TrajectoryPoint.frag 
-    Source/Interface/Renderer/shaders/TrajectoryPoint.vert
+    Source/Interface/Renderer/Shaders/TrajectoryPoint.frag 
+    Source/Interface/Renderer/Shaders/TrajectoryPoint.vert
     Source/Interface/Renderer/Shaders/Terrain.frag 
     Source/Interface/Renderer/Shaders/Terrain.vert
 )

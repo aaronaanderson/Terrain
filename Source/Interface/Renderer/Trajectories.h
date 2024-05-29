@@ -60,7 +60,7 @@ public:
     {
         vertexBuffer = std::make_unique<VertexBuffer>(numVertices);
     }
-    virtual ~PointsMesh() {};
+    virtual ~PointsMesh() {}
     virtual void update(void* glVertexWritePtr) = 0;
 protected:
     virtual void draw (Attributes& a) // must only be called in GL render loop
@@ -70,7 +70,7 @@ protected:
         a.enable(); ERROR_CHECK();
         // juce::gl::glPointSize (12.5f); ERROR_CHECK();
         juce::gl::glEnable (juce::gl::GL_VERTEX_PROGRAM_POINT_SIZE);  ERROR_CHECK();// points sized per-vertex
-        juce::gl::glDrawArrays (juce::gl::GL_POINTS, vertexBuffer->glVertexBuffer, vertexBuffer->numVertices - 2 /* no idea why this is needed*/); ERROR_CHECK();
+        juce::gl::glDrawArrays (juce::gl::GL_POINTS, (GLint)vertexBuffer->glVertexBuffer, vertexBuffer->numVertices - 2 /* no idea why this is needed*/); ERROR_CHECK();
         a.disable(); ERROR_CHECK();
         juce::gl::glBindBuffer (juce::gl::GL_ARRAY_BUFFER, 0); ERROR_CHECK();
     }
@@ -110,7 +110,7 @@ private:
         
         int numVertices;
         juce::Colour color;
-        JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VertexBuffer);
+        JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VertexBuffer)
     };
     protected:
     std::unique_ptr<VertexBuffer> vertexBuffer;
@@ -118,9 +118,10 @@ private:
 struct TrajectoryMesh : PointsMesh // must be constructed on GL Initialize
 {
     TrajectoryMesh(juce::OpenGLContext& c, tp::Trajectory* t,  int numVertices = 4096)
-      : glContext(c),
-        voice(t),
-        PointsMesh(numVertices)
+      : PointsMesh (numVertices),
+        glContext (c),
+        voice (t)
+        
     {
         if(loadShaders())
         {
@@ -132,10 +133,10 @@ struct TrajectoryMesh : PointsMesh // must be constructed on GL Initialize
             std::cout << "Trajectory Shaders failed to load\n" << std::endl;
         }
     }
-
+    ~TrajectoryMesh() override {}
     void update(void* glVertexPtr) override 
     {
-        std::memcpy (glVertexPtr, voice->getRawData(), (int)sizeof(Vertex) * vertexBuffer->numVertices);
+        std::memcpy (glVertexPtr, voice->getRawData(), sizeof(Vertex) * static_cast<size_t> (vertexBuffer->numVertices));
     }  
     
     void render(const Camera& camera)
@@ -186,7 +187,7 @@ private:
         return loaded;
     }
 };
-struct  Trajectories : private tp::WaveTerrainSynthesizer::VoiceListener
+struct Trajectories : private tp::WaveTerrainSynthesizer::VoiceListener
 {
     Trajectories (juce::OpenGLContext& c, tp::WaveTerrainSynthesizer& wts)
       : context(c)
@@ -194,6 +195,7 @@ struct  Trajectories : private tp::WaveTerrainSynthesizer::VoiceListener
         wts.setVoiceListener(this);
         voicesReset (wts.getVoices());
     }
+    ~Trajectories() override {}
     void render (const Camera& c)
     {
         for(auto t : trajectories)

@@ -140,6 +140,6 @@ private:
     void openGLContextClosing() override 
     {
         terrain.reset();
-        trajectories.reset();
+        //trajectories.reset();
     }
 };

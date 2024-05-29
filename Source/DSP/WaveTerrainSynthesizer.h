@@ -420,6 +420,7 @@ public:
     }
     struct VoiceListener
     {
+        virtual ~VoiceListener() {}
         virtual void voicesReset (juce::Array<juce::SynthesiserVoice*> newVoice) = 0;
     };
     void setVoiceListener(VoiceListener* vl) { voiceListener = vl; }
