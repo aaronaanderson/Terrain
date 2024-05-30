@@ -223,6 +223,7 @@ public:
                               voiceParameters.feedbackTime.getNext(), 
                               voiceParameters.feedbackScalar.getNext(), 
                               voiceParameters.feedbackMix.getNext());
+            point = compressEdge (point);
 
             if (terrain != nullptr)
             {
@@ -381,6 +382,29 @@ private:
         feedbackWriteIndex = (feedbackWriteIndex + 1) % feedbackBuffer.size();
 
         return input + (scaledHistory * mix);
+    }
+    Point compressEdge (const Point p)
+    {
+        static const float threshold = 1.0f;
+        static const float ratio = 6.0f;
+        Point outputPoint = p;
+        if (std::fabs (p.x) > threshold)
+        {
+            float adjustedExtension = (std::fabs (p.x) - threshold) * (1.0f / ratio);
+            if (std::signbit (p.x)) // if negative
+                outputPoint.x = -threshold - adjustedExtension;
+            else 
+                outputPoint.x = threshold + adjustedExtension;
+        }
+        if (std::fabs (p.y) > threshold)
+        {
+            float adjustedExtension = (std::fabs (p.y) - threshold) * (1.0f / ratio);
+            if (std::signbit (p.y)) // if negative
+                outputPoint.y = -threshold - adjustedExtension;
+            else 
+                outputPoint.y = threshold + adjustedExtension;
+        }
+        return outputPoint;
     }
     const ModSet getModSet()
      {
