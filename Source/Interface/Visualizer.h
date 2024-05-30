@@ -100,6 +100,8 @@ public:
     {
         juce::ignoreUnused (e);
         setMouseCursor (juce::MouseCursor::NormalCursor);
+        juce::Point<int> b = this->getScreenPosition() + bounds.getCentre();
+        juce::Desktop::setMousePosition (juce::Point<int>(b));
     }
 private:
     juce::OpenGLContext glContext;
