@@ -19,6 +19,7 @@ struct ParameterSlider : public juce::Component,
       : parameter (p)
     {
         label.setText (labelText, juce::dontSendNotification);
+        
         slider.setRange (range, 0.0);
         if (midPoint.has_value()) slider.setSkewFactorFromMidPoint (midPoint.value());
         slider.setTextBoxStyle (juce::Slider::TextEntryBoxPosition::NoTextBox, true, 20, 20);
@@ -40,6 +41,12 @@ struct ParameterSlider : public juce::Component,
         else
             label.setBounds (b.removeFromLeft (20));
         
+        if (b.getHeight() * 2 >= b.getWidth())
+        {
+            slider.setSliderStyle (juce::Slider::SliderStyle::Rotary);
+            label.setJustificationType (juce::Justification::centred);
+        }
+
         slider.setBounds (b);
     }
 

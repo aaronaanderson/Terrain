@@ -16,6 +16,7 @@ public:
     }
     void resized() override 
     {
+        Panel::resized();
         auto b = getAdjustedBounds();
         visualizer.setBounds (b);
     }

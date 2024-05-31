@@ -91,6 +91,14 @@ private:
                 parameters.trajectoryTranslationX->setValueNotifyingHost (parameters.trajectoryTranslationX->convertTo0to1 (tree.getProperty (property)));
             else if (property == id::translation_y) 
                 parameters.trajectoryTranslationY->setValueNotifyingHost (parameters.trajectoryTranslationY->convertTo0to1 (tree.getProperty (property)));
+            else if (property == id::attack) 
+                parameters.attack->setValueNotifyingHost (parameters.attack->convertTo0to1 (tree.getProperty (property)));
+            else if (property == id::decay) 
+                parameters.decay->setValueNotifyingHost (parameters.decay->convertTo0to1 (tree.getProperty (property)));
+            else if (property == id::sustain) 
+                parameters.sustain->setValueNotifyingHost (parameters.sustain->convertTo0to1 (tree.getProperty (property)));
+            else if (property == id::release) 
+                parameters.release->setValueNotifyingHost (parameters.release->convertTo0to1 (tree.getProperty (property)));
         }else if (tree.getType() == id::FEEDBACK)
         {
             if      (property == id::feedbackTime)

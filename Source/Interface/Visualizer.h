@@ -25,7 +25,7 @@ struct ParameterWatcher
         d (parameters.terrainModD), 
         index (parameters.currentTerrain)
     {}
-    UBO getUBO() { return { (juce::roundToInt (index.getValue() * 4.0f)), 
+    UBO getUBO() { return { static_cast<int> ((index.getValue() * 4.0f)), 
                              a.getValue(), b.getValue(), c.getValue(), d.getValue()};}
 
 private:
@@ -83,7 +83,6 @@ public:
         bounds = getLocalBounds();
         camera.setTargetBounds (bounds);
     }
-
     void mouseDown (const juce::MouseEvent& e) override 
     { 
         setMouseCursor (juce::MouseCursor::NoCursor);

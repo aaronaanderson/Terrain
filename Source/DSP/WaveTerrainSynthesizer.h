@@ -213,6 +213,11 @@ public:
         for(int i = startSample; i < startSample + numSamples; i++)
         {
             if(!envelope.isActive()) break;
+            tp::ADSR::Parameters p = {voiceParameters.attack.getNext(), 
+                                      voiceParameters.decay.getNext(), 
+                                      voiceParameters.sustain.getNext(), 
+                                      voiceParameters.release.getNext()};
+            envelope.setParameters (p);
 
             auto point = functions[*voiceParameters.currentTrajectory](static_cast<float> (phase), getModSet());
             
@@ -275,7 +280,11 @@ private:
             translationY (p.trajectoryTranslationY), 
             feedbackScalar (p.feedbackScalar), 
             feedbackTime (p.feedbackTime), 
-            feedbackMix (p.feedbackMix)
+            feedbackMix (p.feedbackMix), 
+            attack (p.attack), 
+            decay (p.decay), 
+            sustain (p.sustain), 
+            release (p.release)
         {}
         void noteOn()
         {
@@ -290,6 +299,10 @@ private:
             feedbackScalar.noteOn();
             feedbackTime.noteOn();
             feedbackMix.noteOn();
+            attack.noteOn();
+            decay.noteOn();
+            sustain.noteOn();
+            release.noteOn();
         }
         void resetSampleRate (double newSampleRate)
         {
@@ -304,11 +317,16 @@ private:
             feedbackScalar.prepare (newSampleRate);
             feedbackTime.prepare (newSampleRate);
             feedbackMix.prepare (newSampleRate);
+            attack.prepare (newSampleRate);
+            decay.prepare (newSampleRate);
+            sustain.prepare (newSampleRate);
+            release.prepare (newSampleRate);
         }
         tp::ChoiceParameter* currentTrajectory;
         SmoothedParameter mod_a, mod_b, mod_c, mod_d;
         SmoothedParameter size, rotation, translationX, translationY;
         SmoothedParameter feedbackScalar, feedbackTime, feedbackMix;
+        SmoothedParameter attack, decay, sustain, release;
     };
     VoiceParameters voiceParameters;
 

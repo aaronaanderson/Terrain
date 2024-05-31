@@ -12,7 +12,12 @@ struct TrajectoryVariablesTree
         tree.setProperty (id::rotation, 0.0f, nullptr);
         tree.setProperty (id::translation_x, 0.0f, nullptr);
         tree.setProperty (id::translation_y, 0.0f, nullptr);
-
+        
+        tree.setProperty (id::attack, 80.0f, nullptr);
+        tree.setProperty (id::decay, 20.0f, nullptr);
+        tree.setProperty (id::sustain, 0.7f, nullptr);
+        tree.setProperty (id::release, 400.0f, nullptr);
+        
         tree.addChild (createFeedbackBranch(), -1, nullptr);
         return tree;
     }

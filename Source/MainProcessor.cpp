@@ -50,10 +50,24 @@ MainProcessor::MainProcessor()
     addParameter (parameters.trajectoryTranslationY = new tp::RangedFloatParameter ("Translation Y", 
                                                                                     {-1.0f, 1.0f},
                                                                                     (trajectoryVariablesBranch.getProperty (id::translation_y))));
+    auto range = juce::NormalisableRange<float> (2.0f, 2000.0f); range.setSkewForCentre (100.0f);
+    addParameter (parameters.attack = new tp::RangedFloatParameter ("Attack", 
+                                                                    range, 
+                                                                    trajectoryVariablesBranch.getProperty (id::attack)));
+    range = juce::NormalisableRange<float> (2.0f, 1000.0f); range.setSkewForCentre (50.0f);
+    addParameter (parameters.decay = new tp::RangedFloatParameter ("Decay", 
+                                                                    range, 
+                                                                    trajectoryVariablesBranch.getProperty (id::decay)));
+    addParameter (parameters.sustain = new tp::NormalizedFloatParameter ("sustain", trajectoryVariablesBranch.getProperty (id::sustain)));
+    range = juce::NormalisableRange<float> (10.0f, 4000.0f); range.setSkewForCentre (800.0f);
+    addParameter (parameters.release = new tp::RangedFloatParameter ("Release", 
+                                                                    range, 
+                                                                    trajectoryVariablesBranch.getProperty (id::release)));
+    
     
     auto trajectoryFeedbackBranch = trajectoryVariablesBranch.getChildWithName (id::FEEDBACK);
     jassert (trajectoryFeedbackBranch.getType() == id::FEEDBACK);
-    auto range = juce::NormalisableRange<float> (0.0f, 2000.0f); range.setSkewForCentre (250.0f);
+    range = juce::NormalisableRange<float> (0.0f, 2000.0f); range.setSkewForCentre (250.0f);
     addParameter (parameters.feedbackTime = new tp::RangedFloatParameter ("Feedback Time", 
                                                                           range,
                                                                           (trajectoryFeedbackBranch.getProperty (id::feedbackTime))));

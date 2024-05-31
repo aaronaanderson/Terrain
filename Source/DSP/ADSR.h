@@ -1,5 +1,6 @@
 #pragma once 
 
+#include <juce_dsp/juce_dsp.h>
 #include <cmath>
 #include <cassert>
 #include <iostream>
@@ -9,6 +10,12 @@ namespace tp
 class ADSR
 {
 public:
+    ADSR()
+      : EXP_N4_95 (std::exp (-4.95f)), 
+        LOG_EXP_N4_95 (-std::log((1.0f + std::exp (-4.95f)) / std::exp (-4.95f))),
+        EXP_N1_5 (std::exp (-1.5f)),
+        LOG_EXP_N1_5 (-std::log((1.0f + std::exp (-1.5f)) / std::exp (-1.5f)))
+    {}
     void prepare (double sr)
     {
         sampleRate = sr;
@@ -114,7 +121,10 @@ private:
     PhaseParameters attack;
     PhaseParameters decay;
     PhaseParameters release;
-
+    const float EXP_N4_95; // std::exp (-4.95f);
+    const float LOG_EXP_N4_95; // -std::log((1.0 + std::exp (-4.95f)) / std::exp (-4.95f))
+    const float EXP_N1_5; // std::exp (-1.5f)
+    const float LOG_EXP_N1_5; // -std::log((1.0 + std::exp (-1.5f)) / std::exp (-1.5f))
     void calculateCoefficients()
     {
         calculateAttack();
@@ -124,25 +134,28 @@ private:
     void calculateAttack() 
     {
         attack.numSamples = sampleRate * parameters.attack * 0.001;
-        attack.tco = std::exp (-1.5);
-        auto b = -std::log((1.0 + attack.tco) / attack.tco);
-        attack.coefficient = std::exp (b / attack.numSamples); 
+        attack.tco = EXP_N1_5;
+        auto b = LOG_EXP_N1_5;
+        // attack.coefficient = std::exp (b / attack.numSamples); 
+        attack.coefficient = juce::dsp::FastMathApproximations::exp (b / attack.numSamples);
         attack.offset = (1.0 + attack.tco) * (1.0 - attack.coefficient);
     }
     void calculateDecay()
     {
         decay.numSamples = sampleRate * parameters.decay * 0.001;
-        decay.tco = std::exp (-4.95);
-        auto b = -std::log((1.0 + decay.tco) / decay.tco);
-        decay.coefficient = std::exp (b / decay.numSamples);
+        decay.tco = EXP_N4_95;
+        auto b = LOG_EXP_N4_95;
+        // decay.coefficient = std::exp (b / decay.numSamples);
+        decay.coefficient = juce::dsp::FastMathApproximations::exp (b / decay.numSamples);
         decay.offset = (parameters.sustain - decay.tco) * (1.0 - decay.coefficient);
     }
     void calculateRelease()
     {
         release.numSamples = parameters.release * sampleRate * 0.001;
-        release.tco = std::exp (-4.95);
-        auto b = -std::log ((1.0 + release.tco) / release.tco);
-        release.coefficient = std::exp (b / release.numSamples);
+        release.tco = EXP_N4_95;
+        auto b = LOG_EXP_N4_95;
+        // release.coefficient = std::exp (b / release.numSamples);
+        release.coefficient = juce::dsp::FastMathApproximations::exp (b / release.numSamples);
         release.offset = -release.tco * (1.0 - release.coefficient);
     }
     void setPhase (Phase nextPhase) { phase = nextPhase; }

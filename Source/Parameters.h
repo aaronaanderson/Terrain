@@ -83,5 +83,10 @@ struct Parameters
     NormalizedFloatParameter* terrainModB;
     NormalizedFloatParameter* terrainModC;
     NormalizedFloatParameter* terrainModD;
+
+    RangedFloatParameter* attack;
+    RangedFloatParameter* decay;
+    NormalizedFloatParameter* sustain;
+    RangedFloatParameter* release;
 };
 }
