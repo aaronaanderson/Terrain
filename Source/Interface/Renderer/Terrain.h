@@ -15,6 +15,7 @@ struct TerrainUniforms
         viewMatrix.reset       (createUniform (shader, "viewMatrix"));
         cameraPosition.reset   (createUniform (shader, "cameraPosition"));
         lightPosition.reset    (createUniform (shader, "lightPosition"));
+        color.reset            (createUniform (shader, "color"));
         terrainIndex.reset     (createUniform (shader, "terrainIndex"));
         modifierA.reset        (createUniform (shader, "a"));
         modifierB.reset        (createUniform (shader, "b"));
@@ -25,6 +26,7 @@ struct TerrainUniforms
     std::unique_ptr<juce::OpenGLShaderProgram::Uniform> viewMatrix;
     std::unique_ptr<juce::OpenGLShaderProgram::Uniform> cameraPosition;
     std::unique_ptr<juce::OpenGLShaderProgram::Uniform> lightPosition; 
+    std::unique_ptr<juce::OpenGLShaderProgram::Uniform> color; 
     std::unique_ptr<juce::OpenGLShaderProgram::Uniform> terrainIndex;
     std::unique_ptr<juce::OpenGLShaderProgram::Uniform> modifierA;
     std::unique_ptr<juce::OpenGLShaderProgram::Uniform> modifierB;
@@ -135,7 +137,7 @@ public:
             attributes = std::make_unique<Attributes> (*shaders.get());
         }
     }
-    void render (const Camera& camera, int index, float modA, float modB, float modC, float modD)
+    void render (const Camera& camera, juce::Colour color, int index, float modA, float modB, float modC, float modD)
     {
         juce::gl::glDisable (juce::gl::GL_BLEND);
         juce::gl::glEnable (juce::gl::GL_DEPTH_TEST);
@@ -154,6 +156,7 @@ public:
             phase = phase + 0.005f;
             uniforms->lightPosition->set (std::sin (phase) * 8, std::cos (phase) * 8, 2.0f);
         }
+        if (uniforms->color.get() != nullptr) uniforms->color->set (color.getRed(), color.getGreen(), color.getBlue());
         if (uniforms->terrainIndex.get() != nullptr) uniforms->terrainIndex->set (index);
         if (uniforms->modifierA.get() != nullptr) uniforms->modifierA->set (modA);
         if (uniforms->modifierB.get() != nullptr) uniforms->modifierB->set (modB);

@@ -7,9 +7,7 @@
 #include "Interface/VisualiserPanel.h"
 
 #include "Interface/ValueTreeView.h"
-
-class TerrainLookAndFeel : public juce::LookAndFeel_V4 {};
-
+#include "Interface/LookAndFeel.h"
 class MainEditor  : public juce::AudioProcessorEditor
 {
 public:

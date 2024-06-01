@@ -126,7 +126,7 @@ private:
     void renderOpenGL() override 
     {
         const juce::ScopedLock lock (mutex);
-        juce::OpenGLHelpers::clear(juce::Colours::black);
+        juce::OpenGLHelpers::clear(getLookAndFeel().findColour (juce::DocumentWindow::backgroundColourId).darker (3.0f));
         juce::gl::glClear (juce::gl::GL_COLOR_BUFFER_BIT | juce::gl::GL_DEPTH_BUFFER_BIT);
         auto desktopScale = static_cast<float>(glContext.getRenderingScale());
         juce::gl::glDepthFunc (juce::gl::GL_LESS);
@@ -136,12 +136,14 @@ private:
                               juce::roundToInt(desktopScale * static_cast<float>(bounds.getWidth())), 
                               juce::roundToInt(desktopScale * static_cast<float>(bounds.getHeight())));    
         auto ubo = parameterWatcher.getUBO();
-        terrain->render(camera, ubo.index, ubo.a, ubo.b, ubo.c, ubo.d);
-        trajectories->render (camera);
+        auto color = getLookAndFeel().findColour (juce::Slider::ColourIds::trackColourId);
+        terrain->render(camera, color, ubo.index, ubo.a, ubo.b, ubo.c, ubo.d);
+        color = getLookAndFeel().findColour (juce::Slider::ColourIds::thumbColourId);
+        trajectories->render (camera, color);
     }
     void openGLContextClosing() override 
     {
         terrain.reset();
-        //trajectories.reset();
+        trajectories.reset();
     }
 };

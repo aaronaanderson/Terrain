@@ -14,10 +14,12 @@ struct TrajectoryUniforms
         projectionMatrix.reset (createUniform (shader, "projectionMatrix"));
         viewMatrix.reset       (createUniform (shader, "viewMatrix"));
         cameraPosition.reset   (createUniform (shader, "cameraPosition"));
+        color.reset            (createUniform (shader, "color"));
     }
     std::unique_ptr<juce::OpenGLShaderProgram::Uniform> projectionMatrix;
     std::unique_ptr<juce::OpenGLShaderProgram::Uniform> viewMatrix;
     std::unique_ptr<juce::OpenGLShaderProgram::Uniform> cameraPosition;
+    std::unique_ptr<juce::OpenGLShaderProgram::Uniform> color;
 private:
    static juce::OpenGLShaderProgram::Uniform* createUniform (juce::OpenGLShaderProgram& shader, 
                                                              const char* uniformName)
@@ -139,7 +141,7 @@ struct TrajectoryMesh : PointsMesh // must be constructed on GL Initialize
         std::memcpy (glVertexPtr, voice->getRawData(), sizeof(Vertex) * static_cast<size_t> (vertexBuffer->numVertices));
     }  
     
-    void render(const Camera& camera)
+    void render(const Camera& camera, const juce::Colour color)
     {
         if (!voice->isVoiceActive())
             return; 
@@ -157,9 +159,11 @@ struct TrajectoryMesh : PointsMesh // must be constructed on GL Initialize
         shaders->use();
         if (uniforms->projectionMatrix.get() != nullptr)
             uniforms->projectionMatrix->setMatrix4 (&camera.getProjectionMatrix()[0][0], 1, false);
-        
         if (uniforms->viewMatrix.get() != nullptr)
             uniforms->viewMatrix->setMatrix4 (&camera.getViewMatrix()[0][0], 1, false);
+        if (uniforms->color.get() != nullptr)
+            uniforms->color->set (color.getRed(), color.getGreen(), color.getBlue());
+
         PointsMesh::draw(*attributes.get());
         juce::gl::glBindBuffer (juce::gl::GL_ARRAY_BUFFER, 0);
         juce::gl::glDepthMask (juce::gl::GL_TRUE);
@@ -196,10 +200,10 @@ struct Trajectories : private tp::WaveTerrainSynthesizer::VoiceListener
         voicesReset (wts.getVoices());
     }
     ~Trajectories() override {}
-    void render (const Camera& c)
+    void render (const Camera& camera, const juce::Colour color)
     {
         for(auto t : trajectories)
-            t->render (c);
+            t->render (camera, color);
     }
 private:
     void voicesReset (juce::Array<juce::SynthesiserVoice*> voices) override 

@@ -18,7 +18,7 @@ public:
     {
         g.setColour (juce::Colours::black);
         auto b = getLocalBounds();
-        g.drawRect (b);
+        g.drawRect (b, 2);
 
         g.drawRect (b.removeFromTop (20));
     }
