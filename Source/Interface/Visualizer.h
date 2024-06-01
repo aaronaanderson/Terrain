@@ -35,6 +35,7 @@ private:
           :  parameter (p)
         {
             parameter->addListener (this);
+            value.store (parameter->getValue());
         }
         ~WatchedParameter() override { parameter->removeListener (this); }
         float getValue() { return value.load(); }
