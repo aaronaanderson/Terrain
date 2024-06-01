@@ -91,6 +91,8 @@ private:
                 parameters.trajectoryTranslationX->setValueNotifyingHost (parameters.trajectoryTranslationX->convertTo0to1 (tree.getProperty (property)));
             else if (property == id::translation_y) 
                 parameters.trajectoryTranslationY->setValueNotifyingHost (parameters.trajectoryTranslationY->convertTo0to1 (tree.getProperty (property)));
+            else if (property == id::envelopeSize)
+                parameters.envelopeSize->setValueNotifyingHost (static_cast<float> (tree.getProperty (property)));
             else if (property == id::attack) 
                 parameters.attack->setValueNotifyingHost (parameters.attack->convertTo0to1 (tree.getProperty (property)));
             else if (property == id::decay) 

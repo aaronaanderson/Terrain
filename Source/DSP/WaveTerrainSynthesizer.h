@@ -223,6 +223,8 @@ public:
             
             point = rotate (point, voiceParameters.rotation.getNext());
             point = scale (point, voiceParameters.size.getNext());
+            if (*voiceParameters.envelopeSize)
+                point = scale (point, static_cast<float> (envelope.getCurrentValue()));
             point = feedback (point, 
                               voiceParameters.feedbackTime.getNext(), 
                               voiceParameters.feedbackScalar.getNext(), 
@@ -283,6 +285,7 @@ private:
             feedbackScalar (p.feedbackScalar), 
             feedbackTime (p.feedbackTime), 
             feedbackMix (p.feedbackMix), 
+            envelopeSize (p.envelopeSize),
             attack (p.attack), 
             decay (p.decay), 
             sustain (p.sustain), 
@@ -328,6 +331,7 @@ private:
         SmoothedParameter mod_a, mod_b, mod_c, mod_d;
         SmoothedParameter size, rotation, translationX, translationY;
         SmoothedParameter feedbackScalar, feedbackTime, feedbackMix;
+        juce::AudioParameterBool* envelopeSize;
         SmoothedParameter attack, decay, sustain, release;
     };
     VoiceParameters voiceParameters;

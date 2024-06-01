@@ -27,7 +27,8 @@ namespace id
     static const juce::Identifier decay = "decay";
     static const juce::Identifier sustain = "sustain";
     static const juce::Identifier release = "release";
-    
+    static const juce::Identifier envelopeSize = "envelopeSize";
+
     static const juce::Identifier FEEDBACK = "FEEDBACK";
     static const juce::Identifier feedbackTime = "feedbackTime";
     static const juce::Identifier feedbackScalar = "feedbackScalar";

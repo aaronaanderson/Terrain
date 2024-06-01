@@ -69,6 +69,7 @@ public:
         }
         return currentValue;
     }
+    double getCurrentValue() { return currentValue; }
     struct Parameters
     {
         float attack = 200.0f;

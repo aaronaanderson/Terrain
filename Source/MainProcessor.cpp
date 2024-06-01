@@ -50,6 +50,7 @@ MainProcessor::MainProcessor()
     addParameter (parameters.trajectoryTranslationY = new tp::RangedFloatParameter ("Translation Y", 
                                                                                     {-1.0f, 1.0f},
                                                                                     (trajectoryVariablesBranch.getProperty (id::translation_y))));
+    addParameter (parameters.envelopeSize = new juce::AudioParameterBool ("envelopeSize", "Envelope Size", true));
     auto range = juce::NormalisableRange<float> (2.0f, 2000.0f); range.setSkewForCentre (100.0f);
     addParameter (parameters.attack = new tp::RangedFloatParameter ("Attack", 
                                                                     range, 
