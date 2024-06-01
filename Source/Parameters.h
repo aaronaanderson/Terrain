@@ -76,6 +76,7 @@ struct Parameters
 
     RangedFloatParameter*     feedbackTime;
     RangedFloatParameter*     feedbackScalar;
+    RangedFloatParameter*     feedbackCompression;
     RangedFloatParameter*     feedbackMix;
 
     ChoiceParameter* currentTerrain;

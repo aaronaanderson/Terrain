@@ -76,6 +76,9 @@ MainProcessor::MainProcessor()
     addParameter (parameters.feedbackScalar = new tp::RangedFloatParameter ("Feedback", 
                                                                             range,
                                                                             (trajectoryVariablesBranch.getProperty (id::feedbackScalar))));
+    addParameter (parameters.feedbackCompression = new tp::RangedFloatParameter ("Feedback Compression", 
+                                                                                 {1.0f, 20.0f},
+                                                                                 (trajectoryVariablesBranch.getProperty (id::feedbackCompression))));
     addParameter (parameters.feedbackMix = new tp::RangedFloatParameter ("Feedback Mix", 
                                                                          {0.0f, 1.0f},
                                                                          (trajectoryVariablesBranch.getProperty (id::feedbackScalar))));

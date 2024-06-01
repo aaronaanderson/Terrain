@@ -39,6 +39,10 @@ public:
     {
         return smoothedValue.getNextValue();
     }
+    float getCurrent()
+    {
+        return smoothedValue.getCurrentValue();
+    }
     void prepare (double sampleRate) 
     { 
         smoothedValue.reset (sampleRate, 0.02f);
@@ -228,7 +232,9 @@ public:
             point = feedback (point, 
                               voiceParameters.feedbackTime.getNext(), 
                               voiceParameters.feedbackScalar.getNext(), 
-                              voiceParameters.feedbackMix.getNext());
+                              voiceParameters.feedbackMix.getNext(), 
+                              voiceParameters.size.getCurrent(), 
+                              voiceParameters.feedbackCompression.getNext());
             point = translate (point, 
                                voiceParameters.translationX.getNext(), 
                                voiceParameters.translationY.getNext());
@@ -284,6 +290,7 @@ private:
             translationY (p.trajectoryTranslationY), 
             feedbackScalar (p.feedbackScalar), 
             feedbackTime (p.feedbackTime), 
+            feedbackCompression (p.feedbackCompression),
             feedbackMix (p.feedbackMix), 
             envelopeSize (p.envelopeSize),
             attack (p.attack), 
@@ -303,6 +310,7 @@ private:
             translationY.noteOn();
             feedbackScalar.noteOn();
             feedbackTime.noteOn();
+            feedbackCompression.noteOn();
             feedbackMix.noteOn();
             attack.noteOn();
             decay.noteOn();
@@ -321,6 +329,7 @@ private:
             translationY.prepare (newSampleRate);
             feedbackScalar.prepare (newSampleRate);
             feedbackTime.prepare (newSampleRate);
+            feedbackCompression.prepare (newSampleRate);
             feedbackMix.prepare (newSampleRate);
             attack.prepare (newSampleRate);
             decay.prepare (newSampleRate);
@@ -330,7 +339,7 @@ private:
         tp::ChoiceParameter* currentTrajectory;
         SmoothedParameter mod_a, mod_b, mod_c, mod_d;
         SmoothedParameter size, rotation, translationX, translationY;
-        SmoothedParameter feedbackScalar, feedbackTime, feedbackMix;
+        SmoothedParameter feedbackScalar, feedbackTime, feedbackCompression, feedbackMix;
         juce::AudioParameterBool* envelopeSize;
         SmoothedParameter attack, decay, sustain, release;
     };
@@ -401,7 +410,7 @@ private:
         Point newPoint (p.x + x, p.y + y);
         return newPoint;
     }
-    Point feedback (Point input, float feedbackTime, float feedback, float mix)
+    Point feedback (Point input, float feedbackTime, float feedback, float mix, float threshold, float ratio)
     {
         feedbackReadIndex = feedbackWriteIndex - static_cast<int> ((feedbackTime * 0.001f) * sampleRate);
         if (feedbackReadIndex < 0) feedbackReadIndex += feedbackBuffer.size();
@@ -410,12 +419,12 @@ private:
         feedbackWriteIndex = (feedbackWriteIndex + 1) % feedbackBuffer.size();
         auto outputPoint = input + (scaledHistory * mix);
 
+        outputPoint = compressEdge (outputPoint, threshold, ratio);
+
         return outputPoint;
     }
-    Point compressEdge (const Point p)
+    Point compressEdge (const Point p, float threshold = 1.0f, float ratio = 6.0f)
     {
-        static const float threshold = 1.0f;
-        static const float ratio = 6.0f;
         Point outputPoint = p;
         if (std::fabs (p.x) > threshold)
         {

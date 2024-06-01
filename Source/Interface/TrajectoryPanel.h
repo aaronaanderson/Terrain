@@ -204,6 +204,7 @@ public:
         parameters (p),
         time (parameters.feedbackTime, gt, "Time", {0.0, 2000.0}, 250.0), 
         feedback (parameters.feedbackScalar, gt, "Feedback", {0.0, 0.9999}, 0.8), 
+        compression (parameters.feedbackCompression, gt, "Compression", {1.0, 20.0}),
         mix (parameters.feedbackMix, gt, "Mix", {0.0, 1.0})
     {
         jassert (state.getType() == id::FEEDBACK);
@@ -215,6 +216,8 @@ public:
         addAndMakeVisible (time);
         feedback.getSlider().onValueChange = [&]() { state.setProperty (id::feedbackScalar, feedback.getSlider().getValue(), &undoManager); };
         addAndMakeVisible (feedback);
+        compression.getSlider().onValueChange = [&]() { state.setProperty (id::feedbackCompression, compression.getSlider().getValue(), &undoManager); };
+        addAndMakeVisible (compression);
         mix.getSlider().onValueChange = [&]() { state.setProperty (id::feedbackMix, mix.getSlider().getValue(), &undoManager); };
         addAndMakeVisible (mix);
 
@@ -227,6 +230,7 @@ public:
 
         time.setBounds (b.removeFromTop (40));
         feedback.setBounds (b.removeFromTop (40));
+        compression.setBounds (b.removeFromTop (40));
         mix.setBounds (b.removeFromTop (40));
     }
 private:
@@ -235,15 +239,14 @@ private:
     const tp::Parameters& parameters;
 
     juce::Label label;
-    ParameterSlider time;
-    ParameterSlider feedback;
-    ParameterSlider mix;
+    ParameterSlider time, feedback, mix, compression;
 
     void initializeState()
     {
         time.setValue (state.getProperty (id::feedbackTime));
         feedback.setValue (state.getProperty (id::feedbackScalar));
         mix.setValue (state.getProperty (id::feedbackMix));
+        compression.setValue (state.getProperty (id::feedbackCompression));
     }
 };
 class TrajectoryVariables : public juce::Component 
@@ -328,7 +331,7 @@ public:
         auto b = getAdjustedBounds();
         trajectorySelector.setBounds (b.removeFromTop (120));
         trajectoryVariables.setBounds (b.removeFromTop (160));
-        feedbackPanel.setBounds (b.removeFromTop (180));
+        feedbackPanel.setBounds (b.removeFromTop (220));
     }
 
 private:

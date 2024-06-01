@@ -18,7 +18,7 @@ struct TrajectoryVariablesTree
         tree.setProperty (id::sustain, 0.7f, nullptr);
         tree.setProperty (id::release, 400.0f, nullptr);
         tree.setProperty (id::envelopeSize, true, nullptr);
-        
+
         tree.addChild (createFeedbackBranch(), -1, nullptr);
         return tree;
     }
@@ -29,7 +29,7 @@ private:
         tree.setProperty (id::feedbackScalar, 0.0, nullptr);
         tree.setProperty (id::feedbackTime, 200.0, nullptr);
         tree.setProperty (id::feedbackMix, 0.0, nullptr);
-
+        tree.setProperty (id::feedbackCompression, 4.0f, nullptr);
         return tree;
     }
 };

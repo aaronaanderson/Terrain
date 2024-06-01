@@ -33,6 +33,7 @@ namespace id
     static const juce::Identifier feedbackTime = "feedbackTime";
     static const juce::Identifier feedbackScalar = "feedbackScalar";
     static const juce::Identifier feedbackMix = "feedbackMix";
+    static const juce::Identifier feedbackCompression = "feedbackCompression";
 
     static const juce::Identifier TERRAINS = "TERRAINS";
     static const juce::Identifier TERRAIN = "TERRAIN";
