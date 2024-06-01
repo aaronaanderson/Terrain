@@ -221,13 +221,15 @@ public:
 
             auto point = functions[*voiceParameters.currentTrajectory](static_cast<float> (phase), getModSet());
             
-            point = point * (voiceParameters.size.getNext());
             point = rotate (point, voiceParameters.rotation.getNext());
-            point = translate (point, voiceParameters.translationX.getNext(), voiceParameters.translationY.getNext());
+            point = scale (point, voiceParameters.size.getNext());
             point = feedback (point, 
                               voiceParameters.feedbackTime.getNext(), 
                               voiceParameters.feedbackScalar.getNext(), 
                               voiceParameters.feedbackMix.getNext());
+            point = translate (point, 
+                               voiceParameters.translationX.getNext(), 
+                               voiceParameters.translationY.getNext());
             point = compressEdge (point);
 
             if (terrain != nullptr)
@@ -386,6 +388,10 @@ private:
                         (p.y * std::cos (theta)) + (p.x * std::sin (theta)));
         return newPoint;
     }
+    Point scale (Point p, float scalar)
+    {
+        return p * (scalar);
+    }
     Point translate (const Point p, float x, float y)
     {
         Point newPoint (p.x + x, p.y + y);
@@ -398,8 +404,9 @@ private:
         auto scaledHistory = feedbackBuffer[feedbackReadIndex] * feedback;
         feedbackBuffer.setUnchecked (feedbackWriteIndex, input + scaledHistory);
         feedbackWriteIndex = (feedbackWriteIndex + 1) % feedbackBuffer.size();
+        auto outputPoint = input + (scaledHistory * mix);
 
-        return input + (scaledHistory * mix);
+        return outputPoint;
     }
     Point compressEdge (const Point p)
     {
