@@ -15,6 +15,7 @@ struct UBO
     float b;
     float c;
     float d;
+    float saturation;
 };
 struct ParameterWatcher 
 {
@@ -23,33 +24,35 @@ struct ParameterWatcher
         b (parameters.terrainModB),
         c (parameters.terrainModC), 
         d (parameters.terrainModD), 
-        index (parameters.currentTerrain)
+        index (parameters.currentTerrain), 
+        saturation (parameters.terrainSaturation)
     {}
-    UBO getUBO() { return { static_cast<int> ((index.getValue() * 4.0f)), 
-                             a.getValue(), b.getValue(), c.getValue(), d.getValue()};}
+    UBO getUBO() { return { static_cast<int> ((index.getValue())), 
+                            a.getValue(), b.getValue(), c.getValue(), d.getValue(),
+                            saturation.getValue()};}
 
 private:
     struct WatchedParameter : private juce::AudioProcessorParameter::Listener
     {
-        WatchedParameter (juce::AudioProcessorParameter* p)
+        WatchedParameter (juce::RangedAudioParameter* p)
           :  parameter (p)
         {
             parameter->addListener (this);
-            value.store (parameter->getValue());
+            value.store (parameter->convertFrom0to1 (parameter->getValue()));
         }
         ~WatchedParameter() override { parameter->removeListener (this); }
         float getValue() { return value.load(); }
     private:
-        juce::AudioProcessorParameter* parameter;
+        juce::RangedAudioParameter* parameter;
         std::atomic<float> value;
         void parameterValueChanged (int parameterIndex, float newValue) override
         {
             juce::ignoreUnused (parameterIndex);
-            value.store (newValue);
+            value.store (parameter->convertFrom0to1 (newValue));
         }
         virtual void parameterGestureChanged (int pi, bool gis) override { juce::ignoreUnused (pi, gis); }
     };
-    WatchedParameter a, b, c, d, index;
+    WatchedParameter a, b, c, d, index, saturation;
 };
 class Visualizer : public juce::Component, 
                    private juce::OpenGLRenderer, 
@@ -137,7 +140,7 @@ private:
                               juce::roundToInt(desktopScale * static_cast<float>(bounds.getHeight())));    
         auto ubo = parameterWatcher.getUBO();
         auto color = getLookAndFeel().findColour (juce::Slider::ColourIds::trackColourId);
-        terrain->render(camera, color, ubo.index, ubo.a, ubo.b, ubo.c, ubo.d);
+        terrain->render(camera, color, ubo.index, ubo.a, ubo.b, ubo.c, ubo.d, ubo.saturation);
         color = getLookAndFeel().findColour (juce::Slider::ColourIds::thumbColourId);
         trajectories->render (camera, color);
     }

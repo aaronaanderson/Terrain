@@ -21,6 +21,7 @@ struct TerrainUniforms
         modifierB.reset        (createUniform (shader, "b"));
         modifierC.reset        (createUniform (shader, "c"));
         modifierD.reset        (createUniform (shader, "d"));
+        saturation.reset       (createUniform (shader, "saturation"));
     }
     std::unique_ptr<juce::OpenGLShaderProgram::Uniform> projectionMatrix;
     std::unique_ptr<juce::OpenGLShaderProgram::Uniform> viewMatrix;
@@ -32,6 +33,7 @@ struct TerrainUniforms
     std::unique_ptr<juce::OpenGLShaderProgram::Uniform> modifierB;
     std::unique_ptr<juce::OpenGLShaderProgram::Uniform> modifierC;
     std::unique_ptr<juce::OpenGLShaderProgram::Uniform> modifierD;
+    std::unique_ptr<juce::OpenGLShaderProgram::Uniform> saturation;
 private:
    static juce::OpenGLShaderProgram::Uniform* createUniform (juce::OpenGLShaderProgram& shader, 
                                                              const char* uniformName)
@@ -137,7 +139,7 @@ public:
             attributes = std::make_unique<Attributes> (*shaders.get());
         }
     }
-    void render (const Camera& camera, juce::Colour color, int index, float modA, float modB, float modC, float modD)
+    void render (const Camera& camera, juce::Colour color, int index, float modA, float modB, float modC, float modD, float saturation)
     {
         juce::gl::glDisable (juce::gl::GL_BLEND);
         juce::gl::glEnable (juce::gl::GL_DEPTH_TEST);
@@ -162,6 +164,7 @@ public:
         if (uniforms->modifierB.get() != nullptr) uniforms->modifierB->set (modB);
         if (uniforms->modifierC.get() != nullptr) uniforms->modifierC->set (modC);
         if (uniforms->modifierD.get() != nullptr) uniforms->modifierD->set (modD);
+        if (uniforms->saturation.get() != nullptr) uniforms->saturation->set (saturation);
 
         mesh.draw (*attributes.get());
         // juce::gl::glBindBuffer (juce::gl::GL_ARRAY_BUFFER, 0);

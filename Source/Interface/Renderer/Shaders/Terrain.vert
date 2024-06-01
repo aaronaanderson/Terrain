@@ -9,6 +9,7 @@ uniform float a;
 uniform float b;
 uniform float c;
 uniform float d;
+uniform float saturation;
 
 out float depth;
 out vec3 normal;
@@ -16,33 +17,41 @@ out vec3 fragmentPosition;
 
 float pi = 3.14159265359;
 
+float saturate (float signal, float scale)
+{
+    return tanh(signal * scale * 1.31303528551);
+}
+
 float calculateDepth (int index, vec2 p)
 {
+    float outputValue = 0.0;
     switch (index)
     {
         case 0:
-            return sin(p.x * 6.0 * (a + 0.5)) * sin(p.y * 6.0 * (b + 0.5));
+            outputValue = sin(p.x * 6.0 * (a + 0.5)) * sin(p.y * 6.0 * (b + 0.5));
         break;
         case 1:
-            return sin((p.x * pi * 2.0) * (p.x * 3.0 * a) + (b * pi * 2.0)) * sin((p.y * pi * 2.0) * (p.y * 3.0 * a) + (b * -pi * 2));       
+            outputValue = sin((p.x * pi * 2.0) * (p.x * 3.0 * a) + (b * pi * 2.0)) * sin((p.y * pi * 2.0) * (p.y * 3.0 * a) + (b * -pi * 2));       
         break;
         case 2: 
-            return cos(distance(vec2 (p.x, p.y), vec2(0.0, 0.0)) * pi * 2.0 * (a * 5.0 + 1.0) + (b * pi * 2.0)); 
+            outputValue = cos(distance(vec2 (p.x, p.y), vec2(0.0, 0.0)) * pi * 2.0 * (a * 5.0 + 1.0) + (b * pi * 2.0)); 
         break;
         case 3:
         {
             float c = a * 14.0 + 1.0;
-            return  (1.0 - (p.x * p.y)) * cos(c * (1.0 - p.x * p.y));
+            outputValue =  (1.0 - (p.x * p.y)) * cos(c * (1.0 - p.x * p.y));
         }
         case 4:
         {
             float c = a * 0.5 + 0.25;
             float d = b * 16.0 + 4.0;
-            return c * p.x * cos((1.0 - c) * d * pi * p.x * p.y)  +  (1.0 - c) * p.y * cos(c * d * pi * p.x * p.y);
+            outputValue = c * p.x * cos((1.0 - c) * d * pi * p.x * p.y)  +  (1.0 - c) * p.y * cos(c * d * pi * p.x * p.y);
         }
         default:
-            return 0.0;
+            outputValue = 0.0;
     }
+    outputValue = saturate (outputValue, saturation);
+    return outputValue;
 }
 
 // https://stackoverflow.com/questions/13983189/opengl-how-to-calculate-normals-in-a-terrain-height-grid

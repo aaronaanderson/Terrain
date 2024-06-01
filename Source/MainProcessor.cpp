@@ -96,6 +96,13 @@ MainProcessor::MainProcessor()
     addParameter (parameters.terrainModC = new tp::NormalizedFloatParameter ("Terrain Mod C", modifiersBranch.getProperty (id::mod_C)));
     addParameter (parameters.terrainModD = new tp::NormalizedFloatParameter ("Terrain Mod D", modifiersBranch.getProperty (id::mod_D)));
 
+    auto terrainVariablesBranch = state.getChildWithName (id::TERRAIN_VARIABLES);
+    jassert (terrainVariablesBranch.getType() == id::TERRAIN_VARIABLES);
+    range = juce::NormalisableRange<float> (1.0f, 16.0f); range.setSkewForCentre (4.0f);
+    addParameter (parameters.terrainSaturation = new tp::RangedFloatParameter ("Terrain Saturation", 
+                                                                               range,
+                                                                               (terrainVariablesBranch.getProperty (id::feedbackScalar))));
+
     state.addListener (this);
 
     synthesizer = std::make_unique<tp::WaveTerrainSynthesizer> (parameters);
@@ -156,6 +163,7 @@ void MainProcessor::getStateInformation (juce::MemoryBlock& destData)
 }
 void MainProcessor::setStateInformation (const void* data, int sizeInBytes)
 { 
+    juce::ignoreUnused (data, sizeInBytes);
     std::unique_ptr<juce::XmlElement> xml (getXmlFromBinary (data, sizeInBytes));
     if (xml.get() == nullptr) return; // make sure we have data
     if (!xml->hasTagName (state.getType())) return; // make sure it's the right data

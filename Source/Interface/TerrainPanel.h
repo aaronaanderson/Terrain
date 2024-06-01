@@ -8,8 +8,33 @@
 #include "ParameterSlider.h"
 namespace ti
 {
-class TerrainModifierArray : public juce::Component,
-                             private juce::ValueTree::Listener
+class TerrainVariables : public juce::Component 
+{
+public:
+    TerrainVariables (juce::ValueTree terrainVariablesBranch, 
+                      juce::UndoManager& um, 
+                      GlobalTimer& gt, 
+                      const tp::Parameters& p)
+      : state (terrainVariablesBranch),
+        undoManager (um), 
+        saturation (p.terrainSaturation, gt, "Saturation", {1.0, 16.0}, 4.0)
+    {
+        jassert (state.getType() == id::TERRAIN_VARIABLES);
+        saturation.getSlider().onValueChange = [&]() {state.setProperty (id::terrainSaturation, saturation.getSlider().getValue(), &undoManager); };
+        addAndMakeVisible (saturation);
+    }
+    void resized() override 
+    {
+        auto b = getLocalBounds();
+        saturation.setBounds (b.removeFromTop (40));
+    }
+private:
+    juce::ValueTree state;
+    juce::UndoManager& undoManager;
+
+    ParameterSlider saturation;
+};
+class TerrainModifierArray : public juce::Component
 {
 public:
     TerrainModifierArray (juce::ValueTree terrainState, 
@@ -25,8 +50,6 @@ public:
         dModifier (parameters.terrainModD, gt, "d", {0.0, 1.0})
     {
         jassert (state.getType() == id::TERRAINS);
-        
-        state.addListener (this);
 
         aModifier.getSlider().onValueChange = [&](){modifierBranch.setProperty (id::mod_A, aModifier.getSlider().getValue(), &undoManager);};
         addAndMakeVisible (aModifier);
@@ -201,21 +224,25 @@ public:
                   const tp::Parameters& p)
       : Panel ("Terrain"), 
         state (terrainSynthTree),
-        terrainSelector (state.getChildWithName (id::TERRAINS), um, gt, p)
+        terrainSelector (state.getChildWithName (id::TERRAINS), um, gt, p), 
+        terrainVariables (state.getChildWithName (id::TERRAIN_VARIABLES), um, gt, p)
     {
         jassert (state.getType() == id::TERRAINSYNTH);
 
         addAndMakeVisible (terrainSelector);
+        addAndMakeVisible (terrainVariables);
     }
     void resized() override
     {
         Panel::resized();
         auto b = getAdjustedBounds();
         terrainSelector.setBounds (b.removeFromTop (120));
+        terrainVariables.setBounds (b.removeFromTop (40));
     }
 private:
     juce::ValueTree state;
 
     TerrainSelector terrainSelector;
+    TerrainVariables terrainVariables;
 };
 }

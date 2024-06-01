@@ -62,6 +62,16 @@ private:
     }
 
 };
+struct TerrainVariablesTree
+{
+    static juce::ValueTree create()
+    {
+        juce::ValueTree tree (id::TERRAIN_VARIABLES);
+        tree.setProperty (id::terrainSaturation, 1.0f, nullptr);
+
+        return tree;
+    }
+};
 struct TerrainsTree
 {
     static juce::ValueTree create()
@@ -99,6 +109,7 @@ struct DefaultTree
         tree.addChild (TrajectoriesTree::create(), -1, nullptr);
         tree.addChild (TrajectoryVariablesTree::create(), -1, nullptr);
         tree.addChild (TerrainsTree::create(), -1, nullptr);
+        tree.addChild (TerrainVariablesTree::create(), -1, nullptr);
         return tree;
     }
 };

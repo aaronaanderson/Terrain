@@ -111,6 +111,10 @@ private:
                 parameters.feedbackCompression->setValueNotifyingHost (parameters.feedbackCompression->convertTo0to1 (tree.getProperty (property)));
             else if (property == id::feedbackMix)
                 parameters.feedbackMix->setValueNotifyingHost (parameters.feedbackMix->convertTo0to1 (tree.getProperty (property)));
+        }else if (tree.getType() == id::TERRAIN_VARIABLES)
+        {
+            if (property == id::terrainSaturation)
+                parameters.terrainSaturation->setValueNotifyingHost (parameters.terrainSaturation->convertTo0to1 (tree.getProperty (property)));
         }
     }
 

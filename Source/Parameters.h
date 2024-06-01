@@ -85,6 +85,8 @@ struct Parameters
     NormalizedFloatParameter* terrainModC;
     NormalizedFloatParameter* terrainModD;
 
+    RangedFloatParameter*     terrainSaturation;
+
     juce::AudioParameterBool* envelopeSize;
     RangedFloatParameter* attack;
     RangedFloatParameter* decay;
