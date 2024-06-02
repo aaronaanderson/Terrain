@@ -23,8 +23,11 @@ public:
         ))
     {
         setColour (juce::Slider::thumbColourId, accent);
+        // setColour (juce::Slider::ColourIds::backgroundColourId, background.darker (0.5f));
+        // setColour (juce::Slider::ColourIds::trackColourId, background.darker (0.5f));
     }
 
+    
 void drawLinearSlider (juce::Graphics& g, int x, int y, int width, int height,
                                        float sliderPos,
                                        float minSliderPos,
@@ -125,5 +128,65 @@ void drawLinearSlider (juce::Graphics& g, int x, int y, int width, int height,
             drawLinearSliderOutline (g, x, y, width, height, style, slider);
     }
 }
-    
+
+void drawRotarySlider (juce::Graphics& g, int x, int y, int width, int height, float sliderPos,
+                       const float rotaryStartAngle, const float rotaryEndAngle, juce::Slider& slider) override
+{
+    auto outline = slider.findColour (juce::Slider::rotarySliderOutlineColourId);
+    auto fill    = slider.findColour (juce::Slider::rotarySliderFillColourId);
+
+    auto bounds = juce::Rectangle<int> (x, y, width, height).toFloat().reduced (10);
+
+    auto radius = juce::jmin (bounds.getWidth(), bounds.getHeight()) / 2.0f;
+    auto toAngle = rotaryStartAngle + sliderPos * (rotaryEndAngle - rotaryStartAngle);
+    auto lineW = juce::jmin (10.0f, radius * 0.5f);
+    auto arcRadius = radius - lineW * 0.5f;
+
+    juce::Path backgroundArc;
+    backgroundArc.addCentredArc (bounds.getCentreX(),
+                                 bounds.getCentreY(),
+                                 arcRadius,
+                                 arcRadius,
+                                 0.0f,
+                                 rotaryStartAngle,
+                                 rotaryEndAngle,
+                                 true);
+
+    g.setColour (outline);
+    g.strokePath (backgroundArc, juce::PathStrokeType (lineW, juce::PathStrokeType::mitered, juce::PathStrokeType::square));
+
+    if (slider.isEnabled())
+    {
+        juce::Path valueArc;
+        valueArc.addCentredArc (bounds.getCentreX(),
+                                bounds.getCentreY(),
+                                arcRadius,
+                                arcRadius,
+                                0.0f,
+                                rotaryStartAngle,
+                                toAngle,
+                                true);
+
+        g.setColour (fill);
+        g.strokePath (valueArc, juce::PathStrokeType (lineW, juce::PathStrokeType::mitered, juce::PathStrokeType::square));
+    }
+
+    //auto thumbWidth = lineW;// * 2.0f;
+    juce::Point<float> thumbPoint (bounds.getCentreX() + arcRadius * std::cos (toAngle - juce::MathConstants<float>::halfPi),
+                                  bounds.getCentreY() + arcRadius * std::sin (toAngle - juce::MathConstants<float>::halfPi));
+
+    g.setColour (slider.findColour (juce::Slider::thumbColourId));
+    // g.fillEllipse (juce::Rectangle<float> (thumbWidth, thumbWidth).withCentre (thumbPoint));
+    juce::Path thumbArc;
+    const float halfThumbArcLength = juce::MathConstants<float>::halfPi * 0.15f;
+    thumbArc.addCentredArc (bounds.getCentreX(), 
+                            bounds.getCentreY(), 
+                            arcRadius, 
+                            arcRadius, 
+                            0.0f, 
+                            toAngle - halfThumbArcLength, 
+                            toAngle + halfThumbArcLength, 
+                            true);
+    g.strokePath (thumbArc, juce::PathStrokeType (lineW, juce::PathStrokeType::mitered, juce::PathStrokeType::butt));
+}   
 };

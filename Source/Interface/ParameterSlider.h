@@ -92,7 +92,8 @@ struct ParameterSlider : public juce::Component,
         
         if (b.getHeight() * 2 >= b.getWidth())
         {
-            slider.setSliderStyle (juce::Slider::SliderStyle::Rotary);
+            slider.setSliderStyle (juce::Slider::SliderStyle::RotaryVerticalDrag);
+            
             label.setJustificationType (juce::Justification::centred);
         }
 
