@@ -18,7 +18,7 @@ public:
         dropDown.addItem ("4X", 3);
         dropDown.addItem ("8X", 4);
         dropDown.addItem ("16X", 5);
-        dropDown.setSelectedId (2, juce::dontSendNotification);
+        dropDown.setSelectedId (static_cast<int> (state.getProperty (id::oversampling)) + 1, juce::dontSendNotification);
         dropDown.onChange = [&]() 
             {
                 auto index = dropDown.getSelectedItemIndex();
