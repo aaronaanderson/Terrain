@@ -2,6 +2,7 @@
 #include "MainEditor.h"
 
 #include "DefaultTreeGenerator.h"
+static const int OVERSAMPLING_FACTOR = 2;
 
 static juce::StringArray getChoices (juce::ValueTree tree)
 {
@@ -20,7 +21,8 @@ const juce::String MainProcessor::trajectoryNameFromIndex (int i)
 //==============================================================================
 MainProcessor::MainProcessor()
      : AudioProcessor (BusesProperties().withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
-        state (DefaultTree::create())
+       state (DefaultTree::create()),
+       overSampler (2, OVERSAMPLING_FACTOR, juce::dsp::Oversampling<float>::FilterType::filterHalfBandFIREquiripple)
 {
 
     //======================================Trajectory Parameters
@@ -128,7 +130,10 @@ void MainProcessor::changeProgramName (int index, const juce::String& newName) {
 //==============================================================================
 void MainProcessor::prepareToPlay (double sampleRate, int samplesPerBlock) 
 { 
-    synthesizer->prepareToPlay (sampleRate, samplesPerBlock);
+    overSampler.reset();
+    overSampler.initProcessing (samplesPerBlock);
+    synthesizer->prepareToPlay (sampleRate * std::pow (2, OVERSAMPLING_FACTOR), 
+                                samplesPerBlock * static_cast<int> (std::pow (2, OVERSAMPLING_FACTOR)));
 }
 void MainProcessor::releaseResources() {}
 bool MainProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
@@ -149,8 +154,18 @@ void MainProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
     
+    //overSampler.reset(); // is this needed per buffer?
+    auto overSamplingBlock = overSampler.processSamplesUp (buffer);
+    
     synthesizer->updateTerrain();
-    synthesizer->renderNextBlock (buffer, midiMessages, 0, buffer.getNumSamples());
+    juce::Array<float*> channelPointers = {overSamplingBlock.getChannelPointer(0), overSamplingBlock.getChannelPointer(1)};
+    juce::AudioBuffer<float> overSamplingBufferReference (channelPointers.getRawDataPointer(), 
+                                                          static_cast<int> (overSamplingBlock.getNumChannels()), 
+                                                          static_cast<int> (overSamplingBlock.getNumSamples()));
+
+    synthesizer->renderNextBlock (overSamplingBufferReference, midiMessages, 0, overSamplingBufferReference.getNumSamples());
+    auto outputBlock = juce::dsp::AudioBlock<float> (buffer);
+    overSampler.processSamplesDown (outputBlock);
 }
 //==============================================================================
 bool MainProcessor::hasEditor() const { return true; }

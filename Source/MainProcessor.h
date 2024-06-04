@@ -51,7 +51,8 @@ private:
     juce::UndoManager undoManager;
     tp::Parameters parameters;
     std::unique_ptr<tp::WaveTerrainSynthesizer> synthesizer;
-
+    juce::dsp::Oversampling<float> overSampler;
+    
     const juce::String trajectoryNameFromIndex (int i);
 
     void valueTreePropertyChanged (juce::ValueTree& treeWhosePropertyHasChanged,
