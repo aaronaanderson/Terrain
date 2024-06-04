@@ -137,7 +137,7 @@ private:
         overSampler = std::make_unique<juce::dsp::Oversampling<float>> (2, 
                                                                        overSamplingFactor, 
                                                                        juce::dsp::Oversampling<float>::FilterType::filterHalfBandFIREquiripple);
-        overSampler->initProcessing (samplesPerBlock);
+        overSampler->initProcessing (static_cast<size_t> (samplesPerBlock));
         synthesizer->prepareToPlay (sampleRate * std::pow (2, overSamplingFactor), 
                                     samplesPerBlock * static_cast<int> (std::pow (2, overSamplingFactor)));
     }

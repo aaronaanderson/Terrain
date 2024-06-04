@@ -204,8 +204,8 @@ public:
         parameters (p),
         time (parameters.feedbackTime, gt, "Time", {0.0, 2000.0}, 250.0), 
         feedback (parameters.feedbackScalar, gt, "Feedback", {0.0, 0.9999}, 0.8), 
-        compression (parameters.feedbackCompression, gt, "Compression", {1.0, 20.0}),
-        mix (parameters.feedbackMix, gt, "Mix", {0.0, 1.0})
+        mix (parameters.feedbackMix, gt, "Mix", {0.0, 1.0}),
+        compression (parameters.feedbackCompression, gt, "Compression", {1.0, 20.0})
     {
         jassert (state.getType() == id::FEEDBACK);
         label.setText ("Trajectory Feedback", juce::dontSendNotification);
