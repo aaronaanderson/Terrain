@@ -51,8 +51,12 @@ private:
     juce::UndoManager undoManager;
     tp::Parameters parameters;
     std::unique_ptr<tp::WaveTerrainSynthesizer> synthesizer;
-    juce::dsp::Oversampling<float> overSampler;
-    
+    std::unique_ptr<juce::dsp::Oversampling<float>> overSampler;
+    int storedFactor = 0;
+
+    int samplesPerBlock;
+    double sampleRate;
+
     const juce::String trajectoryNameFromIndex (int i);
 
     void valueTreePropertyChanged (juce::ValueTree& treeWhosePropertyHasChanged,
@@ -117,6 +121,25 @@ private:
             if (property == id::terrainSaturation)
                 parameters.terrainSaturation->setValueNotifyingHost (parameters.terrainSaturation->convertTo0to1 (tree.getProperty (property)));
         }
+        else if (tree.getType() == id::CONTROLS)
+        {
+            // if (property == id::oversampling)
+            //     prepareOversampling();
+        }
+    }
+    void prepareOversampling()
+    {
+        auto controlsTree = state.getChildWithName (id::CONTROLS);
+        auto overSamplingFactor = static_cast<int> (controlsTree.getProperty (id::oversampling));
+        if (overSamplingFactor == storedFactor) return;
+
+        storedFactor = overSamplingFactor;
+        overSampler = std::make_unique<juce::dsp::Oversampling<float>> (2, 
+                                                                       overSamplingFactor, 
+                                                                       juce::dsp::Oversampling<float>::FilterType::filterHalfBandFIREquiripple);
+        overSampler->initProcessing (samplesPerBlock);
+        synthesizer->prepareToPlay (sampleRate * std::pow (2, overSamplingFactor), 
+                                    samplesPerBlock * static_cast<int> (std::pow (2, overSamplingFactor)));
     }
 
     juce::Array<juce::String> trajectoryStrings {"Ellipse", "Limacon", "Butterfly", "Scarabaeus"};

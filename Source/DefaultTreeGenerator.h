@@ -101,6 +101,16 @@ struct TerrainsTree
         return tree;
     }
 };
+struct ControlsTree
+{
+    static juce::ValueTree create()
+    {
+        juce::ValueTree tree (id::CONTROLS);
+        tree.setProperty (id::oversampling, 1, nullptr);
+
+        return tree;
+    }
+};
 struct DefaultTree
 {
     static const juce::ValueTree create()
@@ -110,6 +120,7 @@ struct DefaultTree
         tree.addChild (TrajectoryVariablesTree::create(), -1, nullptr);
         tree.addChild (TerrainsTree::create(), -1, nullptr);
         tree.addChild (TerrainVariablesTree::create(), -1, nullptr);
+        tree.addChild (ControlsTree::create(), -1, nullptr);
         return tree;
     }
 };

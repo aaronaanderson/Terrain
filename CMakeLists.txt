@@ -15,7 +15,7 @@ juce_add_plugin(WaveTerrainSynth
     NEEDS_MIDI_INPUT TRUE              # Does the plugin need midi input?
     # NEEDS_MIDI_OUTPUT TRUE/FALSE              # Does the plugin need midi output?
     IS_MIDI_EFFECT FALSE                 # Is this plugin a MIDI effect?
-    VST3_COPY_DIR "." 
+    VST3_COPY_DIR "./vst3" 
     COPY_PLUGIN_AFTER_BUILD TRUE
     PLUGIN_MANUFACTURER_CODE Aaro               # A four-character manufacturer id with at least one upper-case character
     PLUGIN_CODE JEe9                            # A unique four-character plugin id with exactly one upper-case character

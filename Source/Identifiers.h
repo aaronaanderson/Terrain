@@ -41,4 +41,7 @@ namespace id
 
     static const juce::Identifier TERRAIN_VARIABLES = "TERRAIN_VARIABLES";
     static const juce::Identifier terrainSaturation = "terrainSaturation";
+
+    static const juce::Identifier CONTROLS = "CONTROLS";
+    static const juce::Identifier oversampling = "oversampling";
 }

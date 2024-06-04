@@ -410,7 +410,7 @@ private:
         feedbackReadIndex = feedbackWriteIndex - static_cast<int> ((feedbackTime * 0.001f) * sampleRate);
         if (feedbackReadIndex < 0) feedbackReadIndex += feedbackBuffer.size();
         auto scaledHistory = feedbackBuffer[feedbackReadIndex] * feedback;
-        feedbackBuffer.setUnchecked (feedbackWriteIndex, input + scaledHistory);
+        feedbackBuffer.set (feedbackWriteIndex, input + scaledHistory);
         feedbackWriteIndex = (feedbackWriteIndex + 1) % feedbackBuffer.size();
         auto outputPoint = input + (scaledHistory * mix);
 

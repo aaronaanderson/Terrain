@@ -4,6 +4,44 @@
 #include "ParameterSlider.h"
 namespace ti
 {
+class OverSampling : public juce::Component
+{
+public:
+    OverSampling (juce::ValueTree controlsBranch, 
+                  juce::UndoManager& um)
+      : state (controlsBranch),
+        undoManager (um)
+    {
+        jassert (state.getType() == id::CONTROLS);
+        dropDown.addItem ("1X", 1);
+        dropDown.addItem ("2X", 2);
+        dropDown.addItem ("4X", 3);
+        dropDown.addItem ("8X", 4);
+        dropDown.addItem ("16X", 5);
+        dropDown.setSelectedId (2, juce::dontSendNotification);
+        dropDown.onChange = [&]() 
+            {
+                auto index = dropDown.getSelectedItemIndex();
+                state.setProperty (id::oversampling, index, &undoManager);
+            };
+        addAndMakeVisible (dropDown);
+        label.setText ("Oversampling", juce::dontSendNotification);
+        label.setJustificationType (juce::Justification::centred);
+        addAndMakeVisible (label);
+    }
+    void resized() override 
+    {
+        auto b = getLocalBounds();
+        label.setBounds (b.removeFromTop (20));
+        dropDown.setBounds (b.removeFromTop (20));
+    }
+private:
+    juce::ValueTree state;
+    juce::UndoManager& undoManager;
+
+    juce::Label label;
+    juce::ComboBox dropDown;
+};
 class Envelope : public juce::Component
 {
 public:
@@ -58,20 +96,24 @@ public:
       : Panel ("Control Panel"), 
         state (synthState), 
         undoManager (um), 
-        envelope (state.getChildWithName (id::TRAJECTORY_VARIABLES), undoManager, gt, p)
+        envelope (state.getChildWithName (id::TRAJECTORY_VARIABLES), undoManager, gt, p), 
+        oversampling (state.getChildWithName (id::CONTROLS), undoManager)
     {
         jassert (state.getType() == id::TERRAINSYNTH);
         addAndMakeVisible (envelope);  
+        addAndMakeVisible (oversampling);
     }
     void resized() override 
     {
         Panel::resized();
         auto b = getAdjustedBounds();
         envelope.setBounds (b.removeFromLeft (430));
+        oversampling.setBounds (b.removeFromLeft (80));
     }
 private:
     juce::ValueTree state;
     juce::UndoManager& undoManager;
     Envelope envelope;
+    OverSampling oversampling;
 };
 }
