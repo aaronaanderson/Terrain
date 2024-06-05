@@ -168,7 +168,7 @@ public:
         envelope.setParameters ({200.0f, 20.0f, 0.7f, 1000.0f});
         functions = 
         {
-            [&](float theta, ModSet m){ return Point(std::sin(theta) * m.a, std::cos(theta));} 
+            [&](float theta, ModSet m){ return Point (std::sin(theta) * m.a, std::cos(theta));} 
             ,[&](float theta, ModSet m)
                 {   float r = m.b + m.a * std::sin (theta);
                     return Point(r * std::cos(theta), r * std::sin(theta)); }
@@ -180,6 +180,9 @@ public:
             ,[&](float theta, ModSet m)
                 {   float r = (m.b * std::cos (2.0f * theta) - m.a * std::cos (theta));
                     return Point(r * std::cos(theta), r * std::sin(theta)); }
+            // Squarcle
+            ,[&](float theta, ModSet m) { return Point (std::tanh (std::sin (theta) * (m.a * 3.0f + 1.0f) ), 
+                                                        std::tanh (std::cos (theta) * (m.a * 3.0f + 1.0f) )); }
         };
     }
     bool canPlaySound (juce::SynthesiserSound* s) override { return dynamic_cast<Terrain*>(s) != nullptr; }

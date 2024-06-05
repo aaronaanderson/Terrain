@@ -142,7 +142,7 @@ private:
                                     samplesPerBlock * static_cast<int> (std::pow (2, overSamplingFactor)));
     }
 
-    juce::Array<juce::String> trajectoryStrings {"Ellipse", "Limacon", "Butterfly", "Scarabaeus"};
+    juce::Array<juce::String> trajectoryStrings {"Ellipse", "Limacon", "Butterfly", "Scarabaeus", "Squarcle"};
     void setCurrentTrajectoryParamFromString (juce::String s) //Need something better here
     {
         for (int i = 0; i < trajectoryStrings.size(); i++)

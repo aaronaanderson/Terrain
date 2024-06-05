@@ -43,6 +43,7 @@ struct TrajectoriesTree
         tree.addChild (createTrajectoryType ("Limacon", {0.5f, 0.5f}), -1, nullptr);
         tree.addChild (createTrajectoryType ("Butterfly", {0.5f, 0.5f, 0.4f, 0.4f}), -1, nullptr);
         tree.addChild (createTrajectoryType ("Scarabaeus", {0.5f, 0.5f}), -1, nullptr);
+        tree.addChild (createTrajectoryType ("Squarcle", {0.5f}), -1, nullptr);
         return tree;
     }
 private:
