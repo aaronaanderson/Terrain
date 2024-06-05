@@ -59,6 +59,7 @@ public:
         release (parameters.release, gt, "Release", {10.0f, 4000.0f}, 800.0f)
     {
         jassert (state.getType() == id::TRAJECTORY_VARIABLES);
+        envelopeSize.getToggle().onStateChange = [&]() { state.setProperty (id::envelopeSize, envelopeSize.getToggle().getToggleState(), &undoManager); };
         addAndMakeVisible (envelopeSize);
         attack.getSlider().onValueChange = [&]() { state.setProperty (id::attack, attack.getSlider().getValue(), &undoManager); };
         addAndMakeVisible (attack);
