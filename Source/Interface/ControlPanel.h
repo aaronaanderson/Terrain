@@ -50,8 +50,8 @@ public:
               GlobalTimer& gt, 
               const tp::Parameters& p)
       : state (trajectoryVariablesBranch),
-        parameters (p), 
         undoManager (um),
+        parameters (p), 
         envelopeSize (parameters.envelopeSize, gt, "ES"),
         attack (parameters.attack, gt, "Attack", {2.0f, 2000.0f}, 100.0f),
         decay (parameters.decay, gt, "Decay", {2.0f, 1000.0f}, 50.0f), 
