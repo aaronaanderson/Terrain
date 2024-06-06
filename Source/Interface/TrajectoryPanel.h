@@ -192,7 +192,8 @@ private:
     }
     void parameterGestureChanged (int parameterIndex, bool gestureIsStarting) override { juce::ignoreUnused (parameterIndex, gestureIsStarting); }          
 };
-class FeedbackPanel : public juce::Component
+class FeedbackPanel : public juce::Component, 
+                      private juce::ValueTree::Listener
 {
 public:
     FeedbackPanel (juce::ValueTree feedbackBranch, 
@@ -208,6 +209,8 @@ public:
         compression (parameters.feedbackCompression, gt, "Compression", {1.0, 20.0})
     {
         jassert (state.getType() == id::FEEDBACK);
+        state.addListener (this);
+
         label.setText ("Trajectory Feedback", juce::dontSendNotification);
         label.setJustificationType (juce::Justification::centred);
         addAndMakeVisible (label);
@@ -247,6 +250,42 @@ private:
         feedback.setValue (state.getProperty (id::feedbackScalar));
         mix.setValue (state.getProperty (id::feedbackMix));
         compression.setValue (state.getProperty (id::feedbackCompression));
+    }
+    void valueTreePropertyChanged (juce::ValueTree& tree,
+                                   const juce::Identifier& property) override
+    {
+        juce::ignoreUnused (tree, property);
+        // if (tree.getType() == id::FEEDBACK)
+        // {
+        //     if (property == id::feedbackTime)
+        //         time.setValue (tree.getProperty (id::feedbackTime));
+        //     else if (property == id::feedbackScalar)
+        //         feedback.setValue (tree.getProperty (id::feedbackScalar));
+        //     else if (property == id::feedbackCompression)
+        //         compression.setValue (tree.getProperty (id::feedbackCompression));
+        //     else if (property == id::feedbackMix)
+        //         mix.setValue (tree.getProperty (id::feedbackMix));
+        // }
+    }
+    void valueTreeParentChanged (juce::ValueTree& treeWhoseParentHasChanged) override
+    {
+        juce::ignoreUnused (treeWhoseParentHasChanged);
+    }
+    void valueTreeRedirected (juce::ValueTree& treeWhichHasBeenChanged) override 
+    {
+        juce::ignoreUnused (treeWhichHasBeenChanged);
+    }
+    void valueTreeChildAdded (juce::ValueTree& parentTree,
+                              juce::ValueTree& childWhichHasBeenAdded) override 
+    {
+        juce::ignoreUnused (parentTree, childWhichHasBeenAdded);
+    }
+
+    void valueTreeChildRemoved (juce::ValueTree& parentTree,
+                                juce::ValueTree& childWhichHasBeenRemoved,
+                                int indexFromWhichChildWasRemoved) override 
+    {
+        juce::ignoreUnused (parentTree, childWhichHasBeenRemoved, indexFromWhichChildWasRemoved);
     }
 };
 class TrajectoryVariables : public juce::Component 

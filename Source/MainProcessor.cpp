@@ -171,15 +171,68 @@ void MainProcessor::getStateInformation (juce::MemoryBlock& destData)
 { 
     std::unique_ptr<juce::XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
+    // std::cout << "output\n" << xml->toString() << std::endl;
+    // if (destData.getData() == nullptr) return;
+    // auto outputStream = juce::MemoryOutputStream (destData.getData(), destData.getSize());
+    // state.writeToStream (outputStream);
 }
 void MainProcessor::setStateInformation (const void* data, int sizeInBytes)
 { 
     juce::ignoreUnused (data, sizeInBytes);
-    // std::unique_ptr<juce::XmlElement> xml (getXmlFromBinary (data, sizeInBytes));
-    // if (xml.get() == nullptr) return; // make sure we have data
-    // if (!xml->hasTagName (state.getType())) return; // make sure it's the right data
+    std::unique_ptr<juce::XmlElement> xml (getXmlFromBinary (data, sizeInBytes));
+    if (xml.get() == nullptr) return; // make sure we have data
+    if (!xml->hasTagName (state.getType())) return; // make sure it's the right data
+    state = juce::ValueTree::fromXml (*xml);
+    // std::cout << "input\n" << xml->toString() << std::endl;
+    resetParameterState();
+    // state.readFromData (data, sizeInBytes);
+    // auto inputStream = juce::MemoryInputStream (data, sizeInBytes, false);
+    // state.readFromStream (inputStream);
+}
+void MainProcessor::resetParameterState()
+{
+    auto trajectoriesBranch = state.getChildWithName (id::TRAJECTORIES);
+    setCurrentTrajectoryParamFromString (trajectoriesBranch.getProperty (id::currentTrajectory).toString());
+    auto currentTrajectoryBranch = getCurrentTrajectoryBranch (state.getChildWithName (id::TRAJECTORIES));
+    auto trajectoryModifiersBranch = currentTrajectoryBranch.getChildWithName (id::MODIFIERS);
+    jassert (currentTrajectoryBranch.getType() == id::TRAJECTORY);
+    parameters.trajectoryModA->setValueNotifyingHost (trajectoryModifiersBranch.getProperty (id::mod_A));
+    parameters.trajectoryModB->setValueNotifyingHost (trajectoryModifiersBranch.getProperty (id::mod_B));
+    parameters.trajectoryModC->setValueNotifyingHost (trajectoryModifiersBranch.getProperty (id::mod_C));
+    parameters.trajectoryModD->setValueNotifyingHost (trajectoryModifiersBranch.getProperty (id::mod_D));
+    
+    auto terrainsBranch = state.getChildWithName (id::TERRAINS);
+    setCurrentTerrainFromString (terrainsBranch.getProperty (id::currentTerrain).toString());
+    auto currentTerrainBranch = getCurrentTerrainBranch (state.getChildWithName (id::TERRAINS));
+    auto terrainModifiersBranch = currentTerrainBranch.getChildWithName (id::MODIFIERS);
+    parameters.terrainModA->setValueNotifyingHost (terrainModifiersBranch.getProperty (id::mod_A));
+    parameters.terrainModB->setValueNotifyingHost (terrainModifiersBranch.getProperty (id::mod_B));
+    parameters.terrainModC->setValueNotifyingHost (terrainModifiersBranch.getProperty (id::mod_C));
+    parameters.terrainModD->setValueNotifyingHost (terrainModifiersBranch.getProperty (id::mod_D));
+            
+    auto trajectoryVariablesBranch = state.getChildWithName (id::TRAJECTORY_VARIABLES);
+    jassert (trajectoryVariablesBranch.getType() == id::TRAJECTORY_VARIABLES);
+    
+    parameters.trajectorySize->setValueNotifyingHost (trajectoryVariablesBranch.getProperty (id::size));
+    parameters.trajectoryRotation->setValueNotifyingHost (parameters.trajectoryRotation->convertTo0to1 (trajectoryVariablesBranch.getProperty (id::rotation)));
+    parameters.trajectoryTranslationX->setValueNotifyingHost (parameters.trajectoryTranslationX->convertTo0to1 (trajectoryVariablesBranch.getProperty (id::translation_x)));
+    parameters.trajectoryTranslationY->setValueNotifyingHost (parameters.trajectoryTranslationY->convertTo0to1 (trajectoryVariablesBranch.getProperty (id::translation_y)));
+    parameters.envelopeSize->setValueNotifyingHost (static_cast<float> (trajectoryVariablesBranch.getProperty (id::envelopeSize)));
+    parameters.attack->setValueNotifyingHost (parameters.attack->convertTo0to1 (trajectoryVariablesBranch.getProperty (id::attack)));
+    parameters.decay->setValueNotifyingHost (parameters.decay->convertTo0to1 (trajectoryVariablesBranch.getProperty (id::decay)));
+    parameters.sustain->setValueNotifyingHost (parameters.sustain->convertTo0to1 (trajectoryVariablesBranch.getProperty (id::sustain)));
+    parameters.release->setValueNotifyingHost (parameters.release->convertTo0to1 (trajectoryVariablesBranch.getProperty (id::release)));
 
-    // state = juce::ValueTree::fromXml (*xml);
+    auto trajectoryFeedbackBranch = trajectoryVariablesBranch.getChildWithName (id::FEEDBACK);
+    jassert (trajectoryFeedbackBranch.getType() == id::FEEDBACK);
+
+    parameters.feedbackTime->setValueNotifyingHost (parameters.feedbackTime->convertTo0to1 (trajectoryFeedbackBranch.getProperty (id::feedbackTime)));
+    parameters.feedbackScalar->setValueNotifyingHost (parameters.feedbackScalar->convertTo0to1 (trajectoryFeedbackBranch.getProperty (id::feedbackScalar)));
+    parameters.feedbackCompression->setValueNotifyingHost (parameters.feedbackCompression->convertTo0to1 (trajectoryFeedbackBranch.getProperty (id::feedbackCompression)));
+    parameters.feedbackMix->setValueNotifyingHost (parameters.feedbackMix->convertTo0to1 (trajectoryFeedbackBranch.getProperty (id::feedbackMix)));
+
+    auto terrainVariablesBranch = state.getChildWithName (id::TERRAIN_VARIABLES);
+    parameters.terrainSaturation->setValueNotifyingHost (parameters.terrainSaturation->convertTo0to1 (terrainVariablesBranch.getProperty (id::terrainSaturation)));
 }
 //==============================================================================
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter() { return new MainProcessor(); }

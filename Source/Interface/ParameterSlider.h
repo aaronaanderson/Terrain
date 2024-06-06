@@ -100,7 +100,7 @@ struct ParameterSlider : public juce::Component,
         slider.setBounds (b);
     }
 
-    void setValue (double v) { slider.setValue (v, juce::NotificationType::dontSendNotification); }
+    void setValue (double v) { slider.setValue (v, juce::NotificationType::sendNotification); }
     juce::Slider& getSlider() { return slider; }
 private:
     juce::AudioProcessorParameter* parameter;

@@ -59,6 +59,7 @@ private:
 
     const juce::String trajectoryNameFromIndex (int i);
 
+    void resetParameterState();
     void valueTreePropertyChanged (juce::ValueTree& treeWhosePropertyHasChanged,
                                    const juce::Identifier& property) override 
     {
