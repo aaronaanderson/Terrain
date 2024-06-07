@@ -49,7 +49,6 @@ private:
         {
             juce::ignoreUnused (parameterIndex);
             value.store (parameter->convertFrom0to1 (newValue));
-            std::cout << value.load() << std::endl;
         }
         virtual void parameterGestureChanged (int pi, bool gis) override { juce::ignoreUnused (pi, gis); }
     };
