@@ -41,12 +41,14 @@ float calculateDepth (int index, vec2 p)
             float c = a * 14.0 + 1.0;
             outputValue =  (1.0 - (p.x * p.y)) * cos(c * (1.0 - p.x * p.y));
         }
+        break;
         case 4:
         {
             float c = a * 0.5 + 0.25;
             float d = b * 16.0 + 4.0;
             outputValue = c * p.x * cos((1.0 - c) * d * pi * p.x * p.y)  +  (1.0 - c) * p.y * cos(c * d * pi * p.x * p.y);
         }
+        break;
         default:
             outputValue = 0.0;
     }

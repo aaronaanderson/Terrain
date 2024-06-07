@@ -27,7 +27,7 @@ struct ParameterWatcher
         index (parameters.currentTerrain), 
         saturation (parameters.terrainSaturation)
     {}
-    UBO getUBO() { return { static_cast<int> ((index.getValue())), 
+    UBO getUBO() { return { juce::roundToInt ((index.getValue())), 
                             a.getValue(), b.getValue(), c.getValue(), d.getValue(),
                             saturation.getValue()};}
 
@@ -49,6 +49,7 @@ private:
         {
             juce::ignoreUnused (parameterIndex);
             value.store (parameter->convertFrom0to1 (newValue));
+            std::cout << value.load() << std::endl;
         }
         virtual void parameterGestureChanged (int pi, bool gis) override { juce::ignoreUnused (pi, gis); }
     };
