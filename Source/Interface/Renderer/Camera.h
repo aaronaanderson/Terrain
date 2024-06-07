@@ -29,10 +29,15 @@ public:
     {
         juce::ignoreUnused(e);
         thetaStart = theta;
+        zStart = zRotation;
     }
     void mouseDrag (const juce::MouseEvent& e) 
     { 
-        theta = thetaStart + glm::radians (static_cast<float> (e.getDistanceFromDragStartX()) * 0.2f);
+        theta = thetaStart + glm::radians (static_cast<float> (e.getDistanceFromDragStartX()) * 0.14f);
+        zRotation = zStart + (static_cast<float> (e.getDistanceFromDragStartY()) * 0.005f);
+        if (zRotation > juce::MathConstants<float>::halfPi - 0.01f) zRotation = juce::MathConstants<float>::halfPi - 0.01f;
+        if (zRotation < 0.5f) zRotation = 0.5f;
+        std::cout << zRotation << std::endl;
         updateCameraPosition();
     }
     void mouseWheelMoved (const juce::MouseWheelDetails& wheel) 
@@ -57,6 +62,9 @@ private:
     float theta = 0.0f;
     float thetaStart = 0.0f;
 
+    float zRotation = 0.5f;
+    float zStart = 0.0f;
+
     void updateProjectionMatrix()
     {
         const juce::ScopedLock lock (mutex);
@@ -66,7 +74,10 @@ private:
     void updateCameraPosition()
     {
         const juce::ScopedLock lock (mutex);
-        cameraPosition = glm::vec3 (std::sin (theta) * 2.0f, std::cos (theta) * 2.0f, 1.5f);
+        cameraPosition = glm::vec3 (std::sin (theta) * 2.0f * std::cos (zRotation), 
+                                    std::cos (theta) * 2.0f * std::cos (zRotation), 
+                                    std::sin (zRotation) * 2.0f);
+
         viewMatrix = glm::lookAt(cameraPosition, cameraTarget, cameraUp);
     }
 };
