@@ -13,6 +13,16 @@ struct Point
     Point operator+(const Point& other) { return Point(this->x + other.x, this->y + other.y); }
     Point operator*(float scalar) { return Point(this->x * scalar, this->y * scalar); }
 };
+static float distance (const Point a, const Point b)
+{
+    return static_cast<float> (std::sqrt (std::pow (a.x - b.x, 2) + std::pow (a.y - b.y, 2)));
+}
+static Point normalize (const Point p, const float n = 1.0f)
+{
+    auto d = distance (p, Point (0.0f, 0.0f));
+    auto adjustmentScalar = n / d;
+    return Point (p.x * adjustmentScalar, p.y * adjustmentScalar);
+}
 struct ModSet
 {
     ModSet (float ia = 0.0f, float ib = 0.0f, float ic = 0.0f, float id = 0.0f) : a(ia), b(ib), c(ic), d(id) {}
@@ -417,8 +427,19 @@ private:
         feedbackWriteIndex = (feedbackWriteIndex + 1) % feedbackBuffer.size();
         auto outputPoint = input + (scaledHistory * mix);
 
-        outputPoint = compressEdge (outputPoint, threshold, ratio);
+        outputPoint = radialCompression (outputPoint, threshold, ratio);
 
+        return outputPoint;
+    }
+    Point radialCompression (const Point p, float threshold, float ratio)
+    {
+        Point outputPoint = p;
+        if (distance (p, Point (0.0f, 0.0f)) > threshold)
+        {
+            auto extraDistance = distance (p, normalize (p, threshold));
+            auto adjustedDistance = extraDistance * (1.0f / ratio);
+            outputPoint = normalize (p, threshold + adjustedDistance);
+        }
         return outputPoint;
     }
     Point compressEdge (const Point p, float threshold = 1.0f, float ratio = 6.0f)

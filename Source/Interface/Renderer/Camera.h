@@ -37,7 +37,6 @@ public:
         zRotation = zStart + (static_cast<float> (e.getDistanceFromDragStartY()) * 0.005f);
         if (zRotation > juce::MathConstants<float>::halfPi - 0.01f) zRotation = juce::MathConstants<float>::halfPi - 0.01f;
         if (zRotation < 0.5f) zRotation = 0.5f;
-        std::cout << zRotation << std::endl;
         updateCameraPosition();
     }
     void mouseWheelMoved (const juce::MouseWheelDetails& wheel) 
