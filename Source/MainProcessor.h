@@ -53,6 +53,12 @@ private:
     std::unique_ptr<tp::WaveTerrainSynthesizer> synthesizer;
     std::unique_ptr<juce::dsp::Oversampling<float>> overSampler;
     int storedFactor = 0;
+    juce::AudioBuffer<float> renderBuffer;
+
+    // juce::dsp::ProcessorChain<juce::dsp::IIR::Filter<float>> outputChain;
+    juce::dsp::ProcessorChain<juce::dsp::IIR::Filter<float>, // DC Offset filter
+                              juce::dsp::LadderFilter<float>> outputChain;//, 
+                            //   juce::dsp::Gain<float>> outputChain;
 
     int samplesPerBlock;
     double sampleRate;
@@ -124,8 +130,10 @@ private:
         }
         else if (tree.getType() == id::CONTROLS)
         {
-            // if (property == id::oversampling)
-            //     prepareOversampling();
+            if      (property == id::filterFrequency)
+                parameters.filterFrequency->setValueNotifyingHost (parameters.filterFrequency->convertTo0to1 (tree.getProperty (property)));
+            else if (property == id::filterResonance)
+                parameters.filterResonance->setValueNotifyingHost (parameters.filterResonance->convertTo0to1 (tree.getProperty (property)));
         }
     }
     void prepareOversampling()
@@ -135,12 +143,14 @@ private:
         if (overSamplingFactor == storedFactor) return;
 
         storedFactor = overSamplingFactor;
-        overSampler = std::make_unique<juce::dsp::Oversampling<float>> (2, 
+        overSampler = std::make_unique<juce::dsp::Oversampling<float>> (1, 
                                                                        overSamplingFactor, 
-                                                                       juce::dsp::Oversampling<float>::FilterType::filterHalfBandFIREquiripple);
+                                                                       juce::dsp::Oversampling<float>::FilterType::filterHalfBandPolyphaseIIR);
         overSampler->initProcessing (static_cast<size_t> (samplesPerBlock));
         synthesizer->prepareToPlay (sampleRate * std::pow (2, overSamplingFactor), 
                                     samplesPerBlock * static_cast<int> (std::pow (2, overSamplingFactor)));
+        renderBuffer.setSize (1, samplesPerBlock);
+        renderBuffer.clear();
     }
 
     juce::Array<juce::String> trajectoryStrings {"Ellipse", "Limacon", "Butterfly", "Scarabaeus", "Squarcle"};

@@ -44,4 +44,6 @@ namespace id
 
     static const juce::Identifier CONTROLS = "CONTROLS";
     static const juce::Identifier oversampling = "oversampling";
+    static const juce::Identifier filterFrequency = "filterFrequency";
+    static const juce::Identifier filterResonance = "filterResonance";
 }

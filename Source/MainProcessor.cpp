@@ -104,9 +104,17 @@ MainProcessor::MainProcessor()
                                                                                range,
                                                                                (terrainVariablesBranch.getProperty (id::feedbackScalar))));
 
+    auto controlsBranch = state.getChildWithName (id::CONTROLS);
+    addParameter (parameters.filterResonance = new tp::NormalizedFloatParameter ("Filter Resonance", controlsBranch.getProperty (id::filterResonance)));
+    range = juce::NormalisableRange<float> (20.0f, 10000.0f); range.setSkewForCentre (500.0f);
+    addParameter (parameters.filterFrequency = new tp::RangedFloatParameter ("Filter Frequency", 
+                                                                               range,
+                                                                               (controlsBranch.getProperty (id::filterFrequency))));
+
     state.addListener (this);
 
     synthesizer = std::make_unique<tp::WaveTerrainSynthesizer> (parameters);
+    outputChain.reset();
 }
 
 MainProcessor::~MainProcessor() {}
@@ -131,6 +139,21 @@ void MainProcessor::prepareToPlay (double sr, int size)
 { 
     sampleRate = sr; samplesPerBlock = size;
     prepareOversampling();
+
+    juce::dsp::ProcessSpec spec;
+    spec.maximumBlockSize = size;
+    spec.numChannels = 2;
+    spec.sampleRate = sr;
+
+    auto& dcOffset = outputChain.get<0>();
+    dcOffset.coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass (spec.sampleRate, 5.0);
+
+    auto& ladderFilter = outputChain.get<1>();
+    ladderFilter.setEnabled (true);
+    ladderFilter.setMode (juce::dsp::LadderFilterMode::LPF24);
+    ladderFilter.setDrive (1.0f);
+
+    outputChain.prepare (spec);
 }
 void MainProcessor::releaseResources() {}
 bool MainProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
@@ -152,16 +175,28 @@ void MainProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         buffer.clear (i, 0, buffer.getNumSamples());
     
     prepareOversampling();
-    auto overSamplingBlock = overSampler->processSamplesUp (buffer);
+    auto overSamplingBlock = overSampler->processSamplesUp (renderBuffer);
     synthesizer->updateTerrain();
-    juce::Array<float*> channelPointers = {overSamplingBlock.getChannelPointer(0), overSamplingBlock.getChannelPointer(1)};
+    juce::Array<float*> channelPointers = {overSamplingBlock.getChannelPointer(0)};
     juce::AudioBuffer<float> overSamplingBufferReference (channelPointers.getRawDataPointer(), 
                                                           static_cast<int> (overSamplingBlock.getNumChannels()), 
                                                           static_cast<int> (overSamplingBlock.getNumSamples()));
 
     synthesizer->renderNextBlock (overSamplingBufferReference, midiMessages, 0, overSamplingBufferReference.getNumSamples());
-    auto outputBlock = juce::dsp::AudioBlock<float> (buffer);
+    auto outputBlock = juce::dsp::AudioBlock<float> (renderBuffer);
     overSampler->processSamplesDown (outputBlock);
+
+    auto& ladderFilter = outputChain.get<1>();
+    ladderFilter.setCutoffFrequencyHz ((*parameters.filterFrequency));
+    ladderFilter.setResonance (*parameters.filterResonance);
+
+    juce::dsp::ProcessContextReplacing<float> context (outputBlock);
+    outputChain.process (context);
+
+    for (int c = 0; c < buffer.getNumChannels(); c++)
+        buffer.copyFrom (c, 0, renderBuffer.getReadPointer (0), buffer.getNumSamples());
+    
+    renderBuffer.clear();
 }
 //==============================================================================
 bool MainProcessor::hasEditor() const { return true; }
@@ -233,6 +268,10 @@ void MainProcessor::resetParameterState()
 
     auto terrainVariablesBranch = state.getChildWithName (id::TERRAIN_VARIABLES);
     parameters.terrainSaturation->setValueNotifyingHost (parameters.terrainSaturation->convertTo0to1 (terrainVariablesBranch.getProperty (id::terrainSaturation)));
+
+    auto controlsBranch = state.getChildWithName (id::CONTROLS);
+    parameters.filterFrequency->setValueNotifyingHost (parameters.filterFrequency->convertTo0to1 (controlsBranch.getProperty (id::filterFrequency)));
+    parameters.filterResonance->setValueNotifyingHost (parameters.filterResonance->convertTo0to1 (controlsBranch.getProperty (id::filterResonance)));
 }
 //==============================================================================
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter() { return new MainProcessor(); }

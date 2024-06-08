@@ -92,5 +92,8 @@ struct Parameters
     RangedFloatParameter* decay;
     NormalizedFloatParameter* sustain;
     RangedFloatParameter* release;
+
+    NormalizedFloatParameter* filterResonance;
+    RangedFloatParameter*     filterFrequency;
 };
 }

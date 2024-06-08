@@ -109,6 +109,9 @@ struct ControlsTree
         juce::ValueTree tree (id::CONTROLS);
         tree.setProperty (id::oversampling, 1, nullptr);
 
+        tree.setProperty (id::filterFrequency, 200.0f, nullptr);
+        tree.setProperty (id::filterResonance, 0.5f, nullptr);
+        
         return tree;
     }
 };

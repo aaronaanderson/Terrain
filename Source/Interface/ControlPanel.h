@@ -4,6 +4,42 @@
 #include "ParameterSlider.h"
 namespace ti
 {
+class Filter : public juce::Component 
+{
+public:
+    Filter (juce::ValueTree controlsBranch, 
+            juce::UndoManager& um, 
+            GlobalTimer& gt, 
+            const tp::Parameters& p)
+      : state (controlsBranch), 
+        undoManager (um), 
+        frequency (p.filterFrequency, gt, "Frequency", {20.0f, 10000.0f}, 500.0f), 
+        resonance (p.filterResonance, gt, "Resonance", {0.0f, 1.0f})
+    {
+        jassert (state.getType() == id::CONTROLS);
+        
+        label.setText ("Filter", juce::dontSendNotification);
+        label.setJustificationType (juce::Justification::centred);
+        addAndMakeVisible (label);
+        frequency.getSlider().onValueChange = [&]() {state.setProperty (id::filterFrequency, frequency.getSlider().getValue(), &undoManager); };
+        addAndMakeVisible (frequency);
+        resonance.getSlider().onValueChange = [&]() {state.setProperty (id::filterResonance, resonance.getSlider().getValue(), &undoManager); };
+        addAndMakeVisible (resonance);
+    }
+    void resized() override 
+    {
+        auto b = getLocalBounds();
+        label.setBounds (b.removeFromTop (20));
+        frequency.setBounds (b.removeFromLeft (100));
+        resonance.setBounds (b.removeFromLeft (100));
+    }
+private:
+    juce::ValueTree state;
+    juce::UndoManager& undoManager;
+
+    juce::Label label;
+    ParameterSlider frequency, resonance;
+};
 class OverSampling : public juce::Component
 {
 public:
@@ -98,11 +134,13 @@ public:
         state (synthState), 
         undoManager (um), 
         envelope (state.getChildWithName (id::TRAJECTORY_VARIABLES), undoManager, gt, p), 
-        oversampling (state.getChildWithName (id::CONTROLS), undoManager)
+        oversampling (state.getChildWithName (id::CONTROLS), undoManager), 
+        filter (state.getChildWithName (id::CONTROLS), undoManager, gt, p)
     {
         jassert (state.getType() == id::TERRAINSYNTH);
         addAndMakeVisible (envelope);  
         addAndMakeVisible (oversampling);
+        addAndMakeVisible (filter);
     }
     void resized() override 
     {
@@ -110,11 +148,13 @@ public:
         auto b = getAdjustedBounds();
         envelope.setBounds (b.removeFromLeft (430));
         oversampling.setBounds (b.removeFromLeft (80));
+        filter.setBounds (b.removeFromLeft (200));
     }
 private:
     juce::ValueTree state;
     juce::UndoManager& undoManager;
     Envelope envelope;
     OverSampling oversampling;
+    Filter filter;
 };
 }
