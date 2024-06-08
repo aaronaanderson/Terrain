@@ -95,5 +95,6 @@ struct Parameters
 
     NormalizedFloatParameter* filterResonance;
     RangedFloatParameter*     filterFrequency;
+    juce::AudioParameterBool* filterOnOff;
 };
 }

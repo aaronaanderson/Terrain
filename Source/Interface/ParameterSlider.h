@@ -30,7 +30,8 @@ struct ParameterToggle : public juce::Component,
     void resized() override 
     {
         auto b = getLocalBounds();
-        label.setBounds (b.removeFromTop (20));
+        if (label.getText() != "")
+            label.setBounds (b.removeFromTop (20));
         toggle.setBounds (b);
     }
 

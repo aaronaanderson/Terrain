@@ -14,7 +14,8 @@ public:
       : state (controlsBranch), 
         undoManager (um), 
         frequency (p.filterFrequency, gt, "Frequency", {20.0f, 10000.0f}, 500.0f), 
-        resonance (p.filterResonance, gt, "Resonance", {0.0f, 1.0f})
+        resonance (p.filterResonance, gt, "Resonance", {0.0f, 1.0f}), 
+        onOff (p.filterOnOff, gt, "")
     {
         jassert (state.getType() == id::CONTROLS);
         
@@ -25,10 +26,19 @@ public:
         addAndMakeVisible (frequency);
         resonance.getSlider().onValueChange = [&]() {state.setProperty (id::filterResonance, resonance.getSlider().getValue(), &undoManager); };
         addAndMakeVisible (resonance);
+        onOff.getToggle().onStateChange = [&]() { state.setProperty (id::filterOnOff, onOff.getToggle().getToggleState(), &undoManager); };
+        addAndMakeVisible (onOff);
+
+    }
+    void paint (juce::Graphics& g) override 
+    {
+        g.setColour (juce::Colours::black);
+        g.drawRect (getLocalBounds());
     }
     void resized() override 
     {
         auto b = getLocalBounds();
+        onOff.setBounds (0, 0, 22, 22);
         label.setBounds (b.removeFromTop (20));
         frequency.setBounds (b.removeFromLeft (100));
         resonance.setBounds (b.removeFromLeft (100));
@@ -39,6 +49,7 @@ private:
 
     juce::Label label;
     ParameterSlider frequency, resonance;
+    ParameterToggle onOff;
 };
 class OverSampling : public juce::Component
 {

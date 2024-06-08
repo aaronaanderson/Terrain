@@ -110,6 +110,7 @@ MainProcessor::MainProcessor()
     addParameter (parameters.filterFrequency = new tp::RangedFloatParameter ("Filter Frequency", 
                                                                                range,
                                                                                (controlsBranch.getProperty (id::filterFrequency))));
+    addParameter (parameters.filterOnOff = new juce::AudioParameterBool ("FilterOnOff", "Filter Bypass", controlsBranch.getProperty (id::filterOnOff)));
 
     state.addListener (this);
 
@@ -189,7 +190,8 @@ void MainProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     auto& ladderFilter = outputChain.get<1>();
     ladderFilter.setCutoffFrequencyHz ((*parameters.filterFrequency));
     ladderFilter.setResonance (*parameters.filterResonance);
-
+    ladderFilter.setEnabled (*parameters.filterOnOff);
+    
     juce::dsp::ProcessContextReplacing<float> context (outputBlock);
     outputChain.process (context);
 
@@ -214,12 +216,12 @@ void MainProcessor::getStateInformation (juce::MemoryBlock& destData)
 void MainProcessor::setStateInformation (const void* data, int sizeInBytes)
 { 
     juce::ignoreUnused (data, sizeInBytes);
-    std::unique_ptr<juce::XmlElement> xml (getXmlFromBinary (data, sizeInBytes));
-    if (xml.get() == nullptr) return; // make sure we have data
-    if (!xml->hasTagName (state.getType())) return; // make sure it's the right data
-    state = juce::ValueTree::fromXml (*xml);
-    // std::cout << "input\n" << xml->toString() << std::endl;
-    resetParameterState();
+    // std::unique_ptr<juce::XmlElement> xml (getXmlFromBinary (data, sizeInBytes));
+    // if (xml.get() == nullptr) return; // make sure we have data
+    // if (!xml->hasTagName (state.getType())) return; // make sure it's the right data
+    // state = juce::ValueTree::fromXml (*xml);
+    // // std::cout << "input\n" << xml->toString() << std::endl;
+    // resetParameterState();
     // state.readFromData (data, sizeInBytes);
     // auto inputStream = juce::MemoryInputStream (data, sizeInBytes, false);
     // state.readFromStream (inputStream);
@@ -272,6 +274,7 @@ void MainProcessor::resetParameterState()
     auto controlsBranch = state.getChildWithName (id::CONTROLS);
     parameters.filterFrequency->setValueNotifyingHost (parameters.filterFrequency->convertTo0to1 (controlsBranch.getProperty (id::filterFrequency)));
     parameters.filterResonance->setValueNotifyingHost (parameters.filterResonance->convertTo0to1 (controlsBranch.getProperty (id::filterResonance)));
+    parameters.filterOnOff->setValueNotifyingHost (static_cast<float> (controlsBranch.getProperty (id::filterOnOff)));
 }
 //==============================================================================
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter() { return new MainProcessor(); }

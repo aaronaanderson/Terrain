@@ -111,7 +111,7 @@ struct ControlsTree
 
         tree.setProperty (id::filterFrequency, 200.0f, nullptr);
         tree.setProperty (id::filterResonance, 0.5f, nullptr);
-        
+        tree.setProperty (id::filterOnOff, false, nullptr);
         return tree;
     }
 };

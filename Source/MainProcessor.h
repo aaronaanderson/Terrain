@@ -134,6 +134,8 @@ private:
                 parameters.filterFrequency->setValueNotifyingHost (parameters.filterFrequency->convertTo0to1 (tree.getProperty (property)));
             else if (property == id::filterResonance)
                 parameters.filterResonance->setValueNotifyingHost (parameters.filterResonance->convertTo0to1 (tree.getProperty (property)));
+            else if (property == id::filterOnOff)
+                parameters.filterOnOff->setValueNotifyingHost (static_cast<float> (tree.getProperty (property)));
         }
     }
     void prepareOversampling()

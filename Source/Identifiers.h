@@ -46,4 +46,5 @@ namespace id
     static const juce::Identifier oversampling = "oversampling";
     static const juce::Identifier filterFrequency = "filterFrequency";
     static const juce::Identifier filterResonance = "filterResonance";
+    static const juce::Identifier filterOnOff     = "filterOnOff";
 }
