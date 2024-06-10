@@ -4,6 +4,47 @@
 #include "ParameterSlider.h"
 namespace ti
 {
+class Compressor : public juce::Component 
+{
+public:
+    Compressor (juce::ValueTree controlsBranch, 
+            juce::UndoManager& um, 
+            GlobalTimer& gt, 
+            const tp::Parameters& p)
+      : state (controlsBranch), 
+        undoManager (um), 
+        threshold (p.compressorThreshold, gt, "Threshold", {-24.0f, 0.0f}), 
+        ratio (p.compressorRatio, gt, "Ratio", {1.0f, 12.0f})
+    {
+        jassert (state.getType() == id::CONTROLS);
+        
+        label.setText ("Compressor", juce::dontSendNotification);
+        label.setJustificationType (juce::Justification::centred);
+        addAndMakeVisible (label);
+        threshold.getSlider().onValueChange = [&]() {state.setProperty (id::compressionThreshold, threshold.getSlider().getValue(), &undoManager); };
+        addAndMakeVisible (threshold);
+        ratio.getSlider().onValueChange = [&]() {state.setProperty (id::compressionRatio, ratio.getSlider().getValue(), &undoManager); };
+        addAndMakeVisible (ratio);
+    }
+    void paint (juce::Graphics& g) override 
+    {
+        g.setColour (juce::Colours::black);
+        g.drawRect (getLocalBounds());
+    }
+    void resized() override 
+    {
+        auto b = getLocalBounds();
+        label.setBounds (b.removeFromTop (20));
+        threshold.setBounds (b.removeFromLeft (100));
+        ratio.setBounds (b.removeFromLeft (100));
+    }
+private:
+    juce::ValueTree state;
+    juce::UndoManager& undoManager;
+
+    juce::Label label;
+    ParameterSlider threshold, ratio;
+};
 class Filter : public juce::Component 
 {
 public:
@@ -146,12 +187,14 @@ public:
         undoManager (um), 
         envelope (state.getChildWithName (id::TRAJECTORY_VARIABLES), undoManager, gt, p), 
         oversampling (state.getChildWithName (id::CONTROLS), undoManager), 
-        filter (state.getChildWithName (id::CONTROLS), undoManager, gt, p)
+        filter (state.getChildWithName (id::CONTROLS), undoManager, gt, p), 
+        compressor (state.getChildWithName (id::CONTROLS), undoManager, gt, p)
     {
         jassert (state.getType() == id::TERRAINSYNTH);
         addAndMakeVisible (envelope);  
         addAndMakeVisible (oversampling);
         addAndMakeVisible (filter);
+        addAndMakeVisible (compressor);
     }
     void resized() override 
     {
@@ -160,6 +203,7 @@ public:
         envelope.setBounds (b.removeFromLeft (430));
         oversampling.setBounds (b.removeFromLeft (80));
         filter.setBounds (b.removeFromLeft (200));
+        compressor.setBounds (b.removeFromLeft (200));
     }
 private:
     juce::ValueTree state;
@@ -167,5 +211,6 @@ private:
     Envelope envelope;
     OverSampling oversampling;
     Filter filter;
+    Compressor compressor;
 };
 }

@@ -112,6 +112,11 @@ struct ControlsTree
         tree.setProperty (id::filterFrequency, 200.0f, nullptr);
         tree.setProperty (id::filterResonance, 0.5f, nullptr);
         tree.setProperty (id::filterOnOff, false, nullptr);
+
+        tree.setProperty (id::compressionThreshold, -3.0f, nullptr);
+        tree.setProperty (id::compressionRatio, 4.0f, nullptr);
+        tree.setProperty (id::compressionOnOff, true, nullptr);
+        
         return tree;
     }
 };

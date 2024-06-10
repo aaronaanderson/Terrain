@@ -108,10 +108,17 @@ MainProcessor::MainProcessor()
     addParameter (parameters.filterResonance = new tp::NormalizedFloatParameter ("Filter Resonance", controlsBranch.getProperty (id::filterResonance)));
     range = juce::NormalisableRange<float> (20.0f, 10000.0f); range.setSkewForCentre (500.0f);
     addParameter (parameters.filterFrequency = new tp::RangedFloatParameter ("Filter Frequency", 
-                                                                               range,
-                                                                               (controlsBranch.getProperty (id::filterFrequency))));
+                                                                             range,
+                                                                             (controlsBranch.getProperty (id::filterFrequency))));
     addParameter (parameters.filterOnOff = new juce::AudioParameterBool ("FilterOnOff", "Filter Bypass", controlsBranch.getProperty (id::filterOnOff)));
 
+    addParameter (parameters.compressorThreshold = new tp::RangedFloatParameter ("Compressor Threshold", 
+                                                                                 {-24.0f, 0.0f},
+                                                                                 (controlsBranch.getProperty (id::compressionThreshold))));
+    addParameter (parameters.compressorRatio = new tp::RangedFloatParameter ("Compressor Ratio", 
+                                                                             {1.0f, 12.0f},
+                                                                             (controlsBranch.getProperty (id::compressionRatio))));
+    
     state.addListener (this);
 
     synthesizer = std::make_unique<tp::WaveTerrainSynthesizer> (parameters);
@@ -154,6 +161,9 @@ void MainProcessor::prepareToPlay (double sr, int size)
     ladderFilter.setMode (juce::dsp::LadderFilterMode::LPF24);
     ladderFilter.setDrive (1.0f);
 
+    auto& compressor = outputChain.get<2>();
+    compressor.setAttack (20.0f);
+
     outputChain.prepare (spec);
 }
 void MainProcessor::releaseResources() {}
@@ -192,6 +202,10 @@ void MainProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     ladderFilter.setResonance (*parameters.filterResonance);
     ladderFilter.setEnabled (*parameters.filterOnOff);
     
+    auto& compressor = outputChain.get<2>();
+    compressor.setThreshold (*parameters.compressorThreshold);
+    compressor.setRatio (*parameters.compressorRatio);
+
     juce::dsp::ProcessContextReplacing<float> context (outputBlock);
     outputChain.process (context);
 
@@ -216,12 +230,13 @@ void MainProcessor::getStateInformation (juce::MemoryBlock& destData)
 void MainProcessor::setStateInformation (const void* data, int sizeInBytes)
 { 
     juce::ignoreUnused (data, sizeInBytes);
-    // std::unique_ptr<juce::XmlElement> xml (getXmlFromBinary (data, sizeInBytes));
-    // if (xml.get() == nullptr) return; // make sure we have data
-    // if (!xml->hasTagName (state.getType())) return; // make sure it's the right data
-    // state = juce::ValueTree::fromXml (*xml);
-    // // std::cout << "input\n" << xml->toString() << std::endl;
-    // resetParameterState();
+    std::unique_ptr<juce::XmlElement> xml (getXmlFromBinary (data, sizeInBytes));
+    if (xml.get() == nullptr) return; // make sure we have data
+    if (!xml->hasTagName (state.getType())) return; // make sure it's the right data
+    state = juce::ValueTree::fromXml (*xml);
+    // std::cout << "input\n" << xml->toString() << std::endl;
+    resetParameterState();
+    
     // state.readFromData (data, sizeInBytes);
     // auto inputStream = juce::MemoryInputStream (data, sizeInBytes, false);
     // state.readFromStream (inputStream);
@@ -275,6 +290,8 @@ void MainProcessor::resetParameterState()
     parameters.filterFrequency->setValueNotifyingHost (parameters.filterFrequency->convertTo0to1 (controlsBranch.getProperty (id::filterFrequency)));
     parameters.filterResonance->setValueNotifyingHost (parameters.filterResonance->convertTo0to1 (controlsBranch.getProperty (id::filterResonance)));
     parameters.filterOnOff->setValueNotifyingHost (static_cast<float> (controlsBranch.getProperty (id::filterOnOff)));
+    parameters.compressorThreshold->setValueNotifyingHost (parameters.compressorThreshold->convertTo0to1 (controlsBranch.getProperty (id::compressionThreshold)));
+    parameters.compressorRatio->setValueNotifyingHost (parameters.compressorRatio->convertTo0to1 (controlsBranch.getProperty (id::compressionRatio)));
 }
 //==============================================================================
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter() { return new MainProcessor(); }

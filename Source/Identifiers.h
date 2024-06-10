@@ -47,4 +47,7 @@ namespace id
     static const juce::Identifier filterFrequency = "filterFrequency";
     static const juce::Identifier filterResonance = "filterResonance";
     static const juce::Identifier filterOnOff     = "filterOnOff";
+    static const juce::Identifier compressionThreshold = "compressionThreshold";
+    static const juce::Identifier compressionRatio = "compressionRatio";
+    static const juce::Identifier compressionOnOff = "compressionOnOff";
 }
