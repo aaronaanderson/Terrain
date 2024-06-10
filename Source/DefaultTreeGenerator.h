@@ -116,7 +116,8 @@ struct ControlsTree
         tree.setProperty (id::compressionThreshold, -3.0f, nullptr);
         tree.setProperty (id::compressionRatio, 4.0f, nullptr);
         tree.setProperty (id::compressionOnOff, true, nullptr);
-        
+
+        tree.setProperty (id::outputLevel, -3.0f, nullptr);
         return tree;
     }
 };

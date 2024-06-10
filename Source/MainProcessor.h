@@ -58,8 +58,8 @@ private:
     // juce::dsp::ProcessorChain<juce::dsp::IIR::Filter<float>> outputChain;
     juce::dsp::ProcessorChain<juce::dsp::IIR::Filter<float>, // DC Offset filter
                               juce::dsp::LadderFilter<float>, 
-                              juce::dsp::Compressor<float>> outputChain;//, 
-                            //   juce::dsp::Gain<float>> outputChain;
+                              juce::dsp::Compressor<float>, 
+                              juce::dsp::Gain<float>> outputChain;
 
     int samplesPerBlock;
     double sampleRate;
@@ -142,6 +142,9 @@ private:
                 parameters.compressorThreshold->setValueNotifyingHost (parameters.compressorThreshold->convertTo0to1 (tree.getProperty (property)));
             else if (property == id::compressionRatio)
                 parameters.compressorRatio->setValueNotifyingHost (parameters.compressorRatio->convertTo0to1 (tree.getProperty (property)));
+            
+            else if (property == id::outputLevel)
+                parameters.outputLevel->setValueNotifyingHost (parameters.outputLevel->convertTo0to1 (tree.getProperty (property)));
         }
     }
     void prepareOversampling()

@@ -118,6 +118,9 @@ MainProcessor::MainProcessor()
     addParameter (parameters.compressorRatio = new tp::RangedFloatParameter ("Compressor Ratio", 
                                                                              {1.0f, 12.0f},
                                                                              (controlsBranch.getProperty (id::compressionRatio))));
+    addParameter (parameters.outputLevel = new tp::RangedFloatParameter ("Output Level", 
+                                                                         {-60.0f, 6.0f}, 
+                                                                         controlsBranch.getProperty (id::outputLevel)));
     
     state.addListener (this);
 
@@ -164,6 +167,9 @@ void MainProcessor::prepareToPlay (double sr, int size)
     auto& compressor = outputChain.get<2>();
     compressor.setAttack (20.0f);
 
+    auto& outputLevel = outputChain.get<3>();
+    outputLevel.setRampDurationSeconds (0.02);
+
     outputChain.prepare (spec);
 }
 void MainProcessor::releaseResources() {}
@@ -205,6 +211,9 @@ void MainProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     auto& compressor = outputChain.get<2>();
     compressor.setThreshold (*parameters.compressorThreshold);
     compressor.setRatio (*parameters.compressorRatio);
+    
+    auto& outputLevel = outputChain.get<3>();
+    outputLevel.setGainDecibels (*parameters.outputLevel);
 
     juce::dsp::ProcessContextReplacing<float> context (outputBlock);
     outputChain.process (context);
@@ -292,6 +301,7 @@ void MainProcessor::resetParameterState()
     parameters.filterOnOff->setValueNotifyingHost (static_cast<float> (controlsBranch.getProperty (id::filterOnOff)));
     parameters.compressorThreshold->setValueNotifyingHost (parameters.compressorThreshold->convertTo0to1 (controlsBranch.getProperty (id::compressionThreshold)));
     parameters.compressorRatio->setValueNotifyingHost (parameters.compressorRatio->convertTo0to1 (controlsBranch.getProperty (id::compressionRatio)));
+    parameters.outputLevel->setValueNotifyingHost (parameters.outputLevel->convertTo0to1 (controlsBranch.getProperty (id::outputLevel)));
 }
 //==============================================================================
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter() { return new MainProcessor(); }

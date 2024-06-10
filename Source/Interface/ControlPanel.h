@@ -4,6 +4,43 @@
 #include "ParameterSlider.h"
 namespace ti
 {
+class OutputLevel : public juce::Component 
+{
+public:
+    OutputLevel (juce::ValueTree controlsBranch, 
+                 juce::UndoManager& um, 
+                 GlobalTimer& gt, 
+                 const tp::Parameters& p)
+      : state (controlsBranch), 
+        undoManager (um), 
+        level (p.outputLevel, gt, "Output Level", {-60.0f, 6.0f})
+    {
+        jassert (state.getType() == id::CONTROLS);
+        
+        // label.setText ("Output Level", juce::dontSendNotification);
+        // label.setJustificationType (juce::Justification::centred);
+        // addAndMakeVisible (label);
+        level.getSlider().onValueChange = [&]() {state.setProperty (id::outputLevel, level.getSlider().getValue(), &undoManager); };
+        addAndMakeVisible (level);
+    }
+    void paint (juce::Graphics& g) override 
+    {
+        g.setColour (juce::Colours::black);
+        g.drawRect (getLocalBounds());
+    }
+    void resized() override 
+    {
+        auto b = getLocalBounds();
+        // label.setBounds (b.removeFromTop (20));
+        level.setBounds (b.removeFromLeft (100));
+    }
+private:
+    juce::ValueTree state;
+    juce::UndoManager& undoManager;
+
+    // juce::Label label;
+    ParameterSlider level;
+};
 class Compressor : public juce::Component 
 {
 public:
@@ -188,13 +225,15 @@ public:
         envelope (state.getChildWithName (id::TRAJECTORY_VARIABLES), undoManager, gt, p), 
         oversampling (state.getChildWithName (id::CONTROLS), undoManager), 
         filter (state.getChildWithName (id::CONTROLS), undoManager, gt, p), 
-        compressor (state.getChildWithName (id::CONTROLS), undoManager, gt, p)
+        compressor (state.getChildWithName (id::CONTROLS), undoManager, gt, p), 
+        outputLevel (state.getChildWithName (id::CONTROLS), undoManager, gt, p)
     {
         jassert (state.getType() == id::TERRAINSYNTH);
         addAndMakeVisible (envelope);  
         addAndMakeVisible (oversampling);
         addAndMakeVisible (filter);
         addAndMakeVisible (compressor);
+        addAndMakeVisible (outputLevel);
     }
     void resized() override 
     {
@@ -204,6 +243,7 @@ public:
         oversampling.setBounds (b.removeFromLeft (80));
         filter.setBounds (b.removeFromLeft (200));
         compressor.setBounds (b.removeFromLeft (200));
+        outputLevel.setBounds (b.removeFromLeft (100));
     }
 private:
     juce::ValueTree state;
@@ -212,5 +252,6 @@ private:
     OverSampling oversampling;
     Filter filter;
     Compressor compressor;
+    OutputLevel outputLevel;
 };
 }

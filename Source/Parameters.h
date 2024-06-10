@@ -99,5 +99,7 @@ struct Parameters
 
     RangedFloatParameter*     compressorThreshold;
     RangedFloatParameter*     compressorRatio;
+
+    RangedFloatParameter*     outputLevel;
 };
 }

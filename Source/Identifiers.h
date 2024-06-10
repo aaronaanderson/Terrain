@@ -50,4 +50,6 @@ namespace id
     static const juce::Identifier compressionThreshold = "compressionThreshold";
     static const juce::Identifier compressionRatio = "compressionRatio";
     static const juce::Identifier compressionOnOff = "compressionOnOff";
+
+    static const juce::Identifier outputLevel = "outputLevel";
 }
