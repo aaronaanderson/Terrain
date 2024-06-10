@@ -315,7 +315,7 @@ public:
       : state (trajectoryVariableBranch),
         undoManager (um), 
         scale (p.meanderanceScale, gt, "Scale", {0.0f, 1.0f}),
-        speed (p.meanderanceSpeed, gt, "Speed", {0.0f, 4.0f})
+        speed (p.meanderanceSpeed, gt, "Speed", {0.0f, 1.0f})
     {
         jassert (state.getType() == id::TRAJECTORY_VARIABLES);
         

@@ -54,7 +54,7 @@ MainProcessor::MainProcessor()
     addParameter (parameters.meanderanceScale = new tp::NormalizedFloatParameter ("Meanderance Scale", 
                                                                                   trajectoryVariablesBranch.getProperty (id::meanderanceScale)));
     addParameter (parameters.meanderanceSpeed = new tp::RangedFloatParameter ("Meanderance Speed", 
-                                                                              {0.0f, 4.0f}, 
+                                                                              {0.0f, 1.0f}, 
                                                                               trajectoryVariablesBranch.getProperty (id::meanderanceSpeed)));
 
     

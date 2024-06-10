@@ -38,6 +38,8 @@ target_sources(WaveTerrainSynth
         Source/MainEditor.cpp
         Source/MainProcessor.cpp)
 
+target_include_directories(WaveTerrainSynth PRIVATE PerlinNoise)
+
 target_compile_definitions(WaveTerrainSynth
     PUBLIC
         # JUCE_WEB_BROWSER and JUCE_USE_CURL would be on by default, but you might not need them.

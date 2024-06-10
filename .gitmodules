@@ -4,3 +4,6 @@
 [submodule "glm_module/glm"]
 	path = glm_module/glm
 	url = git@github.com:g-truc/glm.git
+[submodule "PerlinNoise"]
+	path = PerlinNoise
+	url = https://github.com/Reputeless/PerlinNoise.git

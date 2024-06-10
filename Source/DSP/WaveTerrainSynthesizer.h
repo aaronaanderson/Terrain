@@ -4,6 +4,7 @@
 #include "../Parameters.h"
 #include "ADSR.h"
 
+#include <PerlinNoise/PerlinNoise.hpp>
 namespace tp {
 struct Point 
 {  
@@ -23,6 +24,54 @@ static Point normalize (const Point p, const float n = 1.0f)
     auto adjustmentScalar = n / d;
     return Point (p.x * adjustmentScalar, p.y * adjustmentScalar);
 }
+struct PerlinVector
+{
+    PerlinVector() 
+    {
+        juce::Random r;
+        r.setSeedRandomly();
+        noiseX.reseed (static_cast<unsigned int> (r.nextInt()));
+        noiseY.reseed (static_cast<unsigned int> (r.nextInt()));
+        
+        phase = 0.0;
+        phaseIncrement = 0.005;
+        sampleIndex = 0;
+        sampleInterval = 1024;
+        smoothX.reset (sampleInterval);
+        smoothY.reset (sampleInterval);
+    }
+    Point getNext()
+    {
+        incrementSampleIndex();
+        return Point (smoothX.getNextValue(), smoothY.getNextValue());
+    }
+    void setSpeed (double newSpeed) // 0 - 1 expected (arbitrary decision)
+    {
+        phaseIncrement = newSpeed * 0.02;
+    }
+    void setSampleRate (double newSampleRate)
+    {
+        juce::ignoreUnused (newSampleRate);
+        // sampleInterval = static_cast<int> (newSampleRate * (48000.0 / 512.0));
+    }
+    private:
+    siv::BasicPerlinNoise<float> noiseX, noiseY;
+    juce::SmoothedValue<float> smoothX, smoothY;
+    double phase, phaseIncrement;
+    int sampleInterval, sampleIndex;
+
+    void incrementSampleIndex()
+    {
+        sampleIndex++;
+        if (sampleIndex >= sampleInterval)
+        {
+            phase += phaseIncrement;
+            smoothX.setTargetValue (noiseX.noise1D (static_cast<float>(phase)));
+            smoothY.setTargetValue (noiseY.noise1D (static_cast<float>(phase)));
+            sampleIndex -= sampleInterval;
+        }
+    }
+};
 struct ModSet
 {
     ModSet (float ia = 0.0f, float ib = 0.0f, float ic = 0.0f, float id = 0.0f) : a(ia), b(ib), c(ic), d(id) {}
@@ -246,6 +295,8 @@ public:
             point = translate (point, 
                                voiceParameters.translationX.getNext(), 
                                voiceParameters.translationY.getNext());
+            perlinVector.setSpeed (voiceParameters.meanderanceSpeed.getNext());
+            point = meander (point, voiceParameters.meanderanceScale.getNext());
             point = compressEdge (point);
 
             if (terrain != nullptr)
@@ -269,6 +320,7 @@ public:
             sampleRate = newRate;
             envelope.prepare (sampleRate);
             setFrequency (frequency);
+            perlinVector.setSampleRate (newRate);
         }
         // two second max delay
         feedbackBuffer.resize (static_cast<int> (sampleRate) * 2);
@@ -296,6 +348,8 @@ private:
             rotation (p.trajectoryRotation), 
             translationX (p.trajectoryTranslationX), 
             translationY (p.trajectoryTranslationY), 
+            meanderanceScale (p.meanderanceScale),
+            meanderanceSpeed (p.meanderanceSpeed),
             feedbackScalar (p.feedbackScalar), 
             feedbackTime (p.feedbackTime), 
             feedbackCompression (p.feedbackCompression),
@@ -316,6 +370,8 @@ private:
             rotation.noteOn();
             translationX.noteOn();
             translationY.noteOn();
+            meanderanceScale.noteOn();
+            meanderanceSpeed.noteOn();
             feedbackScalar.noteOn();
             feedbackTime.noteOn();
             feedbackCompression.noteOn();
@@ -335,6 +391,8 @@ private:
             rotation.prepare (newSampleRate);
             translationX.prepare (newSampleRate); 
             translationY.prepare (newSampleRate);
+            meanderanceScale.prepare (newSampleRate);
+            meanderanceSpeed.prepare (newSampleRate);
             feedbackScalar.prepare (newSampleRate);
             feedbackTime.prepare (newSampleRate);
             feedbackCompression.prepare (newSampleRate);
@@ -347,12 +405,13 @@ private:
         tp::ChoiceParameter* currentTrajectory;
         SmoothedParameter mod_a, mod_b, mod_c, mod_d;
         SmoothedParameter size, rotation, translationX, translationY;
+        SmoothedParameter meanderanceScale, meanderanceSpeed;
         SmoothedParameter feedbackScalar, feedbackTime, feedbackCompression, feedbackMix;
         juce::AudioParameterBool* envelopeSize;
         SmoothedParameter attack, decay, sustain, release;
     };
     VoiceParameters voiceParameters;
-
+    PerlinVector perlinVector;
     float frequency = 440.0f;
     float amplitude = 1.0;
     double phase = 0.0;
@@ -417,6 +476,12 @@ private:
     {
         Point newPoint (p.x + x, p.y + y);
         return newPoint;
+    }
+    Point meander (const Point p, float scale)
+    {
+        auto meanderance = perlinVector.getNext() * scale;
+        auto output = Point (p.x + meanderance.x, p.y + meanderance.y);
+        return output;
     }
     Point feedback (Point input, float feedbackTime, float feedback, float mix, float threshold, float ratio)
     {
