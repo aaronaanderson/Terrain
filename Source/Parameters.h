@@ -73,6 +73,9 @@ struct Parameters
     RangedFloatParameter*     trajectoryRotation;
     RangedFloatParameter*     trajectoryTranslationX;
     RangedFloatParameter*     trajectoryTranslationY;
+    NormalizedFloatParameter* meanderanceScale;
+    RangedFloatParameter*     meanderanceSpeed;
+
 
     RangedFloatParameter*     feedbackTime;
     RangedFloatParameter*     feedbackScalar;

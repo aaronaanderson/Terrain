@@ -51,6 +51,13 @@ MainProcessor::MainProcessor()
     addParameter (parameters.trajectoryTranslationY = new tp::RangedFloatParameter ("Translation Y", 
                                                                                     {-1.0f, 1.0f},
                                                                                     (trajectoryVariablesBranch.getProperty (id::translation_y))));
+    addParameter (parameters.meanderanceScale = new tp::NormalizedFloatParameter ("Meanderance Scale", 
+                                                                                  trajectoryVariablesBranch.getProperty (id::meanderanceScale)));
+    addParameter (parameters.meanderanceSpeed = new tp::RangedFloatParameter ("Meanderance Speed", 
+                                                                              {0.0f, 4.0f}, 
+                                                                              trajectoryVariablesBranch.getProperty (id::meanderanceSpeed)));
+
+    
     addParameter (parameters.envelopeSize = new juce::AudioParameterBool ("envelopeSize", "Envelope Size", true));
     auto range = juce::NormalisableRange<float> (2.0f, 2000.0f); range.setSkewForCentre (100.0f);
     addParameter (parameters.attack = new tp::RangedFloatParameter ("Attack", 
@@ -278,6 +285,8 @@ void MainProcessor::resetParameterState()
     parameters.trajectoryRotation->setValueNotifyingHost (parameters.trajectoryRotation->convertTo0to1 (trajectoryVariablesBranch.getProperty (id::rotation)));
     parameters.trajectoryTranslationX->setValueNotifyingHost (parameters.trajectoryTranslationX->convertTo0to1 (trajectoryVariablesBranch.getProperty (id::translation_x)));
     parameters.trajectoryTranslationY->setValueNotifyingHost (parameters.trajectoryTranslationY->convertTo0to1 (trajectoryVariablesBranch.getProperty (id::translation_y)));
+         parameters.meanderanceScale->setValueNotifyingHost (parameters.meanderanceScale->convertTo0to1 (trajectoryVariablesBranch.getProperty (id::meanderanceScale)));
+                parameters.meanderanceSpeed->setValueNotifyingHost (parameters.meanderanceSpeed->convertTo0to1 (trajectoryVariablesBranch.getProperty (id::meanderanceSpeed)));
     parameters.envelopeSize->setValueNotifyingHost (static_cast<float> (trajectoryVariablesBranch.getProperty (id::envelopeSize)));
     parameters.attack->setValueNotifyingHost (parameters.attack->convertTo0to1 (trajectoryVariablesBranch.getProperty (id::attack)));
     parameters.decay->setValueNotifyingHost (parameters.decay->convertTo0to1 (trajectoryVariablesBranch.getProperty (id::decay)));

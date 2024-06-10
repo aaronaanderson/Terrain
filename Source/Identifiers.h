@@ -23,6 +23,9 @@ namespace id
     static const juce::Identifier translation_x = "translation_x";
     static const juce::Identifier translation_y = "translation_y";
 
+    static const juce::Identifier meanderanceScale = "meanderanceScale";
+    static const juce::Identifier meanderanceSpeed = "meanderanceSpeed";
+
     static const juce::Identifier attack = "attack";
     static const juce::Identifier decay = "decay";
     static const juce::Identifier sustain = "sustain";

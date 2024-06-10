@@ -19,6 +19,9 @@ struct TrajectoryVariablesTree
         tree.setProperty (id::release, 400.0f, nullptr);
         tree.setProperty (id::envelopeSize, true, nullptr);
 
+        tree.setProperty (id::meanderanceScale, 0.5f, nullptr);
+        tree.setProperty (id::meanderanceSpeed, 2.0f, nullptr);
+        
         tree.addChild (createFeedbackBranch(), -1, nullptr);
         return tree;
     }

@@ -192,8 +192,7 @@ private:
     }
     void parameterGestureChanged (int parameterIndex, bool gestureIsStarting) override { juce::ignoreUnused (parameterIndex, gestureIsStarting); }          
 };
-class FeedbackPanel : public juce::Component, 
-                      private juce::ValueTree::Listener
+class FeedbackPanel : public juce::Component
 {
 public:
     FeedbackPanel (juce::ValueTree feedbackBranch, 
@@ -209,7 +208,6 @@ public:
         compression (parameters.feedbackCompression, gt, "Compression", {1.0, 20.0})
     {
         jassert (state.getType() == id::FEEDBACK);
-        state.addListener (this);
 
         label.setText ("Trajectory Feedback", juce::dontSendNotification);
         label.setJustificationType (juce::Justification::centred);
@@ -250,42 +248,6 @@ private:
         feedback.setValue (state.getProperty (id::feedbackScalar));
         mix.setValue (state.getProperty (id::feedbackMix));
         compression.setValue (state.getProperty (id::feedbackCompression));
-    }
-    void valueTreePropertyChanged (juce::ValueTree& tree,
-                                   const juce::Identifier& property) override
-    {
-        juce::ignoreUnused (tree, property);
-        // if (tree.getType() == id::FEEDBACK)
-        // {
-        //     if (property == id::feedbackTime)
-        //         time.setValue (tree.getProperty (id::feedbackTime));
-        //     else if (property == id::feedbackScalar)
-        //         feedback.setValue (tree.getProperty (id::feedbackScalar));
-        //     else if (property == id::feedbackCompression)
-        //         compression.setValue (tree.getProperty (id::feedbackCompression));
-        //     else if (property == id::feedbackMix)
-        //         mix.setValue (tree.getProperty (id::feedbackMix));
-        // }
-    }
-    void valueTreeParentChanged (juce::ValueTree& treeWhoseParentHasChanged) override
-    {
-        juce::ignoreUnused (treeWhoseParentHasChanged);
-    }
-    void valueTreeRedirected (juce::ValueTree& treeWhichHasBeenChanged) override 
-    {
-        juce::ignoreUnused (treeWhichHasBeenChanged);
-    }
-    void valueTreeChildAdded (juce::ValueTree& parentTree,
-                              juce::ValueTree& childWhichHasBeenAdded) override 
-    {
-        juce::ignoreUnused (parentTree, childWhichHasBeenAdded);
-    }
-
-    void valueTreeChildRemoved (juce::ValueTree& parentTree,
-                                juce::ValueTree& childWhichHasBeenRemoved,
-                                int indexFromWhichChildWasRemoved) override 
-    {
-        juce::ignoreUnused (parentTree, childWhichHasBeenRemoved, indexFromWhichChildWasRemoved);
     }
 };
 class TrajectoryVariables : public juce::Component 
@@ -343,6 +305,43 @@ private:
         translation_y.setValue (state.getProperty (id::translation_y));
     }
 };
+class MeanderancePanel : public juce::Component
+{
+public:
+    MeanderancePanel (juce::ValueTree trajectoryVariableBranch, 
+                      juce::UndoManager& um, 
+                      GlobalTimer& gt, 
+                      const tp::Parameters& p)
+      : state (trajectoryVariableBranch),
+        undoManager (um), 
+        scale (p.meanderanceScale, gt, "Scale", {0.0f, 1.0f}),
+        speed (p.meanderanceSpeed, gt, "Speed", {0.0f, 4.0f})
+    {
+        jassert (state.getType() == id::TRAJECTORY_VARIABLES);
+        
+        label.setText ("Meanderance", juce::dontSendNotification);
+        label.setJustificationType (juce::Justification::centred);
+        addAndMakeVisible (label);
+        scale.getSlider().onValueChange = [&](){ state.setProperty (id::meanderanceScale, scale.getSlider().getValue(), &undoManager); };
+        addAndMakeVisible (scale);
+        speed.getSlider().onValueChange = [&](){ state.setProperty (id::meanderanceSpeed, speed.getSlider().getValue(), &undoManager); };
+        addAndMakeVisible (speed);
+    }
+    void resized()
+    {
+        auto b = getLocalBounds();
+        label.setBounds (b.removeFromTop (20));
+        scale.setBounds (b.removeFromTop (40));
+        speed.setBounds (b.removeFromTop (40));
+    }
+
+private:
+    juce::ValueTree state;
+    juce::UndoManager& undoManager;
+    
+    juce::Label label;
+    ParameterSlider scale, speed;
+};
 class TrajectoryPanel : public Panel
 {
 public:
@@ -356,11 +355,13 @@ public:
         // modifierArray (state.getChildWithName (id::TRAJECTORIES), undoManager, gt, p), 
         trajectorySelector (state.getChildWithName (id::TRAJECTORIES), undoManager, gt, p),
         trajectoryVariables (state.getChildWithName (id::TRAJECTORY_VARIABLES), undoManager, gt, p),
+        meanderancePanel (state.getChildWithName (id::TRAJECTORY_VARIABLES), undoManager, gt, p),
         feedbackPanel (state.getChildWithName (id::TRAJECTORY_VARIABLES).getChildWithName (id::FEEDBACK), undoManager, gt, p)
     {
         jassert (state.getType() == id::TERRAINSYNTH);
         addAndMakeVisible (trajectorySelector);
         addAndMakeVisible (trajectoryVariables);
+        addAndMakeVisible (meanderancePanel);
         addAndMakeVisible (feedbackPanel);
     }
 
@@ -370,6 +371,7 @@ public:
         auto b = getAdjustedBounds();
         trajectorySelector.setBounds (b.removeFromTop (120));
         trajectoryVariables.setBounds (b.removeFromTop (160));
+        meanderancePanel.setBounds (b.removeFromTop (100));
         feedbackPanel.setBounds (b.removeFromTop (220));
     }
 
@@ -379,6 +381,7 @@ private:
     
     TrajectorySelector trajectorySelector;
     TrajectoryVariables trajectoryVariables;
+    MeanderancePanel meanderancePanel;
     FeedbackPanel feedbackPanel;
 };
 }
