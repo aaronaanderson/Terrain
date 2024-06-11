@@ -47,16 +47,18 @@ struct PerlinVector
     }
     void setSpeed (double newSpeed) // 0 - 1 expected (arbitrary decision)
     {
-        phaseIncrement = newSpeed * 0.02;
+        phaseIncrement = newSpeed * inverseSampleRate * 1500.0;
     }
     void setSampleRate (double newSampleRate)
     {
         juce::ignoreUnused (newSampleRate);
         // sampleInterval = static_cast<int> (newSampleRate * (48000.0 / 512.0));
+        inverseSampleRate = 1.0 / newSampleRate;
     }
     private:
     siv::BasicPerlinNoise<float> noiseX, noiseY;
     juce::SmoothedValue<float> smoothX, smoothY;
+    double inverseSampleRate;
     double phase, phaseIncrement;
     int sampleInterval, sampleIndex;
 
