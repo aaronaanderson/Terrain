@@ -32,7 +32,7 @@ public:
     {
         auto b = getLocalBounds();
         // label.setBounds (b.removeFromTop (20));
-        level.setBounds (b.removeFromLeft (100));
+        level.setBounds (b.removeFromLeft (b.getWidth()));
     }
 private:
     juce::ValueTree state;
@@ -72,8 +72,9 @@ public:
     {
         auto b = getLocalBounds();
         label.setBounds (b.removeFromTop (20));
-        threshold.setBounds (b.removeFromLeft (100));
-        ratio.setBounds (b.removeFromLeft (100));
+        auto unitWidth = b.getWidth() / 2.0f;
+        threshold.setBounds (b.removeFromLeft (static_cast<int> (unitWidth)));
+        ratio.setBounds (b.removeFromLeft (static_cast<int> (unitWidth)));
     }
 private:
     juce::ValueTree state;
@@ -118,8 +119,9 @@ public:
         auto b = getLocalBounds();
         onOff.setBounds (0, 0, 22, 22);
         label.setBounds (b.removeFromTop (20));
-        frequency.setBounds (b.removeFromLeft (100));
-        resonance.setBounds (b.removeFromLeft (100));
+        auto unitWidth = b.getWidth() / 2.0f;
+        frequency.setBounds (b.removeFromLeft (static_cast<int> (unitWidth)));
+        resonance.setBounds (b.removeFromLeft (static_cast<int> (unitWidth)));
     }
 private:
     juce::ValueTree state;
@@ -154,6 +156,12 @@ public:
         label.setJustificationType (juce::Justification::centred);
         addAndMakeVisible (label);
     }
+    void paint (juce::Graphics& g) override 
+    {
+        auto b = getLocalBounds();
+        g.setColour (juce::Colours::black);
+        g.drawRect (b);
+    }
     void resized() override 
     {
         auto b = getLocalBounds();
@@ -184,6 +192,9 @@ public:
         release (parameters.release, gt, "Release", {10.0f, 4000.0f}, 800.0f)
     {
         jassert (state.getType() == id::TRAJECTORY_VARIABLES);
+        label.setText ("Envelope", juce::dontSendNotification);
+        label.setJustificationType (juce::Justification::centred);
+        addAndMakeVisible (label);
         envelopeSize.getToggle().onStateChange = [&]() { state.setProperty (id::envelopeSize, envelopeSize.getToggle().getToggleState(), &undoManager); };
         addAndMakeVisible (envelopeSize);
         attack.getSlider().onValueChange = [&]() { state.setProperty (id::attack, attack.getSlider().getValue(), &undoManager); };
@@ -195,20 +206,29 @@ public:
         release.getSlider().onValueChange = [&]() { state.setProperty (id::release, release.getSlider().getValue(), &undoManager); };
         addAndMakeVisible (release);
     }
+    void paint (juce::Graphics& g) override 
+    {
+        auto b = getLocalBounds();
+        g.setColour (juce::Colours::black);
+        g.drawRect (b);
+    }
     void resized() override 
     {
         auto b = getLocalBounds();
-        envelopeSize.setBounds (b.removeFromLeft (30));
-        attack.setBounds (b.removeFromLeft (100));
-        decay.setBounds (b.removeFromLeft (100));
-        sustain.setBounds (b.removeFromLeft (100));
-        release.setBounds (b.removeFromLeft (100));
+        label.setBounds (b.removeFromTop (20));
+        auto unitWidth = b.getWidth() / 43.0f;
+        envelopeSize.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 3.0f)));
+        attack.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 10.0f)));
+        decay.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 10.0f)));
+        sustain.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 10.0f)));
+        release.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 10.0f)));
     }
 
 private:
     juce::ValueTree state;
     juce::UndoManager& undoManager;
     const tp::Parameters& parameters;
+    juce::Label label;
     ti::ParameterToggle envelopeSize;
     ti::ParameterSlider attack, decay, sustain, release;
 };
@@ -239,11 +259,12 @@ public:
     {
         Panel::resized();
         auto b = getAdjustedBounds();
-        envelope.setBounds (b.removeFromLeft (430));
-        oversampling.setBounds (b.removeFromLeft (80));
-        filter.setBounds (b.removeFromLeft (200));
-        compressor.setBounds (b.removeFromLeft (200));
-        outputLevel.setBounds (b.removeFromLeft (100));
+        auto unitWidth = b.getWidth() / 10.0f;
+        envelope.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 4.0f)));
+        oversampling.setBounds (b.removeFromLeft (static_cast<int> (unitWidth)));
+        filter.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 2.0f)));
+        compressor.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 2.0f)));
+        outputLevel.setBounds (b.removeFromLeft (static_cast<int> (unitWidth)));
     }
 private:
     juce::ValueTree state;

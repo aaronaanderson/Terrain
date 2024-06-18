@@ -236,8 +236,9 @@ public:
     {
         Panel::resized();
         auto b = getAdjustedBounds();
-        terrainSelector.setBounds (b.removeFromTop (120));
-        terrainVariables.setBounds (b.removeFromTop (40));
+        auto unitHeight = b.getHeight() / static_cast<float>(12 + 4 + 44);
+        terrainSelector.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 12.0f)));
+        terrainVariables.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 4.0f)));
     }
 private:
     juce::ValueTree state;

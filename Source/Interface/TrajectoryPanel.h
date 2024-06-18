@@ -137,9 +137,10 @@ public:
     void resized() override 
     {
         auto b = getLocalBounds();
-        trajectoryListLabel.setBounds (b.removeFromTop (20));
-        trajectoryList.setBounds (b.removeFromTop (20));
-        modifierArray.setBounds (b.removeFromTop (80));
+        auto unitHeight = b.getHeight() / static_cast<float> (2 + 2 + 8);
+        trajectoryListLabel.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 2.0f)));
+        trajectoryList.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 2.0f)));
+        modifierArray.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 8.0f)));
     }
     void onTimerCallback() override 
     {
@@ -227,12 +228,12 @@ public:
     void resized() override 
     {
         auto b = getLocalBounds();
-        label.setBounds (b.removeFromTop(20));
-
-        time.setBounds (b.removeFromTop (40));
-        feedback.setBounds (b.removeFromTop (40));
-        compression.setBounds (b.removeFromTop (40));
-        mix.setBounds (b.removeFromTop (40));
+        auto unitHeight = b.getHeight() / static_cast<float> (2 + 4 + 4 + 4 + 4);
+        label.setBounds (b.removeFromTop(static_cast<int> (unitHeight * 2.0f)));
+        time.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 4.0f)));
+        feedback.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 4.0f)));
+        compression.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 4.0f)));
+        mix.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 4.0f)));
     }
 private:
     juce::ValueTree state;
@@ -282,10 +283,11 @@ public:
     void resized() override 
     {
         auto b = getLocalBounds();
-        size.setBounds (b.removeFromTop (40));
-        rotation.setBounds (b.removeFromTop (40));
-        translation_x.setBounds (b.removeFromTop (40));
-        translation_y.setBounds (b.removeFromTop (40));
+        auto unitHeight = b.getHeight() / static_cast<float> (4);
+        size.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
+        rotation.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
+        translation_x.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
+        translation_y.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
     }
 private:
     juce::ValueTree state;
@@ -330,9 +332,10 @@ public:
     void resized()
     {
         auto b = getLocalBounds();
-        label.setBounds (b.removeFromTop (20));
-        scale.setBounds (b.removeFromTop (40));
-        speed.setBounds (b.removeFromTop (40));
+        auto unitHeight = b.getHeight() / static_cast<float> (2 + 4 + 4);
+        label.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 2.0f)));
+        scale.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 4.0f)));
+        speed.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 4.0f)));
     }
 
 private:
@@ -369,10 +372,11 @@ public:
     {
         Panel::resized();
         auto b = getAdjustedBounds();
-        trajectorySelector.setBounds (b.removeFromTop (120));
-        trajectoryVariables.setBounds (b.removeFromTop (160));
-        meanderancePanel.setBounds (b.removeFromTop (100));
-        feedbackPanel.setBounds (b.removeFromTop (220));
+        auto unitHeight = b.getHeight() / static_cast<float> ((12 + 16 + 10 + 22));
+        trajectorySelector.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 12.0f)));
+        trajectoryVariables.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 16.0f)));
+        meanderancePanel.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 10.0f)));
+        feedbackPanel.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 22.0f)));
     }
 
 private:

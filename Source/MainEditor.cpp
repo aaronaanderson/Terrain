@@ -35,29 +35,19 @@ void MainEditor::resized()
 {
     auto b = getLocalBounds();
     
-    if (b.getHeight() > 500)
-    {
-        controlPanel.setVisible (true);
-        int controlPanelHeight = b.getHeight() / 6;
-        controlPanel.setBounds (b.removeFromBottom (controlPanelHeight));
-    } else {
-        controlPanel.setVisible (false);
-    }
+    controlPanel.setVisible (true);
+    int controlPanelHeight = b.getHeight() / 5;
+    controlPanel.setBounds (b.removeFromBottom (controlPanelHeight));
 
-    if (b.getWidth() > 600)
-    {
-        int quarterWidth = b.getWidth() / 4;
-        auto trajectoryPanelBounds = b.removeFromLeft (quarterWidth);
-        trajectoryPanel.setBounds (trajectoryPanelBounds);
-        trajectoryPanel.setVisible (true);
+    int quarterWidth = b.getWidth() / 4;
+    auto trajectoryPanelBounds = b.removeFromLeft (quarterWidth);
+    trajectoryPanel.setBounds (trajectoryPanelBounds);
+    trajectoryPanel.setVisible (true);
     
-        auto terrainPanelBounds = b.removeFromRight (quarterWidth);
-        terrainPanel.setBounds (terrainPanelBounds);
-        terrainPanel.setVisible (true);
-    } else {
-        trajectoryPanel.setVisible (false);
-        terrainPanel.setVisible (false);
-    }
+    auto terrainPanelBounds = b.removeFromRight (quarterWidth);
+    terrainPanel.setBounds (terrainPanelBounds);
+    terrainPanel.setVisible (true);
+
     visualizerPanel.setBounds (b);
 }
 bool MainEditor::keyPressed (const juce::KeyPress& key) 
