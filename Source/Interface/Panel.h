@@ -21,6 +21,9 @@ public:
         g.drawRect (b, 2);
 
         g.drawRect (b.removeFromTop (20));
+        auto theFont = g.getCurrentFont();
+        theFont.setHeight(static_cast<float> (proportionOfWidth(0.03125f)));
+        g.setFont(theFont);
     }
     void resized() override 
     {

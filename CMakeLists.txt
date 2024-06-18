@@ -53,6 +53,7 @@ juce_add_binary_data(BinaryData SOURCES
     Source/Interface/Renderer/Shaders/TrajectoryPoint.vert
     Source/Interface/Renderer/Shaders/Terrain.frag 
     Source/Interface/Renderer/Shaders/Terrain.vert
+    Source/Interface/Nasa21-l23X.ttf
 )
 
 if(WIN32) 

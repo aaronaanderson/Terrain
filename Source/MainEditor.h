@@ -16,7 +16,6 @@ public:
 
     void paint (juce::Graphics&) override;
     void resized() override;
-
 private:
     MainProcessor& processorRef; // Do NOT change order
     juce::ValueTree& state;       // of processorRef and state xoxo
@@ -32,7 +31,6 @@ private:
 
     std::unique_ptr<ValueTreeViewWindow> valueTreeViewWindow;
     bool keyPressed (const juce::KeyPress& key) override;
-
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainEditor)
 };

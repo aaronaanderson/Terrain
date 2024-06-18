@@ -24,6 +24,13 @@ public:
     {
         setColour (juce::Slider::thumbColourId, accent);
         setColour (juce::ToggleButton::ColourIds::tickColourId, accent);
+        setDefaultSansSerifTypeface (getCustomFont());
+    }
+    static const juce::Typeface::Ptr getCustomFont()
+    {
+        static auto typeface = juce::Typeface::createSystemTypefaceFor(BinaryData::Nasa21l23X_ttf, 
+                                                                       BinaryData::Nasa21l23X_ttfSize);
+        return typeface;
     }
 
     

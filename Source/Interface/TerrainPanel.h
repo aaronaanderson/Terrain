@@ -236,13 +236,12 @@ public:
     {
         Panel::resized();
         auto b = getAdjustedBounds();
-        auto unitHeight = b.getHeight() / static_cast<float>(12 + 4 + 44);
+        auto unitHeight = b.getHeight() / static_cast<float> (12 + 4 + 44);
         terrainSelector.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 12.0f)));
         terrainVariables.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 4.0f)));
     }
 private:
     juce::ValueTree state;
-
     TerrainSelector terrainSelector;
     TerrainVariables terrainVariables;
 };

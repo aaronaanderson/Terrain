@@ -11,10 +11,10 @@ MainEditor::MainEditor (MainProcessor& p)
 {
     jassert (state.getType() == id::TERRAINSYNTH);
     setLookAndFeel (&lookAndFeel);
+    getLookAndFeel().setDefaultLookAndFeel (&lookAndFeel);
 
     setResizable (true, false);
     setResizeLimits (300, 200, 2400, 1600);
-
     setSize (1200, 800);
     addAndMakeVisible (trajectoryPanel);
     addAndMakeVisible (terrainPanel);
@@ -35,18 +35,15 @@ void MainEditor::resized()
 {
     auto b = getLocalBounds();
     
-    controlPanel.setVisible (true);
     int controlPanelHeight = b.getHeight() / 5;
     controlPanel.setBounds (b.removeFromBottom (controlPanelHeight));
 
     int quarterWidth = b.getWidth() / 4;
     auto trajectoryPanelBounds = b.removeFromLeft (quarterWidth);
     trajectoryPanel.setBounds (trajectoryPanelBounds);
-    trajectoryPanel.setVisible (true);
     
     auto terrainPanelBounds = b.removeFromRight (quarterWidth);
     terrainPanel.setBounds (terrainPanelBounds);
-    terrainPanel.setVisible (true);
 
     visualizerPanel.setBounds (b);
 }
