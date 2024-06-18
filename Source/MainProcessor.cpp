@@ -159,7 +159,7 @@ void MainProcessor::prepareToPlay (double sr, int size)
     prepareOversampling();
 
     juce::dsp::ProcessSpec spec;
-    spec.maximumBlockSize = size;
+    spec.maximumBlockSize = static_cast<juce::uint32> (size);
     spec.numChannels = 2;
     spec.sampleRate = sr;
 
