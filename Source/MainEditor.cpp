@@ -46,8 +46,6 @@ void MainEditor::resized()
     terrainPanel.setBounds (terrainPanelBounds);
 
     visualizerPanel.setBounds (b);
-    std::cout << "x: " << getLocalBounds().getWidth() << "\n";
-    std::cout << "y: " << getLocalBounds().getHeight() << "\n";
 }
 bool MainEditor::keyPressed (const juce::KeyPress& key) 
 {   
