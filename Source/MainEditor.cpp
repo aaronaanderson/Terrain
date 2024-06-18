@@ -14,7 +14,7 @@ MainEditor::MainEditor (MainProcessor& p)
     getLookAndFeel().setDefaultLookAndFeel (&lookAndFeel);
 
     setResizable (true, false);
-    setResizeLimits (300, 200, 2400, 1600);
+    setResizeLimits (756, 580, 2400, 1600);
     setSize (1200, 800);
     addAndMakeVisible (trajectoryPanel);
     addAndMakeVisible (terrainPanel);
@@ -46,6 +46,8 @@ void MainEditor::resized()
     terrainPanel.setBounds (terrainPanelBounds);
 
     visualizerPanel.setBounds (b);
+    std::cout << "x: " << getLocalBounds().getWidth() << "\n";
+    std::cout << "y: " << getLocalBounds().getHeight() << "\n";
 }
 bool MainEditor::keyPressed (const juce::KeyPress& key) 
 {   

@@ -30,7 +30,7 @@ struct ParameterToggle : public juce::Component,
     void resized() override 
     {
         auto b = getLocalBounds();
-        auto unitHeight = b.getHeight() / 5.0f;
+        auto unitHeight = b.getHeight() / 3.0f;
         if (label.getText() != "")
             label.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
         toggle.setBounds (b);
@@ -89,14 +89,13 @@ struct ParameterSlider : public juce::Component,
         auto b = getLocalBounds();
         
         if (label.getText().length() > 1)
-            label.setBounds (b.removeFromTop (static_cast<int> (b.getHeight() / 5.0f)));
+            label.setBounds (b.removeFromTop (static_cast<int> (b.getHeight() / 3.0f)));
         else
-            label.setBounds (b.removeFromLeft (static_cast<int> (b.getWidth() / 5.0f)));
+            label.setBounds (b.removeFromLeft (static_cast<int> (b.getWidth() / 3.0f)));
         
         if (b.getHeight() * 2 >= b.getWidth())
         {
             slider.setSliderStyle (juce::Slider::SliderStyle::RotaryVerticalDrag);
-            
             label.setJustificationType (juce::Justification::centred);
         }
 

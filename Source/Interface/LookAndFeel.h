@@ -28,8 +28,8 @@ public:
     }
     static const juce::Typeface::Ptr getCustomFont()
     {
-        static auto typeface = juce::Typeface::createSystemTypefaceFor(BinaryData::Nasa21l23X_ttf, 
-                                                                       BinaryData::Nasa21l23X_ttfSize);
+        static auto typeface = juce::Typeface::createSystemTypefaceFor(BinaryData::Paulle1V_ttf, 
+                                                                       BinaryData::Paulle1V_ttfSize);
         return typeface;
     }
 

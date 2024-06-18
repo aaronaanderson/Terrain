@@ -26,7 +26,7 @@ public:
     void resized() override 
     {
         auto b = getLocalBounds();
-        saturation.setBounds (b.removeFromTop (40));
+        saturation.setBounds (b.removeFromTop (b.getHeight()));
     }
 private:
     juce::ValueTree state;
@@ -160,9 +160,10 @@ public:
     void resized() override 
     {
         auto b = getLocalBounds();
-        terrainListLabel.setBounds (b.removeFromTop (20));
-        terrainList.setBounds (b.removeFromTop (20));
-        modifierArray.setBounds (b.removeFromTop (80));
+        auto unitHeight = b.getHeight() / static_cast<float> (2 + 2 + 8);
+        terrainListLabel.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 2.0f)));
+        terrainList.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 2.0f)));
+        modifierArray.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 8.0f)));
     }
     void onTimerCallback() override 
     {
