@@ -17,7 +17,8 @@ struct ParameterToggle : public juce::Component,
       : parameter (p)
     {
         label.setText (labelText, juce::dontSendNotification);
-        //label.setJustificationType (juce::Justification::centred);
+        // label.setJustificationType (juce::Justification::centred);
+        
         addAndMakeVisible (label);
         addAndMakeVisible (toggle);
         parameter->addListener (this);
@@ -91,7 +92,7 @@ struct ParameterSlider : public juce::Component,
         if (label.getText().length() > 1)
             label.setBounds (b.removeFromTop (static_cast<int> (b.getHeight() / 3.0f)));
         else
-            label.setBounds (b.removeFromLeft (static_cast<int> (b.getWidth() / 3.0f)));
+            label.setBounds (b.removeFromLeft (static_cast<int> (b.getWidth() / 12.0f)));
         
         if (b.getHeight() * 2 >= b.getWidth())
         {
