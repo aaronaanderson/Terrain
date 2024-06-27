@@ -71,7 +71,6 @@ struct ParameterSlider : public juce::Component,
       : parameter (p)
     {
         label.setText (labelText, juce::dontSendNotification);
-        
         slider.setRange (range, 0.0);
         if (midPoint.has_value()) slider.setSkewFactorFromMidPoint (midPoint.value());
         slider.setTextBoxStyle (juce::Slider::TextEntryBoxPosition::NoTextBox, true, 20, 20);
