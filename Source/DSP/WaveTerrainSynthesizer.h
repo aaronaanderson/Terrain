@@ -197,6 +197,16 @@ public:
                 output = c * p.x * std::cos((1.0f - c) * d * juce::MathConstants<float>::pi * p.x * p.y)  +  (1.0f - c) * p.y * cos(c * d * juce::MathConstants<float>::pi * p.x * p.y);
             }
                 break;
+            case 5:
+            {
+                float aa = m.a * 4.0f + 1.0f;
+                float bb = m.b * 4.0f + 1.0f;
+                float cc = m.c * 0.8f + 0.1f;
+                output = ((std::pow (aa * p.x, 2.0f) + std::pow (bb * p.y, 2.0f)) * 
+                           std::pow (cc, (std::pow (4.0f * p.x, 2.0f) + 
+                                          std::pow (4.0f * p.y, 2.0f)))) * 2.0f - 1.0f;
+            }
+                break;
             default:
             jassertfalse;
         }

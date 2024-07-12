@@ -16,7 +16,7 @@ out vec3 normal;
 out vec3 fragmentPosition;
 
 float pi = 3.14159265359;
-
+float e =  2.71828;
 float saturate (float signal, float scale)
 {
     return tanh(signal * scale * 1.31303528551);
@@ -47,6 +47,16 @@ float calculateDepth (int index, vec2 p)
             float c = a * 0.5 + 0.25;
             float d = b * 16.0 + 4.0;
             outputValue = c * p.x * cos((1.0 - c) * d * pi * p.x * p.y)  +  (1.0 - c) * p.y * cos(c * d * pi * p.x * p.y);
+        }
+        break;
+        case 5:
+        {
+            float aa = a * 4.0 + 1.0;
+            float bb = b * 4.0 + 1.0;
+            float cc = c * 0.8 + 0.1; //c * 1.5 + 2.6;
+            outputValue =  ((pow (aa * p.x, 2.0) + pow (bb * p.y, 2.0)) * 
+                             pow (cc, (pow (4.0 * p.x, 2.0) + 
+                                       pow (4.0 * p.y, 2.0)))) * 2.0 - 1.0;
         }
         break;
         default:

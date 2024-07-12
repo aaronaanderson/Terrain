@@ -246,10 +246,10 @@ void MainProcessor::getStateInformation (juce::MemoryBlock& destData)
 void MainProcessor::setStateInformation (const void* data, int sizeInBytes)
 { 
     juce::ignoreUnused (data, sizeInBytes);
-    std::unique_ptr<juce::XmlElement> xml (getXmlFromBinary (data, sizeInBytes));
-    if (xml.get() == nullptr) return; // make sure we have data
-    if (!xml->hasTagName (state.getType())) return; // make sure it's the right data
-    state = juce::ValueTree::fromXml (*xml);
+    // std::unique_ptr<juce::XmlElement> xml (getXmlFromBinary (data, sizeInBytes));
+    // if (xml.get() == nullptr) return; // make sure we have data
+    // if (!xml->hasTagName (state.getType())) return; // make sure it's the right data
+    // state = juce::ValueTree::fromXml (*xml);
     // std::cout << "input\n" << xml->toString() << std::endl;
     resetParameterState();
     

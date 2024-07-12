@@ -87,6 +87,7 @@ struct TerrainsTree
         tree.addChild (createTerrainType ("Wobbly", {0.5f, 0.2f}), -1, nullptr);
         tree.addChild (createTerrainType ("System 3", {0.3f}), -1, nullptr);
         tree.addChild (createTerrainType ("System 9", {0.5f, 0.5f, 0.5f, 0.5f}), -1, nullptr);
+        tree.addChild (createTerrainType ("System 11", {0.5f, 0.5f, 0.5f}), -1, nullptr);
 
         return tree;
     }
