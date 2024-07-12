@@ -58,7 +58,7 @@ MainProcessor::MainProcessor()
                                                                               trajectoryVariablesBranch.getProperty (id::meanderanceSpeed)));
 
     
-    addParameter (parameters.envelopeSize = new juce::AudioParameterBool ("envelopeSize", "Envelope Size", true));
+    addParameter (parameters.envelopeSize = new juce::AudioParameterBool ({"envelopeSize", 1}, "Envelope Size", true));
     auto range = juce::NormalisableRange<float> (2.0f, 2000.0f); range.setSkewForCentre (100.0f);
     addParameter (parameters.attack = new tp::RangedFloatParameter ("Attack", 
                                                                     range, 
@@ -117,7 +117,7 @@ MainProcessor::MainProcessor()
     addParameter (parameters.filterFrequency = new tp::RangedFloatParameter ("Filter Frequency", 
                                                                              range,
                                                                              (controlsBranch.getProperty (id::filterFrequency))));
-    addParameter (parameters.filterOnOff = new juce::AudioParameterBool ("FilterOnOff", "Filter Bypass", controlsBranch.getProperty (id::filterOnOff)));
+    addParameter (parameters.filterOnOff = new juce::AudioParameterBool ({"FilterOnOff", 1}, "Filter Bypass", controlsBranch.getProperty (id::filterOnOff)));
 
     addParameter (parameters.compressorThreshold = new tp::RangedFloatParameter ("Compressor Threshold", 
                                                                                  {-24.0f, 0.0f},
