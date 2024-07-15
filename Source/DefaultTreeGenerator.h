@@ -43,10 +43,12 @@ struct TrajectoriesTree
         juce::ValueTree tree (id::TRAJECTORIES);
         tree.setProperty (id::currentTrajectory, "Ellipse", nullptr);
         tree.addChild (createTrajectoryType ("Ellipse", {0.5f}), -1, nullptr);
+        tree.addChild (createTrajectoryType ("Superellipse", {1.0f, 0.5f, 0.5f}), -1, nullptr);
         tree.addChild (createTrajectoryType ("Limacon", {0.5f, 0.5f}), -1, nullptr);
-        tree.addChild (createTrajectoryType ("Butterfly", {0.5f, 0.5f, 0.4f, 0.4f}), -1, nullptr);
+        tree.addChild (createTrajectoryType ("Butterfly", {0.5f}), -1, nullptr);
         tree.addChild (createTrajectoryType ("Scarabaeus", {0.5f, 0.5f}), -1, nullptr);
         tree.addChild (createTrajectoryType ("Squarcle", {0.5f}), -1, nullptr);
+        tree.addChild (createTrajectoryType ("Bicorn", {}), -1, nullptr);
         tree.addChild (createTrajectoryType ("Cornoid", {1.0f}), -1, nullptr);
         tree.addChild (createTrajectoryType ("Epitrochoid 3", {0.5f}), -1, nullptr);
         tree.addChild (createTrajectoryType ("Epitrochoid 5", {0.5f}), -1, nullptr);

@@ -242,6 +242,14 @@ public:
         {
             [&](float theta, ModSet m){ return Point (std::sin(theta) * m.a, std::cos(theta));} 
             ,[&](float theta, ModSet m)
+                {
+                    auto n = std::pow (m.a, 2.0f) * 5 + 0.5f;
+                    auto a = m.b * 0.5f + 0.5f;
+                    auto b = m.c * 0.5f + 0.5f;
+                    auto r = std::pow (std::pow (std::abs (std::cos (theta) / a), n) + std::pow (std::abs (std::sin (theta) / b), n), (-1.0f / n));
+                    return Point (r * std::cos (theta), r * std::sin (theta));
+                }
+            ,[&](float theta, ModSet m)
                 {   float r = m.b + m.a * std::sin (theta);
                     return Point(r * std::cos(theta), r * std::sin(theta)); }
             ,[&](float theta, ModSet m)
@@ -255,6 +263,12 @@ public:
             // Squarcle
             ,[&](float theta, ModSet m) { return Point (std::tanh (std::sin (theta) * (m.a * 3.0f + 1.0f) ), 
                                                         std::tanh (std::cos (theta) * (m.a * 3.0f + 1.0f) )); }
+            // Bicorn
+            ,[&](float theta, ModSet m) 
+                {   juce::ignoreUnused (m); 
+                    return Point (std::sin (theta), 
+                                   ((2.0f + std::cos (theta)) * std::pow (std::cos (theta), 2.0f)) / 
+                                    (3.0f + std::pow (std::sin (theta), 2.0f))); }
             // Cornoid
             ,[&](float theta, ModSet m) 
                 {   auto aa = m.a * 2.0f + 0.01f;
