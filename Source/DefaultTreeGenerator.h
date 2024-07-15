@@ -50,6 +50,9 @@ struct TrajectoriesTree
         tree.addChild (createTrajectoryType ("Epitrochoid 3", {0.5f}), -1, nullptr);
         tree.addChild (createTrajectoryType ("Epitrochoid 5", {0.5f}), -1, nullptr);
         tree.addChild (createTrajectoryType ("Epitrochoid 7", {0.5f}), -1, nullptr);
+        tree.addChild (createTrajectoryType ("Hypocycloid 3", {0.5f}), -1, nullptr);
+        tree.addChild (createTrajectoryType ("Hypocycloid 5", {0.5f}), -1, nullptr);
+        tree.addChild (createTrajectoryType ("Hypocycloid 7", {0.5f}), -1, nullptr);
         return tree;
     }
 private:

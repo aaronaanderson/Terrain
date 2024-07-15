@@ -282,6 +282,30 @@ public:
                     return Point (((R + r) * std::cos (theta)) - (d * std::cos (((R + r) / r) * theta)), 
                                   ((R + r) * std::sin (theta)) - (d * std::sin (((R + r) / r) * theta)));
                 }
+            // Hypocycloid 3
+            ,[&](float theta, ModSet m) 
+            {    
+                auto R = 1.0f;
+                auto r = R / 3.0f;
+                return Point (((R - r) * std::cos (theta)) + (m.a * r * std::cos (((R - r) / r) * theta)), 
+                              ((R - r) * std::sin (theta)) - (m.a * r * std::sin (((R - r) / r) * theta)));
+            }
+            // Hypocycloid 5
+            ,[&](float theta, ModSet m) 
+            {    
+                auto R = 1.0f;
+                auto r = R / 5.0f;
+                return Point (((R - r) * std::cos (theta)) + (m.a * r * std::cos (((R - r) / r) * theta)), 
+                              ((R - r) * std::sin (theta)) - (m.a * r * std::sin (((R - r) / r) * theta)));
+            }
+            // Hypocycloid 7
+            ,[&](float theta, ModSet m) 
+            {    
+                auto R = 1.0f;
+                auto r = R / 7.0f;
+                return Point (((R - r) * std::cos (theta)) + (m.a * r * std::cos (((R - r) / r) * theta)), 
+                              ((R - r) * std::sin (theta)) - (m.a * r * std::sin (((R - r) / r) * theta)));
+            }
         };
     }
     bool canPlaySound (juce::SynthesiserSound* s) override { return dynamic_cast<Terrain*>(s) != nullptr; }
