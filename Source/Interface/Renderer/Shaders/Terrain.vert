@@ -59,6 +59,7 @@ float calculateDepth (int index, vec2 p)
                                        pow (4.0 * p.y, 2.0)))) * 2.0 - 1.0;
         }
         break;
+
         default:
             outputValue = 0.0;
     }

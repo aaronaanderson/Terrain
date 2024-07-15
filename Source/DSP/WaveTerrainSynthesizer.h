@@ -207,6 +207,7 @@ public:
                                           std::pow (4.0f * p.y, 2.0f)))) * 2.0f - 1.0f;
             }
                 break;
+
             default:
             jassertfalse;
         }
@@ -254,6 +255,14 @@ public:
             // Squarcle
             ,[&](float theta, ModSet m) { return Point (std::tanh (std::sin (theta) * (m.a * 3.0f + 1.0f) ), 
                                                         std::tanh (std::cos (theta) * (m.a * 3.0f + 1.0f) )); }
+            // Hypotrochoid 3
+            ,[&](float theta, ModSet m) 
+                {    
+                    auto d = m.a + 0.01f;
+                    auto r = (1.0f - d) / 4.0f;
+                    auto R = 3.0f * r;
+                    return Point (((R + r) * std::cos (theta)) - (d * std::cos (((R + r) / r) * theta)), 
+                                  ((R + r) * std::sin (theta)) - (d * std::sin (((R + r) / r) * theta)));}
         };
     }
     bool canPlaySound (juce::SynthesiserSound* s) override { return dynamic_cast<Terrain*>(s) != nullptr; }

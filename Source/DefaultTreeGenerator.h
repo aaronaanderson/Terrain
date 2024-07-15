@@ -47,6 +47,7 @@ struct TrajectoriesTree
         tree.addChild (createTrajectoryType ("Butterfly", {0.5f, 0.5f, 0.4f, 0.4f}), -1, nullptr);
         tree.addChild (createTrajectoryType ("Scarabaeus", {0.5f, 0.5f}), -1, nullptr);
         tree.addChild (createTrajectoryType ("Squarcle", {0.5f}), -1, nullptr);
+        tree.addChild (createTrajectoryType ("Epitrochoid", {0.5f}), -1, nullptr);
         return tree;
     }
 private:
@@ -88,7 +89,6 @@ struct TerrainsTree
         tree.addChild (createTerrainType ("System 3", {0.3f}), -1, nullptr);
         tree.addChild (createTerrainType ("System 9", {0.5f, 0.5f, 0.5f, 0.5f}), -1, nullptr);
         tree.addChild (createTerrainType ("System 11", {0.5f, 0.5f, 0.5f}), -1, nullptr);
-
         return tree;
     }
     static const juce::ValueTree createTerrainType (juce::String name, const juce::Array<float> mods)
