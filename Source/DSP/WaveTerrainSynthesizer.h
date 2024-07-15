@@ -207,6 +207,13 @@ public:
                                           std::pow (4.0f * p.y, 2.0f)))) * 2.0f - 1.0f;
             }
                 break;
+            case 6: // system 12
+            {
+                float aa = m.a * 4.0f + 1.0f;
+                float bb = m.b * 4.0f + 1.0f;
+                output = std::sin(std::pow (aa * p.x, 2.0f) + std::pow (bb * p.y, 2.0f));
+            }
+                break;
 
             default:
             jassertfalse;

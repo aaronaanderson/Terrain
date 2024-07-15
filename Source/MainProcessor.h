@@ -200,7 +200,13 @@ private:
         jassertfalse;
         return 0;
     }
-    juce::Array<juce::String> terrainStrings = {"Sinusoidal", "Wiggly", "Wobbly", "System 3", "System 9", "System 11"};
+    juce::Array<juce::String> terrainStrings = {"Sinusoidal", 
+                                                "System 1", 
+                                                "System 2", 
+                                                "System 3", 
+                                                "System 9", 
+                                                "System 11",
+                                                "System 12"};
     void setCurrentTerrainFromString (juce::String s)
     {
         for (int i = 0; i < terrainStrings.size(); i++)
