@@ -325,6 +325,27 @@ public:
                 return Point (((R - r) * std::cos (theta)) + (m.a * r * std::cos (((R - r) / r) * theta)), 
                               ((R - r) * std::sin (theta)) - (m.a * r * std::sin (((R - r) / r) * theta)));
             }
+            // Gear Curve 3
+            ,[&](float theta, ModSet m) 
+            {
+                auto b = (10.0f - m.a * 10.0f) + 2.0f;
+                auto r = 1.0f + ((1.0f / b) * std::tanh (b * std::sin (3 * theta)));
+                return Point (r * std::cos (theta), r * sin (theta));
+            }
+            // Gear Curve 5
+            ,[&](float theta, ModSet m) 
+            {
+                auto b = (10.0f - m.a * 10.0f) + 2.0f;
+                auto r = 1.0f + ((1.0f / b) * std::tanh (b * std::sin (5 * theta)));
+                return Point (r * std::cos (theta), r * sin (theta));
+            }
+            // Gear Curve 7
+            ,[&](float theta, ModSet m) 
+            {
+                auto b = (10.0f - m.a * 10.0f) + 2.0f;
+                auto r = 1.0f + ((1.0f / b) * std::tanh (b * std::sin (7 * theta)));
+                return Point (r * std::cos (theta), r * sin (theta));
+            }
         };
     }
     bool canPlaySound (juce::SynthesiserSound* s) override { return dynamic_cast<Terrain*>(s) != nullptr; }

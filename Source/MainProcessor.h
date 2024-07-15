@@ -168,7 +168,17 @@ private:
         renderBuffer.clear();
     }
 
-    juce::Array<juce::String> trajectoryStrings {"Ellipse", "Superellipse", "Limacon", "Butterfly", "Scarabaeus", "Squarcle", "Bicorn", "Cornoid", "Epitrochoid 3", "Epitrochoid 5", "Epitrochoid 7", "Hypocycloid 3", "Hypocycloid 5", "Hypocycloid 7"};
+    juce::Array<juce::String> trajectoryStrings {"Ellipse", 
+                                                 "Superellipse", 
+                                                 "Limacon", 
+                                                 "Butterfly", 
+                                                 "Scarabaeus", 
+                                                 "Squarcle", 
+                                                 "Bicorn", 
+                                                 "Cornoid", 
+                                                 "Epitrochoid 3", "Epitrochoid 5", "Epitrochoid 7", 
+                                                 "Hypocycloid 3", "Hypocycloid 5", "Hypocycloid 7", 
+                                                 "Gear Curve 3", "Gear Curve 5", "Gear Curve 7"};
     void setCurrentTrajectoryParamFromString (juce::String s) //Need something better here
     {
         for (int i = 0; i < trajectoryStrings.size(); i++)
