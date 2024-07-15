@@ -255,6 +255,11 @@ public:
             // Squarcle
             ,[&](float theta, ModSet m) { return Point (std::tanh (std::sin (theta) * (m.a * 3.0f + 1.0f) ), 
                                                         std::tanh (std::cos (theta) * (m.a * 3.0f + 1.0f) )); }
+            // Cornoid
+            ,[&](float theta, ModSet m) 
+                {   auto aa = m.a * 2.0f + 0.01f;
+                    return Point (std::cos (theta) * std::cos (2.0f * theta),
+                                  juce::jmap (aa, 0.01f, 2.01f, 1.0f, 0.5f) * std::sin (theta) * (aa + std::cos (2.0f * theta))); }
             // Epitrochoid 3
             ,[&](float theta, ModSet m) 
                 {    
