@@ -214,7 +214,14 @@ public:
                 output = std::sin(std::pow (aa * p.x, 2.0f) + std::pow (bb * p.y, 2.0f));
             }
                 break;
-
+            case 7: // system 14
+            {
+                float aa = m.a * 36.0f + 6.0f;
+                float bb = m.b * 2.0f - 1.0f;
+                float cc = m.c * 2.0f - 1.0f;
+                output = std::cos (aa * std::sin (std::sqrt (std::pow (p.x + bb, 2.0f) + std::pow (p.y + cc, 2.0f))));
+            }
+                break;
             default:
             jassertfalse;
         }

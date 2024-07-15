@@ -66,7 +66,14 @@ float calculateDepth (int index, vec2 p)
             outputValue = sin (pow (aa * p.x, 2.0) + pow (bb * p.y, 2.0));
         }
         break;
-
+        case 7: // System 14
+        {   
+            float aa = a * 36.0 + 6.0;
+            float bb = b * 2.0 - 1.0;
+            float cc = c * 2.0 - 1.0;
+            outputValue = cos(aa * sin (sqrt (pow (p.x + bb, 2.0) + pow (p.y + cc, 2.0))));
+        }
+        break;
         default:
             outputValue = 0.0;
     }
