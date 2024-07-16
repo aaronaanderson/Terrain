@@ -207,7 +207,8 @@ private:
                                                 "System 9", 
                                                 "System 11",
                                                 "System 12", 
-                                                "System 14"};
+                                                "System 14", 
+                                                "System 15"};
     void setCurrentTerrainFromString (juce::String s)
     {
         for (int i = 0; i < terrainStrings.size(); i++)

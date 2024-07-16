@@ -222,6 +222,12 @@ public:
                 output = std::cos (aa * std::sin (std::sqrt (std::pow (p.x + bb, 2.0f) + std::pow (p.y + cc, 2.0f))));
             }
                 break;
+            case 8: // system 15
+            {
+                float aa = m.a * 36.0f;
+                output = std::cos (( aa * std::sin (std::sqrt (std::pow (p.x + 1.1f, 2.0f) + std::pow (p.y + 1.1f, 2.0f)))) - (4.0f * std::atan ((p.y + 1.1f) / (p.x + 1.1f))));
+            }
+                break;
             default:
             jassertfalse;
         }

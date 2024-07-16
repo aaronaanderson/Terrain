@@ -98,10 +98,11 @@ struct TerrainsTree
         tree.addChild (createTerrainType ("System 1", {0.5f, 0.5f}), -1, nullptr);
         tree.addChild (createTerrainType ("System 2", {0.5f, 0.2f}), -1, nullptr);
         tree.addChild (createTerrainType ("System 3", {0.3f}), -1, nullptr);
-        tree.addChild (createTerrainType ("System 9", {0.5f, 0.5f, 0.5f, 0.5f}), -1, nullptr);
+        tree.addChild (createTerrainType ("System 9", {0.5f, 0.5f}), -1, nullptr);
         tree.addChild (createTerrainType ("System 11", {0.5f, 0.5f, 0.5f}), -1, nullptr);
         tree.addChild (createTerrainType ("System 12", {0.5f, 0.5f}), -1, nullptr);
         tree.addChild (createTerrainType ("System 14", {0.5f, 0.5f, 0.5f}), -1, nullptr);
+        tree.addChild (createTerrainType ("System 15", {0.5f}), -1, nullptr);
         return tree;
     }
     static const juce::ValueTree createTerrainType (juce::String name, const juce::Array<float> mods)
