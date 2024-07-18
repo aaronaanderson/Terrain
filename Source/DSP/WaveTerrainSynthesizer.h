@@ -427,7 +427,7 @@ public:
             {
                 float outputSample = terrain->sampleAt (point, i);
                 history.feedNext (point, outputSample);
-                o[i] += outputSample * static_cast<float> (envelope.calculateNext()) * 0.1f;
+                o[i] += outputSample * static_cast<float> (envelope.calculateNext()) * amplitude;
             }
             phase = std::fmod (phase + phaseIncrement, juce::MathConstants<double>::twoPi);
             if(!envelope.isActive())
