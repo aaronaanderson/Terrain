@@ -407,7 +407,7 @@ public:
             auto point = functions[*voiceParameters.currentTrajectory](static_cast<float> (phase), getModSet());
             
             point = rotate (point, voiceParameters.rotation.getNext());
-            point = scale (point, voiceParameters.size.getNext());
+            point = scale (point, voiceParameters.size.getNext() * amplitude);
             if (*voiceParameters.envelopeSize)
                 point = scale (point, static_cast<float> (envelope.getCurrentValue()));
             point = feedback (point, 
@@ -427,7 +427,7 @@ public:
             {
                 float outputSample = terrain->sampleAt (point, i);
                 history.feedNext (point, outputSample);
-                o[i] += outputSample * static_cast<float> (envelope.calculateNext()) * amplitude;
+                o[i] += outputSample * static_cast<float> (envelope.calculateNext());
             }
             phase = std::fmod (phase + phaseIncrement, juce::MathConstants<double>::twoPi);
             if(!envelope.isActive())
