@@ -74,4 +74,43 @@ The VST3 plugin should now appear as an option the next time you start your pref
 
 ## Mac
 
+Download and install XCode: https://developer.apple.com/xcode/
+Download and install CMake: https://cmake.org/download/
+
+Open the Terminal application and enter the following commands. You may clone the repository in any directory; the following commands will clone the repository to your Documents folder.
+
+`cd Documents`
+
+`git clone https://github.com/aaronaanderson/Terrain`
+
+`cd Terrain`
+
+`git submodule update --init --recursive`
+
+You should now have a folder named Terrain in your documents folder. Continue in Git Bash:
+
+`mkdir build`
+
+`cmake -B ./build -S . -G Xcode`
+
+Use Finder to navigate to Documents/Terrain/build/ and double-click on TERRAIN.xcodeproj.
+
+With XCode open, select the AllBuild option:
+
+![alt text](ReadmeSource/MacAllBuildHighlight.png)
+
+In the same drop-down menu, select Edit Scheme:
+
+![alt text](ReadmeSource/EditSchemeHighlight.png)
+
+In the following pop-up menu, select Realease for the build configuration:
+
+![alt text](ReadmeSource/MacReleaseHighlight.png)
+
+Use the keyboard to enter cmd+b to build the plugin.
+
+To install the the Audio Unit build, navigate to Documents/Terrain/build/WaveTerrainSynth_artefacts/Release/AU and copy Terrain.component. Paste this binary in file location /Library/Audio/Plug-Ins/Components/.
+
+To install the VST3 build, navigate to Documents/Terrain/build/WaveTerrainSynth_artefacts/Release/VST3 and copy Terrain.vst3. Paste this binary in file location Library/Audio/Plug-ins/VST3/
+
 ## Linux
