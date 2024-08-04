@@ -155,8 +155,9 @@ void MainProcessor::changeProgramName (int index, const juce::String& newName) {
 //==============================================================================
 void MainProcessor::prepareToPlay (double sr, int size) 
 { 
-    sampleRate = sr; samplesPerBlock = size;
-    prepareOversampling();
+    sampleRate = sr; maxSamplesPerBlock = size;
+    
+    renderBuffer.setSize (1, maxSamplesPerBlock);
 
     juce::dsp::ProcessSpec spec;
     spec.maximumBlockSize = static_cast<juce::uint32> (size);
@@ -198,9 +199,9 @@ void MainProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
     
-    prepareOversampling();
-    auto overSamplingBlock = overSampler->processSamplesUp (renderBuffer);
+    prepareOversampling (buffer.getNumSamples());
     synthesizer->updateTerrain();
+    auto overSamplingBlock = overSampler->processSamplesUp (renderBuffer);
     juce::Array<float*> channelPointers = {overSamplingBlock.getChannelPointer(0)};
     juce::AudioBuffer<float> overSamplingBufferReference (channelPointers.getRawDataPointer(), 
                                                           static_cast<int> (overSamplingBlock.getNumChannels()), 
@@ -225,7 +226,7 @@ void MainProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     juce::dsp::ProcessContextReplacing<float> context (outputBlock);
     outputChain.process (context);
 
-    for (int c = 0; c < buffer.getNumChannels(); c++)
+    for (int c = 1; c < buffer.getNumChannels(); c++)
         buffer.copyFrom (c, 0, renderBuffer.getReadPointer (0), buffer.getNumSamples());
     
     renderBuffer.clear();

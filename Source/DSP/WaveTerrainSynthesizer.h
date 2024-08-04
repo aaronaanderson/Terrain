@@ -129,18 +129,24 @@ public:
     void prepareToPlay (double sr, int blockSize)
     {
         smoothedParameter.prepare (sr);
-        buffer.resize (blockSize);
+        // buffer.resize (blockSize);
+        buffer.setSize (1, blockSize, false, false, true);
     }
     // call once per audio block
     void updateBuffer()
     {
-        for (auto& s : buffer)
-            s = smoothedParameter.getNext();
+        for (int i = 0; i < buffer.getNumSamples(); i++)
+        {
+            auto* b = buffer.getWritePointer (0);
+            b[i] = smoothedParameter.getNext();
+        }
     }
-    float getAt (int bufferIndex) { return buffer[bufferIndex]; }
+    float getAt (int bufferIndex) { return buffer.getReadPointer (0)[bufferIndex]; }
+    void allocate (int numSamples) { buffer.setSize (1, numSamples); }
 private:
     SmoothedParameter smoothedParameter;
-    juce::Array<float> buffer;
+    // juce::Array<float> buffer;
+    juce::AudioBuffer<float> buffer;
 };
 class Terrain : public juce::SynthesiserSound
 {
@@ -162,6 +168,14 @@ public:
         modC.prepareToPlay (sampleRate, blockSize);
         modD.prepareToPlay (sampleRate, blockSize);
         saturation.prepareToPlay (sampleRate, blockSize);
+    }
+    void allocate (int maxNumSamples)
+    {
+        modA.allocate (maxNumSamples);
+        modB.allocate (maxNumSamples);
+        modC.allocate (maxNumSamples);
+        modD.allocate (maxNumSamples);
+        saturation.allocate (maxNumSamples);
     }
     void updateParameterBuffers()
     {
@@ -682,6 +696,13 @@ public:
         auto terrain = dynamic_cast<Terrain*> (getSound (0).get());
         jassert (terrain != nullptr);
         terrain->prepareToPlay (sr, blockSize);
+    }
+    void allocate (int maxNumSamples)
+    {
+        jassert (getNumSounds() == 1);
+        auto terrain = dynamic_cast<Terrain*> (getSound (0).get());
+        jassert (terrain != nullptr);
+        terrain->allocate (maxNumSamples);
     }
     // must be called once per buffer
     void updateTerrain()

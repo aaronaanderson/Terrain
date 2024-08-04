@@ -15,7 +15,7 @@ public:
     MainProcessor();
     ~MainProcessor() override;
     //==============================================================================
-    void prepareToPlay (double sampleRate, int samplesPerBlock) override;
+    void prepareToPlay (double sampleRate, int storedBufferSize) override;
     void releaseResources() override;
 
     bool isBusesLayoutSupported (const BusesLayout& layouts) const override;
@@ -61,7 +61,8 @@ private:
                               juce::dsp::Compressor<float>, 
                               juce::dsp::Gain<float>> outputChain;
 
-    int samplesPerBlock;
+    int storedBufferSize = 0;
+    int maxSamplesPerBlock;
     double sampleRate;
 
     const juce::String trajectoryNameFromIndex (int i);
@@ -151,21 +152,30 @@ private:
                 parameters.outputLevel->setValueNotifyingHost (parameters.outputLevel->convertTo0to1 (tree.getProperty (property)));
         }
     }
-    void prepareOversampling()
+    void prepareOversampling (int bufferSize)
     {
         auto controlsTree = state.getChildWithName (id::CONTROLS);
         auto overSamplingFactor = static_cast<int> (controlsTree.getProperty (id::oversampling));
-        if (overSamplingFactor == storedFactor) return;
+        if (overSamplingFactor == storedFactor && bufferSize == storedBufferSize) return;
 
+        if (overSamplingFactor != storedFactor)
+        {
+            synthesizer->allocate (maxSamplesPerBlock * static_cast<int> (std::pow (2, overSamplingFactor)));
+            overSampler = std::make_unique<juce::dsp::Oversampling<float>> (1, 
+                                                                            overSamplingFactor, 
+                                                                            juce::dsp::Oversampling<float>::FilterType::filterHalfBandPolyphaseIIR);
+            overSampler->initProcessing (static_cast<size_t> (maxSamplesPerBlock));
+        }
         storedFactor = overSamplingFactor;
-        overSampler = std::make_unique<juce::dsp::Oversampling<float>> (1, 
-                                                                       overSamplingFactor, 
-                                                                       juce::dsp::Oversampling<float>::FilterType::filterHalfBandPolyphaseIIR);
-        overSampler->initProcessing (static_cast<size_t> (samplesPerBlock));
-        synthesizer->prepareToPlay (sampleRate * std::pow (2, overSamplingFactor), 
-                                    samplesPerBlock * static_cast<int> (std::pow (2, overSamplingFactor)));
-        renderBuffer.setSize (1, samplesPerBlock);
-        renderBuffer.clear();
+
+        if (bufferSize != storedBufferSize)
+        {
+            synthesizer->prepareToPlay (sampleRate * std::pow (2, overSamplingFactor), 
+                                        bufferSize * static_cast<int> (std::pow (2, overSamplingFactor)));
+            renderBuffer.setSize (1, bufferSize, false, false, true); // Don't re-allocate; maxBufferSize is set in prepareToPlay
+            renderBuffer.clear();
+        }
+        storedBufferSize = bufferSize;
     }
 
     juce::Array<juce::String> trajectoryStrings {"Ellipse", 
