@@ -60,7 +60,7 @@ This command will generate a Visual Studio project ready to compile the source m
 
 At the top of the Visual Studio interface, make sure that the build type is set to Release.
 
-![alt text](ReadMeSource/WindowsReleaseHighlight.png)
+![alt text](ReadmeSource/WindowsReleaseHighlight.png)
 
 Use the keyboard to enter ctl+shift+b to build the plugin.
 
@@ -114,3 +114,35 @@ To install the the Audio Unit build, navigate to Documents/Terrain/build/WaveTer
 To install the VST3 build, navigate to Documents/Terrain/build/WaveTerrainSynth_artefacts/Release/VST3 and copy Terrain.vst3. Paste this binary in file location Library/Audio/Plug-ins/VST3/
 
 ## Linux
+
+Open Terminal and install Git with the following command:
+
+`apt-get install git`
+
+Install GCC compilers, make, and the opengl Dev libraries:
+
+`sudo apt-get install build-essential libgl1-mesa-dev`
+
+Install CMake: https://cmake.org/download/
+
+Use the terminal to clone the repository. The following commands will clone this repository to your Documents folder.
+
+`cd Documents`
+
+`git clone https://github.com/aaronaanderson/Terrain`
+
+`cd Terrain`
+
+`git submodule update --init --recursive`
+
+Use CMake to make the build files.
+
+`mkdir build`
+
+`cmake -B ./build -S . -DCMAKE_BUILD_TYPE=Release`
+
+`cd build`
+
+`make -j4`
+
+To install the plugin binary, use the file explorer to navigate to Documents/Terrain/build/WaveTerrainSynth_artefacts/Release/VST3/ and copy Terrain.vst3. Paste this file in location /lib/vst3/. Note that copying files to this location may require elevated privileges
