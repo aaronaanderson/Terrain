@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.22) 
 
-project(TERRAIN VERSION 0.0.1)
+project(TERRAIN VERSION 1.0.1)
 
 find_package(OpenGL REQUIRED)
 
 add_subdirectory(JUCE)                    # If you've put JUCE in a subdirectory called JUCE
 
 juce_add_plugin(WaveTerrainSynth
-    VERSION "0.0.1"                               # Set this if the plugin version is different to the project version
+    VERSION "1.0.1"                               # Set this if the plugin version is different to the project version
     # ICON_BIG ...                              # ICON_* arguments specify a path to an image file to use as an icon for the Standalone
     # ICON_SMALL ...
     COMPANY_NAME "Aaron Anderson"                          # Specify the name of the plugin's author
