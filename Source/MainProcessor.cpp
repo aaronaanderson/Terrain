@@ -226,7 +226,7 @@ void MainProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     juce::dsp::ProcessContextReplacing<float> context (outputBlock);
     outputChain.process (context);
 
-    for (int c = 1; c < buffer.getNumChannels(); c++)
+    for (int c = 0; c < buffer.getNumChannels(); c++)
         buffer.copyFrom (c, 0, renderBuffer.getReadPointer (0), buffer.getNumSamples());
     
     renderBuffer.clear();
