@@ -52,7 +52,7 @@ private:
     tp::Parameters parameters;
     std::unique_ptr<tp::WaveTerrainSynthesizer> synthesizer;
     std::unique_ptr<juce::dsp::Oversampling<float>> overSampler;
-    int storedFactor = 0;
+    int storedFactor = -1;
     juce::AudioBuffer<float> renderBuffer;
 
     // juce::dsp::ProcessorChain<juce::dsp::IIR::Filter<float>> outputChain;
