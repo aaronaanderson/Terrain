@@ -52,7 +52,7 @@ private:
     tp::Parameters parameters;
     std::unique_ptr<tp::WaveTerrainSynthesizer> synthesizer;
     std::unique_ptr<juce::dsp::Oversampling<float>> overSampler;
-    int storedFactor = -1;
+    int storedFactor = -1; // initialize with invalid factor
     juce::AudioBuffer<float> renderBuffer;
 
     // juce::dsp::ProcessorChain<juce::dsp::IIR::Filter<float>> outputChain;
@@ -165,17 +165,24 @@ private:
                                                                             overSamplingFactor, 
                                                                             juce::dsp::Oversampling<float>::FilterType::filterHalfBandPolyphaseIIR);
             overSampler->initProcessing (static_cast<size_t> (maxSamplesPerBlock));
+            
+            synthesizer->prepareToPlay (sampleRate * std::pow (2, overSamplingFactor), 
+                                        bufferSize * static_cast<int> (std::pow (2, overSamplingFactor)));
+            renderBuffer.setSize (1, bufferSize, false, false, true); // Don't re-allocate; maxBufferSize is set in prepareToPlay
+            renderBuffer.clear();
+            
+            storedFactor = overSamplingFactor;
+            storedBufferSize = bufferSize;
         }
-        storedFactor = overSamplingFactor;
-
+        
         if (bufferSize != storedBufferSize)
         {
             synthesizer->prepareToPlay (sampleRate * std::pow (2, overSamplingFactor), 
                                         bufferSize * static_cast<int> (std::pow (2, overSamplingFactor)));
             renderBuffer.setSize (1, bufferSize, false, false, true); // Don't re-allocate; maxBufferSize is set in prepareToPlay
             renderBuffer.clear();
+            storedBufferSize = bufferSize;
         }
-        storedBufferSize = bufferSize;
     }
 
     juce::Array<juce::String> trajectoryStrings {"Ellipse", 
