@@ -3,7 +3,7 @@
 	url = https://github.com/juce-framework/JUCE.git
 [submodule "glm_module/glm"]
 	path = glm_module/glm
-	url = git@github.com:g-truc/glm.git
+	url = https://github.com/g-truc/glm.git
 [submodule "PerlinNoise"]
 	path = PerlinNoise
 	url = https://github.com/Reputeless/PerlinNoise.git
