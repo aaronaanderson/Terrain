@@ -1,6 +1,6 @@
 # Terrain
-<!-- ![alt text](ReadmeSource/Terrain.PNG) -->
-[![YouTube](http://i.ytimg.com/vi/xtvo_RxdEsY/hqdefault.jpg)](https://www.youtube.com/watch?v=xtvo_RxdEsY)
+![alt text](ReadmeSource/Terrain.PNG)
+https://www.youtube.com/watch?v=xtvo_RxdEsY
 Installer links are in the description of the youtube video linked above.
 
 Terrain is a Wave Terrain Synthesis instrument plugin I've made available for free on Mac, Windows, and Linux systems.
