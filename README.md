@@ -4,6 +4,7 @@ https://www.youtube.com/watch?v=xtvo_RxdEsY
 
 Installer links are in the description of the youtube video linked above.
 
+## Description
 Terrain is a Wave Terrain Synthesis instrument plugin I've made available for free on Mac, Windows, and Linux systems.
 
 In wave terrain synthesis, a sound is produced via a 2D trajectory scanning over a 3D surface, or terrain. The timbre produced is dependent on the shape and parameters of the trajectory, as well as the shape of the scanned terrain.
