@@ -22,7 +22,11 @@ public:
         calculateCoefficients();
     }
     void noteOn() { setPhase (Phase::ATTACK); }
-    void noteOff() { if (currentValue > 0.0) setPhase (Phase::RELEASE); }
+    void noteOff() 
+    { 
+        if (currentValue > 0.0) // This condition has to be here for reasons unknown, be wary - Aaron
+            setPhase (Phase::RELEASE); 
+    }
     enum class Phase 
     {
         ATTACK, 

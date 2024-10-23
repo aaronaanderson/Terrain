@@ -94,7 +94,7 @@ struct Parameters
     juce::AudioParameterBool* envelopeSize;
     RangedFloatParameter* attack;
     RangedFloatParameter* decay;
-    NormalizedFloatParameter* sustain;
+    RangedFloatParameter* sustain;
     RangedFloatParameter* release;
 
     NormalizedFloatParameter* filterResonance;

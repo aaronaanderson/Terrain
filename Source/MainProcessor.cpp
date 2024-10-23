@@ -67,7 +67,10 @@ MainProcessor::MainProcessor()
     addParameter (parameters.decay = new tp::RangedFloatParameter ("Decay", 
                                                                     range, 
                                                                     trajectoryVariablesBranch.getProperty (id::decay)));
-    addParameter (parameters.sustain = new tp::NormalizedFloatParameter ("sustain", trajectoryVariablesBranch.getProperty (id::sustain)));
+    range = juce::NormalisableRange<float> (-24.0f, 0.0f);
+    addParameter (parameters.sustain = new tp::RangedFloatParameter ("sustain", 
+                                                                     range, 
+                                                                     trajectoryVariablesBranch.getProperty (id::sustain)));
     range = juce::NormalisableRange<float> (10.0f, 4000.0f); range.setSkewForCentre (800.0f);
     addParameter (parameters.release = new tp::RangedFloatParameter ("Release", 
                                                                     range, 

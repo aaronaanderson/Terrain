@@ -50,7 +50,7 @@ public:
         virtual ~VoiceListener() {}
         virtual void voicesReset (juce::Array<juce::SynthesiserVoice*> newVoice) = 0;
     };
-    void setVoiceListener(VoiceListener* vl) { voiceListener = vl; }
+    void setVoiceListener (VoiceListener* vl) { voiceListener = vl; }
     juce::Array<juce::SynthesiserVoice*> getVoices()
     {
         juce::Array<juce::SynthesiserVoice*> v;

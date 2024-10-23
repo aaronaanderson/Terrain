@@ -1,8 +1,8 @@
 # In Progress
 
 ## 1.0.3
-* Pitch Bend
-* Add Zero-Sustain exception (zero sustain currently causes canceled release phases)
+* Pitch Bend - complete
+* Add Zero-Sustain exception (zero sustain currently causes canceled release phases) - complete
 * Experiment/implement more effective DC-Offset filter
 * Fix bug that causes Reaper interface to brake when loading a preset
 

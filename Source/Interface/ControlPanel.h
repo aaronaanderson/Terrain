@@ -188,7 +188,7 @@ public:
         envelopeSize (parameters.envelopeSize, gt, "ES"),
         attack (parameters.attack, gt, "Attack", {2.0f, 2000.0f}, 100.0f),
         decay (parameters.decay, gt, "Decay", {2.0f, 1000.0f}, 50.0f), 
-        sustain (parameters.sustain, gt, "Sustain", {0.0f, 1.0f}), 
+        sustain (parameters.sustain, gt, "Sustain", {-24.0f, 0.0f}), 
         release (parameters.release, gt, "Release", {10.0f, 4000.0f}, 800.0f)
     {
         jassert (state.getType() == id::TRAJECTORY_VARIABLES);
