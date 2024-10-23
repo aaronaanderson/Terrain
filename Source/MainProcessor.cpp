@@ -168,7 +168,7 @@ void MainProcessor::prepareToPlay (double sr, int size)
     spec.sampleRate = sr;
 
     auto& dcOffset = outputChain.get<0>();
-    dcOffset.coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass (spec.sampleRate, 5.0);
+    dcOffset.coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass (spec.sampleRate, 20.0);
 
     auto& ladderFilter = outputChain.get<1>();
     ladderFilter.setEnabled (true);

@@ -19,7 +19,7 @@ juce_add_plugin(WaveTerrainSynth
     BUNDLE_ID com.AaronAnderson.WaveTerrainSynth
     COPY_PLUGIN_AFTER_BUILD TRUE
     PLUGIN_MANUFACTURER_CODE Aaro               # A four-character manufacturer id with at least one upper-case character
-    PLUGIN_CODE JEe9                            # A unique four-character plugin id with exactly one upper-case character
+    PLUGIN_CODE JEe9                        # A unique four-character plugin id with exactly one upper-case character
                                                 # GarageBand 10.3 requires the first letter to be upper-case, and the remaining letters to be lower-case
     APP_SANDBOX_ENABLED TRUE        # Needed for GarageBand
     FORMATS Standalone VST3 AU      # The formats to build. Other valid formats are: AAX Unity VST AU AUv3
