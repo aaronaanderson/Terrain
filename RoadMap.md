@@ -13,6 +13,9 @@
 ## 1.1.0
 * Microtonality via MTS-ESP
 
+## 1.2.0
+* MPE Support
+
 # Completed
 
 ## 1.0.2
