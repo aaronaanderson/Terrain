@@ -141,9 +141,8 @@ public:
                     float velocity,
                     juce::SynthesiserSound* sound,
                     int currentPitchWheelPosition) override 
-    {
-        juce::ignoreUnused (currentPitchWheelPosition);
-        
+    {   
+        setPitchWheelIncrementScalar (currentPitchWheelPosition);
         setFrequency (static_cast<float> (juce::MidiMessage::getMidiNoteInHertz (midiNoteNumber)));
         amplitude = velocity;
         terrain = dynamic_cast<Terrain*> (sound);
@@ -156,13 +155,16 @@ public:
         juce::ignoreUnused (velocity, allowTailOff); 
         envelope.noteOff();
     }
-    void pitchWheelMoved (int newPitchWheelValue) override { juce::ignoreUnused (newPitchWheelValue); }
+    void pitchWheelMoved (int newPitchWheelValue) override 
+    { 
+        setPitchWheelIncrementScalar (newPitchWheelValue);
+    }
     void controllerMoved (int controllerNumber, int newControllerValue) override { juce::ignoreUnused (controllerNumber, newControllerValue); }
     void renderNextBlock (juce::AudioBuffer<double>& ob, int ss, int nums) override { juce::ignoreUnused (ob, ss, nums); }
     void renderNextBlock (juce::AudioBuffer<float>& outputBuffer, 
                           int startSample, int numSamples) override 
     {
-         auto* o = outputBuffer.getWritePointer(0);
+        auto* o = outputBuffer.getWritePointer(0);
         for(int i = startSample; i < startSample + numSamples; i++)
         {
             if(!envelope.isActive()) break;
@@ -197,7 +199,7 @@ public:
                 history.feedNext (point, outputSample);
                 o[i] += outputSample * static_cast<float> (envelope.calculateNext());
             }
-            phase = std::fmod (phase + phaseIncrement, juce::MathConstants<double>::twoPi);
+            phase = std::fmod (phase + (phaseIncrement * pitchWheelIncrementScalar), juce::MathConstants<double>::twoPi);
             if(!envelope.isActive())
             {
                 history.clear();
@@ -308,6 +310,7 @@ private:
     float amplitude = 1.0;
     double phase = 0.0;
     double phaseIncrement;
+    double pitchWheelIncrementScalar = 1.0;
     double sampleRate = 48000.0;
 
     juce::Array<Point> feedbackBuffer;
@@ -347,7 +350,21 @@ private:
         int index;
     }; 
     History history;
-
+    void setPitchWheelIncrementScalar (int pitchWheelPosition)
+    {
+        // linear mapping of 0 - 16383 to -1.0 - 1.0 will not work 
+        // because the middle of the range is not 0.0f; thus we have
+        // to branch each side of the 0
+        float normalizedBend;
+        if (pitchWheelPosition <= 8192)
+            normalizedBend = (pitchWheelPosition - 8192) / 8192.0f;
+        else
+            normalizedBend = (pitchWheelPosition - 8191) / 8192.0f;
+        
+        float bendRangeSemitones = 12.0f; // this will be a variable later; for now a constant bend range of a whole step
+        float semitoneBend = normalizedBend * bendRangeSemitones;
+        pitchWheelIncrementScalar = std::pow (2.0, semitoneBend / 12.0);
+    }
     void setFrequency (float newFrequency)
     {
         jassert (newFrequency > 0.0f);
@@ -426,5 +443,4 @@ private:
                         voiceParameters.mod_c.getNext(), voiceParameters.mod_d.getNext());
     }
 };
-
 } // end namespace tp
