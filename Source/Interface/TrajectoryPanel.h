@@ -111,6 +111,7 @@ public:
                         const tp::Parameters p)
       : state (trajectoryBranch),
         undoManager (um),
+        globalTimer (gt),
         parameters (p), 
         modifierArray (state, undoManager, gt, parameters)
     {
@@ -126,13 +127,14 @@ public:
         addAndMakeVisible (trajectoryListLabel);
         addAndMakeVisible (modifierArray);
 
-        gt.addListener (*this);
+        globalTimer.addListener (*this);
         parameters.currentTrajectory->addListener (this);
         initializeState();
     }
     ~TrajectorySelector() override
     {
         parameters.currentTrajectory->removeListener (this);
+        globalTimer.removeListener (*this);
     }
     void resized() override 
     {
@@ -156,6 +158,7 @@ public:
 private:
     juce::ValueTree state;
     juce::UndoManager& undoManager;
+    GlobalTimer& globalTimer;
     const tp::Parameters parameters;
 
     juce::ComboBox trajectoryList;

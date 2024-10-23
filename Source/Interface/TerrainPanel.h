@@ -134,6 +134,7 @@ public:
                      const tp::Parameters p)
       : state (terrainBranch),
         undoManager (um),
+        globalTimer (gt),
         parameters (p),
         modifierArray (state, undoManager, gt, parameters)
     {
@@ -150,12 +151,13 @@ public:
         addAndMakeVisible (terrainListLabel);
         addAndMakeVisible (modifierArray);
 
-        gt.addListener (*this);
+        globalTimer.addListener (*this);
         parameters.currentTerrain->addListener (this);
     }
     ~TerrainSelector() override
     {
         parameters.currentTerrain->removeListener (this);
+        globalTimer.removeListener (*this);
     }
     void resized() override 
     {
@@ -179,6 +181,7 @@ public:
 private:
     juce::ValueTree state;
     juce::UndoManager& undoManager;
+    GlobalTimer& globalTimer;
     const tp::Parameters parameters;
 
     juce::ComboBox terrainList;

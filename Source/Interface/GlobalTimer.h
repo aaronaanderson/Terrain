@@ -10,7 +10,9 @@ struct GlobalTimer : private juce::Timer
     {
         virtual void onTimerCallback() = 0;
     };
-    void addListener (Listener& l) { listeners.add (&l); }
+
+    void addListener (Listener& l)    { listeners.add (&l); }
+    void removeListener (Listener& l) { listeners.removeAllInstancesOf (&l); }
 private:
     juce::Array<Listener*> listeners;
 

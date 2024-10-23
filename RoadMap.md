@@ -4,7 +4,7 @@
 * Pitch Bend - complete
 * Add Zero-Sustain exception (zero sustain currently causes canceled release phases) - complete
 * Experiment/implement more effective DC-Offset filter - complete
-* Fix bug that causes Reaper interface to break when loading a preset
+* Fix bug that causes Reaper interface to break when loading a preset - complete
 * Fix crash that appears in auval stress test (likely this is happening due to the oversampling buffer resizing)
 
 ## 1.0.4

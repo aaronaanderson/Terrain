@@ -14,7 +14,8 @@ struct ParameterToggle : public juce::Component,
     ParameterToggle (juce::AudioProcessorParameter* p,
                      GlobalTimer& gt, 
                      juce::String labelText)
-      : parameter (p)
+      : parameter (p), 
+        globalTimer (gt)
     {
         label.setText (labelText, juce::dontSendNotification);
         // label.setJustificationType (juce::Justification::centred);
@@ -22,11 +23,12 @@ struct ParameterToggle : public juce::Component,
         addAndMakeVisible (label);
         addAndMakeVisible (toggle);
         parameter->addListener (this);
-        gt.addListener (*this);
+        globalTimer.addListener (*this);
     }
     ~ParameterToggle() override
     {
         parameter->removeListener (this);
+        globalTimer.removeListener (*this);
     }
     void resized() override 
     {
@@ -40,6 +42,7 @@ struct ParameterToggle : public juce::Component,
     juce::ToggleButton& getToggle() { return toggle; }
 private:
     juce::AudioProcessorParameter* parameter;
+    GlobalTimer& globalTimer;
     juce::ToggleButton toggle;
     juce::Label label;
     bool needsRepainted = true;
@@ -68,7 +71,8 @@ struct ParameterSlider : public juce::Component,
                      juce::String labelText, 
                      juce::Range<double> range, 
                      std::optional<double> midPoint = std::optional<double>())
-      : parameter (p)
+      : parameter (p),
+        globalTimer (gt)
     {
         label.setText (labelText, juce::dontSendNotification);
         slider.setRange (range, 0.0);
@@ -78,11 +82,12 @@ struct ParameterSlider : public juce::Component,
         addAndMakeVisible (label);
         addAndMakeVisible (slider);
         parameter->addListener (this);
-        gt.addListener (*this);
+        globalTimer.addListener (*this);
     }
     ~ParameterSlider() override
     {
         parameter->removeListener (this);
+        globalTimer.removeListener (*this);
     }
     void resized() override 
     {
@@ -106,6 +111,7 @@ struct ParameterSlider : public juce::Component,
     juce::Slider& getSlider() { return slider; }
 private:
     juce::AudioProcessorParameter* parameter;
+    GlobalTimer& globalTimer;
     juce::Slider slider;
 
     juce::Label label;
