@@ -5,6 +5,7 @@
 * Add Zero-Sustain exception (zero sustain currently causes canceled release phases) - complete
 * Experiment/implement more effective DC-Offset filter
 * Fix bug that causes Reaper interface to brake when loading a preset
+* Fix crash that appears in auval stress test (likely this is happening due to the oversampling buffer resizing)
 
 ## 1.0.4
 * Presets/Preset Menu
