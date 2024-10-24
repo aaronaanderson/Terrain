@@ -15,7 +15,7 @@ struct TrajectoryVariablesTree
         
         tree.setProperty (id::attack, 80.0f, nullptr);
         tree.setProperty (id::decay, 20.0f, nullptr);
-        tree.setProperty (id::sustain, 0.7f, nullptr);
+        tree.setProperty (id::sustain, -3.0f, nullptr);
         tree.setProperty (id::release, 400.0f, nullptr);
         tree.setProperty (id::envelopeSize, true, nullptr);
 
