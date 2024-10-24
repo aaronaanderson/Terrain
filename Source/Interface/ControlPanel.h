@@ -40,6 +40,7 @@ private:
 
     // juce::Label label;
     ParameterSlider level;
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OutputLevel)
 };
 class Compressor : public juce::Component 
 {
@@ -82,6 +83,7 @@ private:
 
     juce::Label label;
     ParameterSlider threshold, ratio;
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Compressor)
 };
 class Filter : public juce::Component 
 {
@@ -130,6 +132,7 @@ private:
     juce::Label label;
     ParameterSlider frequency, resonance;
     ParameterToggle onOff;
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Filter)
 };
 class OverSampling : public juce::Component
 {
@@ -174,6 +177,7 @@ private:
 
     juce::Label label;
     juce::ComboBox dropDown;
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OverSampling)
 };
 class Envelope : public juce::Component
 {
@@ -231,6 +235,7 @@ private:
     juce::Label label;
     ti::ParameterToggle envelopeSize;
     ti::ParameterSlider attack, decay, sustain, release;
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Envelope)
 };
 class ControlPanel : public Panel
 {
@@ -274,5 +279,6 @@ private:
     Filter filter;
     Compressor compressor;
     OutputLevel outputLevel;
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ControlPanel)
 };
 }

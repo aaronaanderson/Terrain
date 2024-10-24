@@ -33,6 +33,7 @@ private:
     juce::UndoManager& undoManager;
 
     ParameterSlider saturation;
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TerrainVariables)
 };
 class TerrainModifierArray : public juce::Component
 {
@@ -122,6 +123,7 @@ private:
         
         return false;
     }
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TerrainModifierArray)
 };
 class TerrainSelector : public juce::Component,
                         private GlobalTimer::Listener, 
@@ -217,7 +219,8 @@ private:
         juce::ignoreUnused (parameterIndex, newValue);
         needsRepainted = true;
     }
-    void parameterGestureChanged (int parameterIndex, bool gestureIsStarting) override { juce::ignoreUnused (parameterIndex, gestureIsStarting); }          
+    void parameterGestureChanged (int parameterIndex, bool gestureIsStarting) override { juce::ignoreUnused (parameterIndex, gestureIsStarting); }   
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TerrainSelector)       
 };
 class TerrainPanel : public Panel
 {
@@ -248,5 +251,6 @@ private:
     juce::ValueTree state;
     TerrainSelector terrainSelector;
     TerrainVariables terrainVariables;
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TerrainPanel)
 };
 }

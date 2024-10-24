@@ -98,6 +98,7 @@ private:
         
         return false;
     }      
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ModifierArray)
 };
 
 class TrajectorySelector : public juce::Component,
@@ -194,7 +195,8 @@ private:
         juce::ignoreUnused (parameterIndex, newValue);
         needsRepainted = true;
     }
-    void parameterGestureChanged (int parameterIndex, bool gestureIsStarting) override { juce::ignoreUnused (parameterIndex, gestureIsStarting); }          
+    void parameterGestureChanged (int parameterIndex, bool gestureIsStarting) override { juce::ignoreUnused (parameterIndex, gestureIsStarting); }    
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TrajectorySelector)      
 };
 class FeedbackPanel : public juce::Component
 {
@@ -253,6 +255,7 @@ private:
         mix.setValue (state.getProperty (id::feedbackMix));
         compression.setValue (state.getProperty (id::feedbackCompression));
     }
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FeedbackPanel)
 };
 class TrajectoryVariables : public juce::Component 
 {
@@ -309,6 +312,7 @@ private:
         translation_x.setValue (state.getProperty (id::translation_x));
         translation_y.setValue (state.getProperty (id::translation_y));
     }
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TrajectoryVariables)
 };
 class MeanderancePanel : public juce::Component
 {
@@ -347,6 +351,7 @@ private:
     
     juce::Label label;
     ParameterSlider scale, speed;
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MeanderancePanel)
 };
 class TrajectoryPanel : public Panel
 {
@@ -390,5 +395,6 @@ private:
     TrajectoryVariables trajectoryVariables;
     MeanderancePanel meanderancePanel;
     FeedbackPanel feedbackPanel;
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TrajectoryPanel)
 };
 }

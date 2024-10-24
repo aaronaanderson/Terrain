@@ -164,6 +164,8 @@ private:
         release.offset = -release.tco * (1.0 - release.coefficient);
     }
     void setPhase (Phase nextPhase) { phase = nextPhase; }
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ADSR)
 };
 
 }

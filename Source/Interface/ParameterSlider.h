@@ -61,6 +61,7 @@ private:
         needsRepainted = true;
     }
     void parameterGestureChanged (int parameterIndex, bool gestureIsStarting) override { juce::ignoreUnused (parameterIndex, gestureIsStarting); }
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ParameterToggle)
 };
 struct ParameterSlider : public juce::Component,
                          private GlobalTimer::Listener,
@@ -134,5 +135,6 @@ private:
         needsRepainted = true;
     }
     void parameterGestureChanged (int parameterIndex, bool gestureIsStarting) override { juce::ignoreUnused (parameterIndex, gestureIsStarting); }
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ParameterSlider)
 };
 }

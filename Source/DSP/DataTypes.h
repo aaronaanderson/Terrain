@@ -61,6 +61,8 @@ struct PerlinVector
             sampleIndex -= sampleInterval;
         }
     }
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PerlinVector)
 };
 struct ModSet
 {
@@ -107,6 +109,8 @@ private:
         smoothedValue.setTargetValue (rangedParameter->convertFrom0to1 (newValue));
     }
     void parameterGestureChanged (int parameterIndex, bool gestureIsStarting) override { juce::ignoreUnused (parameterIndex, gestureIsStarting); }
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SmoothedParameter)
 };
 class BufferedSmoothParameter
 {
@@ -133,8 +137,9 @@ public:
     void allocate (int numSamples) { buffer.setSize (1, numSamples); }
 private:
     SmoothedParameter smoothedParameter;
-    // juce::Array<float> buffer;
     juce::AudioBuffer<float> buffer;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BufferedSmoothParameter)
 };
 
 } //end namespace tp

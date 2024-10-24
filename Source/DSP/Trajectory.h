@@ -339,12 +339,8 @@ private:
         void clear () 
         { 
             buffer.clear (bufferSize); 
-            // std::memset (buffer.getData(), 1200, bufferSize * sizeof(float));
-            // for (int i = 0; i < bufferSize; i++)
-            //     buffer[i] = 400.0f;
         }
     private:
-        // juce::Array<Position> buffer;
         juce::HeapBlock<float> buffer;
         int bufferSize;
         int index;
