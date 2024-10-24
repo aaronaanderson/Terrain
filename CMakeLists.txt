@@ -7,7 +7,7 @@ find_package(OpenGL REQUIRED)
 add_subdirectory(JUCE)                    # If you've put JUCE in a subdirectory called JUCE
 
 juce_add_plugin(WaveTerrainSynth
-    VERSION "1.0.2"                               # Set this if the plugin version is different to the project version
+    VERSION "1.0.3"                               # Set this if the plugin version is different to the project version
     # ICON_BIG ...                              # ICON_* arguments specify a path to an image file to use as an icon for the Standalone
     # ICON_SMALL ...
     COMPANY_NAME "Aaron Anderson"                          # Specify the name of the plugin's author
