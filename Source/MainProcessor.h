@@ -152,12 +152,26 @@ private:
                 parameters.outputLevel->setValueNotifyingHost (parameters.outputLevel->convertTo0to1 (tree.getProperty (property)));
         }
     }
+
+    void allocateMaxSamplesPerBlock (int maxSamples)
+    {
+        auto controlsTree = state.getChildWithName (id::CONTROLS);
+        auto overSamplingFactor = static_cast<int> (controlsTree.getProperty (id::oversampling));
+
+        synthesizer->allocate (maxSamples * static_cast<int> (std::pow (2, overSamplingFactor)));
+        overSampler = std::make_unique<juce::dsp::Oversampling<float>> (1, 
+                                                                        overSamplingFactor, 
+                                                                        juce::dsp::Oversampling<float>::FilterType::filterHalfBandPolyphaseIIR);
+        overSampler->initProcessing (static_cast<size_t> (maxSamples));
+    }
+
     void prepareOversampling (int bufferSize)
     {
         auto controlsTree = state.getChildWithName (id::CONTROLS);
         auto overSamplingFactor = static_cast<int> (controlsTree.getProperty (id::oversampling));
         if (overSamplingFactor == storedFactor && bufferSize == storedBufferSize) return;
-
+        //=============Very bad to allocate here, threaded solution instead of blocking should come in the future
+        //===The situation only arises if oversampling factor has changed
         if (overSamplingFactor != storedFactor)
         {
             synthesizer->allocate (maxSamplesPerBlock * static_cast<int> (std::pow (2, overSamplingFactor)));

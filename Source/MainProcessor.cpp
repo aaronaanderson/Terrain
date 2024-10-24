@@ -164,7 +164,7 @@ void MainProcessor::prepareToPlay (double sr, int size)
     sampleRate = sr; maxSamplesPerBlock = size;
     
     renderBuffer.setSize (1, maxSamplesPerBlock);
-    prepareOversampling (maxSamplesPerBlock);
+    allocateMaxSamplesPerBlock (maxSamplesPerBlock);
 
     juce::dsp::ProcessSpec spec;
     spec.maximumBlockSize = static_cast<juce::uint32> (size);
