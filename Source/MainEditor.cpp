@@ -63,13 +63,11 @@ bool MainEditor::keyPressed (const juce::KeyPress& key)
     }
     return true;
 }
-
-void MainEditor::valueTreeRedirected (juce::ValueTree& treeWhichHasBeenChanged) override 
+void MainEditor::valueTreeRedirected (juce::ValueTree& treeWhichHasBeenChanged) 
 {
     juce::ignoreUnused (treeWhichHasBeenChanged); 
     resetInterface(); 
 }
-
 void MainEditor::resetInterface()
 {
     removeChildComponent (trajectoryPanel.get());
