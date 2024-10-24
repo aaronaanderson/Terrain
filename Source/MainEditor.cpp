@@ -11,18 +11,20 @@ MainEditor::MainEditor (MainProcessor& p)
     terrainPanel = std::make_unique<ti::TerrainPanel> (state, undoManager, globalTimer, processorRef.getParameters()); 
     controlPanel = std::make_unique<ti::ControlPanel> (state, undoManager, globalTimer, processorRef.getParameters());
     visualizerPanel = std::make_unique<ti::VisualizerPanel> (processorRef.getWaveTerrainSynthesizer(), processorRef.getParameters());
-    
+    header = std::make_unique<ti::Header> ();
+
     addAndMakeVisible (trajectoryPanel.get());
     addAndMakeVisible (terrainPanel.get());
     addAndMakeVisible (controlPanel.get());
     addAndMakeVisible (visualizerPanel.get());
+    addAndMakeVisible (header.get());
 
     state.addListener (this);
     setLookAndFeel (&lookAndFeel);
     getLookAndFeel().setDefaultLookAndFeel (&lookAndFeel);
 
     setResizable (true, false);
-    setResizeLimits (756, 580, 2400, 1600);
+    setResizeLimits (756, 620, 2400, 1600);
     setSize (1200, 800);
 
     setWantsKeyboardFocus (true);
@@ -39,6 +41,8 @@ void MainEditor::paint (juce::Graphics& g)
 void MainEditor::resized() 
 {
     auto b = getLocalBounds();
+
+    header->setBounds (b.removeFromTop (40));
     
     int controlPanelHeight = b.getHeight() / 5;
     controlPanel->setBounds (b.removeFromBottom (controlPanelHeight));

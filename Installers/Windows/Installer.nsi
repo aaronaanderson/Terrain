@@ -17,8 +17,8 @@
 
 BrandingText "Aaron Anderson"
 
-Name "${PLUG_NAME} 1.0.2 Installer"
-OutFile "${PLUG_NAME} 1.0.2 Installer.exe"
+Name "${PLUG_NAME} 1.0.3 Installer"
+OutFile "${PLUG_NAME} 1.0.3 Installer.exe"
 
 RequestExecutionLevel admin
 

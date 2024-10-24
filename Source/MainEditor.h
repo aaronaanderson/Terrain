@@ -5,6 +5,7 @@
 #include "Interface/TerrainPanel.h"
 #include "Interface/ControlPanel.h"
 #include "Interface/VisualiserPanel.h"
+#include "Interface/Header.h"
 
 #include "Interface/ValueTreeView.h"
 #include "Interface/LookAndFeel.h"
@@ -29,7 +30,7 @@ private:
     std::unique_ptr<ti::TerrainPanel>    terrainPanel;
     std::unique_ptr<ti::ControlPanel>    controlPanel;
     std::unique_ptr<ti::VisualizerPanel> visualizerPanel;
-
+    std::unique_ptr<ti::Header>          header;
     std::unique_ptr<ValueTreeViewWindow> valueTreeViewWindow;
     bool keyPressed (const juce::KeyPress& key) override;
     
