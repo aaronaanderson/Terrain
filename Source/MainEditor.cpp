@@ -30,6 +30,7 @@ MainEditor::MainEditor (MainProcessor& p)
 MainEditor::~MainEditor() 
 {
     setLookAndFeel (nullptr);
+    state.removeListener (this);
 }
 void MainEditor::paint (juce::Graphics& g)
 {
