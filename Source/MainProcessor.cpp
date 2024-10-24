@@ -138,7 +138,10 @@ MainProcessor::MainProcessor()
     outputChain.reset();
 }
 
-MainProcessor::~MainProcessor() {}
+MainProcessor::~MainProcessor() 
+{
+    state.removeListener (this);
+}
 //==============================================================================
 const juce::String MainProcessor::getName() const  { return JucePlugin_Name; }
 bool MainProcessor::acceptsMidi() const            { return true; }
@@ -161,6 +164,7 @@ void MainProcessor::prepareToPlay (double sr, int size)
     sampleRate = sr; maxSamplesPerBlock = size;
     
     renderBuffer.setSize (1, maxSamplesPerBlock);
+    prepareOversampling (maxSamplesPerBlock);
 
     juce::dsp::ProcessSpec spec;
     spec.maximumBlockSize = static_cast<juce::uint32> (size);

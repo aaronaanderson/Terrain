@@ -121,5 +121,7 @@ private:
     {
         return juce::dsp::FastMathApproximations::tanh<float> (signal * scale * 1.31303528551f);
     }
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Terrain)
 };
 } // end namespace tp

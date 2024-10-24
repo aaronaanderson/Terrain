@@ -442,5 +442,7 @@ private:
          return ModSet (voiceParameters.mod_a.getNext(), voiceParameters.mod_b.getNext(), 
                         voiceParameters.mod_c.getNext(), voiceParameters.mod_d.getNext());
     }
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Trajectory)
 };
 } // end namespace tp
