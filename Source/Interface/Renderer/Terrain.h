@@ -51,6 +51,7 @@ struct PlaneMesh
     }
     void draw (Attributes& attributes)
     {
+        juce::ignoreUnused (attributes);
         vertexBuffer->bind();
         attributes.enable();
         juce::gl::glDrawElements (juce::gl::GL_TRIANGLES, vertexBuffer->numIndices, juce::gl::GL_UNSIGNED_INT, nullptr);ERROR_CHECK();
@@ -131,7 +132,7 @@ class Terrain
 public:
     Terrain (juce::OpenGLContext& c)
       : glContext (c), 
-        mesh (512, 512)
+        mesh (128, 128)
     {
         if (loadShaders())
         {
@@ -141,6 +142,7 @@ public:
     }
     void render (const Camera& camera, juce::Colour color, int index, float modA, float modB, float modC, float modD, float saturation)
     {
+        juce::ignoreUnused (camera,color,index,modA,modC,modB,modD,saturation);
         juce::gl::glDisable (juce::gl::GL_BLEND);
         juce::gl::glEnable (juce::gl::GL_DEPTH_TEST);
         juce::gl::glPolygonMode (juce::gl::GL_FRONT_AND_BACK, juce::gl::GL_FILL);
@@ -167,8 +169,8 @@ public:
         if (uniforms->saturation.get() != nullptr) uniforms->saturation->set (saturation);
 
         mesh.draw (*attributes.get());
-        // juce::gl::glBindBuffer (juce::gl::GL_ARRAY_BUFFER, 0);
-        // juce::gl::glPolygonMode (juce::gl::GL_FRONT_AND_BACK, juce::gl::GL_FILL );
+        // // juce::gl::glBindBuffer (juce::gl::GL_ARRAY_BUFFER, 0);
+        // // juce::gl::glPolygonMode (juce::gl::GL_FRONT_AND_BACK, juce::gl::GL_FILL );
     }
 private:
     juce::OpenGLContext& glContext;

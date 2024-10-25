@@ -125,7 +125,7 @@ struct TrajectoryMesh : PointsMesh // must be constructed on GL Initialize
         voice (t)
         
     {
-        if(loadShaders())
+        if (loadShaders())
         {
             attributes = std::make_unique<Attributes>(*shaders.get());
             uniforms   = std::make_unique<TrajectoryUniforms>(*shaders.get());
@@ -136,12 +136,12 @@ struct TrajectoryMesh : PointsMesh // must be constructed on GL Initialize
         }
     }
     ~TrajectoryMesh() override {}
-    void update(void* glVertexPtr) override 
+    void update (void* glVertexPtr) override 
     {
         std::memcpy (glVertexPtr, voice->getRawData(), sizeof(Vertex) * static_cast<size_t> (vertexBuffer->numVertices));
     }  
     
-    void render(const Camera& camera, const juce::Colour color)
+    void render (const Camera& camera, const juce::Colour color)
     {
         if (!voice->isVoiceActive())
             return; 
@@ -164,7 +164,7 @@ struct TrajectoryMesh : PointsMesh // must be constructed on GL Initialize
         if (uniforms->color.get() != nullptr)
             uniforms->color->set (color.getRed(), color.getGreen(), color.getBlue());
 
-        PointsMesh::draw(*attributes.get());
+        PointsMesh::draw (*attributes.get());
         juce::gl::glBindBuffer (juce::gl::GL_ARRAY_BUFFER, 0);
         juce::gl::glDepthMask (juce::gl::GL_TRUE);
     }

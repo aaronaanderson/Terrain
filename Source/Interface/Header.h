@@ -2,6 +2,7 @@
 
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <juce_data_structures/juce_data_structures.h>
+#include "PopUpWindow.h"
 #include "../Identifiers.h"
 
 namespace ti{
@@ -32,19 +33,18 @@ public:
         auto twoThirds = b.getWidth() * 2 / 3;
 
         auto p = b.removeFromLeft (twoThirds);
-        auto quarterP = p.getWidth() / 4;
-        auto pMenu = p.removeFromLeft (quarterP * 3);
-        presetLabel.setBounds (pMenu.removeFromTop (p.getHeight() / 2));
-        presets.setBounds (pMenu);
-        saveButton.setBounds (p.reduced (8));
+        presetLabel.setBounds (p.removeFromTop (p.getHeight() / 2));
+        auto sevenEighths = p.getWidth() * 7 / 8;
+        presets.setBounds (p.removeFromLeft (sevenEighths));
+        saveButton.setBounds (p);
 
-        randomizeButton.setBounds (b.removeFromTop (p.getHeight() / 2));
+        randomizeButton.setBounds (b.removeFromTop (b.getHeight() / 2));
         randomizeAmountSlider.setBounds (b);
     }
 private:
     juce::ComboBox presets;
     juce::Label presetLabel {"Preset", "Preset"};
-    juce::TextButton saveButton {"Save"};
+    juce::TextButton saveButton {"+"};
 
     juce::Slider randomizeAmountSlider;
     juce::TextButton randomizeButton {"Randomize"};

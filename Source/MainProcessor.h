@@ -169,6 +169,7 @@ private:
     {
         auto controlsTree = state.getChildWithName (id::CONTROLS);
         auto overSamplingFactor = static_cast<int> (controlsTree.getProperty (id::oversampling));
+        
         if (overSamplingFactor == storedFactor && bufferSize == storedBufferSize) return;
         //=============Very bad to allocate here, threaded solution instead of blocking should come in the future
         //===The situation only arises if oversampling factor has changed
