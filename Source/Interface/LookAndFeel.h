@@ -26,14 +26,15 @@ public:
         setColour (juce::ToggleButton::ColourIds::tickColourId, accent);
         setDefaultSansSerifTypeface (getCustomFont());
     }
+    static const juce::Colour getAccentColour() { return accent; }
+    static const juce::Colour getBaseColour() { return base; }
+    static const juce::Colour getBackgroundColour() { return background; }
     static const juce::Typeface::Ptr getCustomFont()
     {
         static auto typeface = juce::Typeface::createSystemTypefaceFor(BinaryData::Paulle1V_ttf, 
                                                                        BinaryData::Paulle1V_ttfSize);
         return typeface;
     }
-
-    
     void drawLinearSlider (juce::Graphics& g, int x, int y, int width, int height,
                                            float sliderPos,
                                            float minSliderPos,

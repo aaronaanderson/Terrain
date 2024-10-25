@@ -74,8 +74,8 @@ public:
         pf.multisamplingLevel = 4;
         glContext.setPixelFormat (pf);
         glContext.setMultisamplingEnabled (true);
+        glContext.setComponentPaintingEnabled(false);
         glContext.attachTo (*this);
-    
         startTimerHz (60);
     }
     ~Visualizer() override 
