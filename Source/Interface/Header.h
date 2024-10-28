@@ -52,7 +52,9 @@ private:
 
             renameButton.onClick = [&]()
                 {
-                    // TODO: rename preset
+                    presetManager.renamePreset (presetManager.getCurrentPresetName(), 
+                                                nameEditor.getText());
+                    presetComponent->refreshList();
                     presetComponent->viewPresetMainComponent();
                 };
             addAndMakeVisible (renameButton);

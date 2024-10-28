@@ -8,9 +8,7 @@ public:
     PresetManager (juce::AudioProcessor* ap, juce::ValueTree& tree)
       : audioProcessor (ap), 
         state (tree)
-    {
-
-    }
+    {}
 
     void savePreset (juce::String presetName)
     {
@@ -41,7 +39,11 @@ public:
     }
     void renamePreset (juce::String oldName, juce::String newName)
     {
-        
+        state.setProperty (id::presetName, newName, nullptr);
+        auto file = getPresetFolder().getChildFile (oldName + ".xml");
+        if (file.existsAsFile())
+            file.deleteFile();
+        savePreset (newName);
     }
     juce::Array<juce::String> getPresetNames()
     {
