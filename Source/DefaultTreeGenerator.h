@@ -144,6 +144,8 @@ struct DefaultTree
     static const juce::ValueTree create()
     {
         auto tree = juce::ValueTree (id::TERRAINSYNTH);
+        tree.setProperty (id::presetName, "Default", nullptr);
+        
         tree.addChild (TrajectoriesTree::create(), -1, nullptr);
         tree.addChild (TrajectoryVariablesTree::create(), -1, nullptr);
         tree.addChild (TerrainsTree::create(), -1, nullptr);

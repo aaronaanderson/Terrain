@@ -14,6 +14,7 @@ public:
 
     void savePreset (juce::String presetName)
     {
+        state.setProperty (id::presetName, presetName, nullptr);
         auto xml = state.createXml();
         auto file = getPresetFolder().getChildFile (presetName + ".xml");
         if (!file.existsAsFile()) file.setCreationTime (juce::Time::getCurrentTime());
@@ -34,7 +35,9 @@ public:
     }
     void deletePreset (juce::String presetName)
     {
-
+        auto file = getPresetFolder().getChildFile (presetName + ".xml");
+        if (file.existsAsFile())
+            file.deleteFile();
     }
     void renamePreset (juce::String oldName, juce::String newName)
     {
@@ -48,6 +51,7 @@ public:
             
         return l;
     }
+    juce::String getCurrentPresetName(){ return state.getProperty (id::presetName).toString(); }
 
 private:
     juce::AudioProcessor* audioProcessor = nullptr;
@@ -60,7 +64,6 @@ private:
 #ifdef JUCE_MAC
 	    presetFolder = presetFolder.getChildFile("Audio").getChildFile("Presets");
 #endif
-	
 	    presetFolder = presetFolder.getChildFile("Aaron Anderson").getChildFile("Terrain"); // "Imogen" is the name of my plugin
 	    auto result = presetFolder.createDirectory();
 

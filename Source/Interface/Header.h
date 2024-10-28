@@ -136,7 +136,8 @@ private:
 
             deleteButton.onClick = [&]()
                 {
-                    // TODO: delete preset
+                    presetManager.deletePreset (presetManager.getCurrentPresetName());
+                    presetComponent->refreshList();
                     presetComponent->viewPresetMainComponent();
                 };
             addAndMakeVisible (deleteButton);
@@ -175,7 +176,7 @@ private:
           : presetComponent (pc), 
             presetManager (pm)
         {
-            presets.addItemList (presetManager.getPresetNames(), 1);
+            refreshList();
             presets.onChange = [&](){ presetManager.loadPreset (presets.getItemText (presets.getSelectedItemIndex())); };
             addAndMakeVisible (presets);
             presetLabel.setJustificationType (juce::Justification::centred);
@@ -210,7 +211,18 @@ private:
         void refreshList()
         {
             presets.clear();
-            presets.addItemList (presetManager.getPresetNames(), 1);
+            auto names = presetManager.getPresetNames();
+            presets.addItemList (names, 1);
+            int currentPresetIndex = 0;
+            for (int i = 0; i < names.size(); i++)
+            {
+                if (names[i] == presetManager.getCurrentPresetName())
+                {
+                    currentPresetIndex = i;
+                    break;
+                }    
+            }
+            presets.setSelectedItemIndex (currentPresetIndex, juce::NotificationType::dontSendNotification);
         }
     private:
         PresetComponent* presetComponent = nullptr;
