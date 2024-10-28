@@ -7,7 +7,8 @@ class PresetManager
 public:
     PresetManager (juce::AudioProcessor* ap, juce::ValueTree& tree)
       : audioProcessor (ap), 
-        state (tree)
+        state (tree), 
+        settings (state.getChildWithName (id::PRESET_SETTINGS))
     {}
 
     void savePreset (juce::String presetName)
@@ -54,11 +55,22 @@ public:
         return l;
     }
     juce::String getCurrentPresetName(){ return state.getProperty (id::presetName).toString(); }
+    void randomize()
+    {
+        auto r = juce::Random ();
+        for (auto p : audioProcessor->getParameters())
+        {
+            auto randomOffset = r.nextFloat() - 0.5f;
+            std::cout << static_cast<float> (settings.getProperty (id::presetRandomizationScale)) << std::endl;
+            randomOffset = randomOffset * static_cast<float> (settings.getProperty (id::presetRandomizationScale));
+            p->setValueNotifyingHost (p->getValue() + randomOffset);
+        }
+    }
 
 private:
     juce::AudioProcessor* audioProcessor = nullptr;
     juce::ValueTree& state;
-
+    juce::ValueTree settings;
     juce::File getPresetFolder()
     {
 	    auto presetFolder = juce::File::getSpecialLocation(juce::File::SpecialLocationType::userApplicationDataDirectory);

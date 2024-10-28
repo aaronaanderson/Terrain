@@ -139,6 +139,16 @@ struct ControlsTree
         return tree;
     }
 };
+struct SettingsTree
+{
+    static juce::ValueTree create()
+    {
+        juce::ValueTree tree (id::PRESET_SETTINGS);
+        tree.setProperty (id::presetRandomizationScale, 0.2f, nullptr);
+
+        return tree;
+    }
+};
 struct DefaultTree
 {
     static const juce::ValueTree create()
@@ -146,6 +156,7 @@ struct DefaultTree
         auto tree = juce::ValueTree (id::TERRAINSYNTH);
         tree.setProperty (id::presetName, "Default", nullptr);
         
+        tree.addChild (SettingsTree::create(), -1, nullptr);
         tree.addChild (TrajectoriesTree::create(), -1, nullptr);
         tree.addChild (TrajectoryVariablesTree::create(), -1, nullptr);
         tree.addChild (TerrainsTree::create(), -1, nullptr);

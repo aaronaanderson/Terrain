@@ -7,6 +7,9 @@ namespace id
     static const juce::Identifier TERRAINSYNTH = "TERRAIN_SYNTH";
     static const juce::Identifier presetName = "presetName";
 
+    static const juce::Identifier PRESET_SETTINGS = "PRESET_SETTINGS";
+    static const juce::Identifier presetRandomizationScale = "presetRandomizationScale";
+
     static const juce::Identifier TRAJECTORIES = "TRAJECTORIES";
     static const juce::Identifier TRAJECTORY = "TRAJECTORY"; 
     static const juce::Identifier type = "type";

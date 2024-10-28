@@ -12,10 +12,10 @@ namespace ti{
 class PresetComponent : public juce::Component
 {
 public:
-    PresetComponent (PresetManager& pm)
+    PresetComponent (PresetManager& pm, juce::ValueTree settingsBranch)
       : viewport ("Preset Component Layout")
     {
-        viewport.setViewedComponent (new PresetComponentLayout (this, pm));
+        viewport.setViewedComponent (new PresetComponentLayout (this, pm, settingsBranch));
         viewport.setScrollBarsShown (false, false);
         addAndMakeVisible (viewport);
     };
@@ -174,10 +174,12 @@ private:
     class PresetMainComponent : public juce::Component
     {
     public:
-        PresetMainComponent (PresetComponent* pc, PresetManager& pm)
+        PresetMainComponent (PresetComponent* pc, PresetManager& pm, juce::ValueTree settingsBranch)
           : presetComponent (pc), 
-            presetManager (pm)
+            presetManager (pm), 
+            settings (settingsBranch)
         {
+            jassert (settingsBranch.getType() == id::PRESET_SETTINGS);
             refreshList();
             presets.onChange = [&](){ presetManager.loadPreset (presets.getItemText (presets.getSelectedItemIndex())); };
             addAndMakeVisible (presets);
@@ -187,7 +189,12 @@ private:
             addAndMakeVisible (presetActionButton);
     
             randomizeAmountSlider.setTextBoxStyle (juce::Slider::TextEntryBoxPosition::NoTextBox, true, 20, 20);
+            randomizeAmountSlider.setRange ({0.0, 1.0}, 0.0);
+            randomizeAmountSlider.onValueChange = [&]() { settings.setProperty (id::presetRandomizationScale,
+                                                                                randomizeAmountSlider.getValue(), 
+                                                                                nullptr); };
             addAndMakeVisible (randomizeAmountSlider);
+            randomizeButton.onClick = [&]() { presetManager.randomize(); };
             addAndMakeVisible (randomizeButton);
         }  
         void paint (juce::Graphics& g) override 
@@ -229,6 +236,7 @@ private:
     private:
         PresetComponent* presetComponent = nullptr;
         PresetManager&   presetManager;
+        juce::ValueTree settings;
         juce::ComboBox presets;
         juce::Label presetLabel {"Preset", "Preset"};
         juce::TextButton presetActionButton {"+"};
@@ -239,8 +247,8 @@ private:
     class PresetComponentLayout : public juce::Component
     {
     public:
-        PresetComponentLayout (PresetComponent* pc, PresetManager& pm)
-          : presetMainComponent   (pc, pm), 
+        PresetComponentLayout (PresetComponent* pc, PresetManager& pm, juce::ValueTree settingsBranch)
+          : presetMainComponent   (pc, pm, settingsBranch), 
             presetActionComponent (pc, pm), 
             presetSaveComponent   (pc, pm),
             presetRenameComponent (pc, pm)
@@ -272,8 +280,8 @@ private:
 class Header : public juce::Component
 {
 public:
-    Header (PresetManager& pm)
-      : presetComponent (pm)
+    Header (PresetManager& pm, juce::ValueTree settingsBranch)
+      : presetComponent (pm, settingsBranch)
     {
         addAndMakeVisible (presetComponent);
     }
@@ -295,5 +303,6 @@ public:
     }
 private:
     PresetComponent presetComponent;
+
 };
 } // end namespace ti

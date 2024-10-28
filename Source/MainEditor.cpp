@@ -11,7 +11,7 @@ MainEditor::MainEditor (MainProcessor& p)
     terrainPanel = std::make_unique<ti::TerrainPanel> (state, undoManager, globalTimer, processorRef.getParameters()); 
     controlPanel = std::make_unique<ti::ControlPanel> (state, undoManager, globalTimer, processorRef.getParameters());
     visualizerPanel = std::make_unique<ti::VisualizerPanel> (processorRef.getWaveTerrainSynthesizer(), processorRef.getParameters());
-    header = std::make_unique<ti::Header> (processorRef.getPresetManager());
+    header = std::make_unique<ti::Header> (processorRef.getPresetManager(), processorRef.getState().getChildWithName (id::PRESET_SETTINGS));
 
     addAndMakeVisible (trajectoryPanel.get());
     addAndMakeVisible (terrainPanel.get());

@@ -255,6 +255,10 @@ void MainProcessor::setStateInformation (const void* data, int sizeInBytes)
     if (!xml->hasTagName (state.getType())) return; // make sure it's the right data
     state = juce::ValueTree::fromXml (*xml);
 
+    // necessary if loading an older preset
+    if (state.getChildWithName(id::PRESET_SETTINGS) == juce::ValueTree())
+        state.addChild (SettingsTree::create(), -1, nullptr);
+
     resetParameterState();
 }
 void MainProcessor::resetParameterState()
