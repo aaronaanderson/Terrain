@@ -4,6 +4,7 @@
 #include "Parameters.h"
 #include "Identifiers.h"
 #include "DSP/WaveTerrainSynthesizer.h"
+#include "Utility/PresetManager.h"
 #include "StateHelpers.h"
 
 //==============================================================================
@@ -43,6 +44,7 @@ public:
 
     juce::ValueTree& getState() { return state; }
     juce::UndoManager& getUndoManager() { return undoManager; }
+    PresetManager& getPresetManager() { return presetManager; }
 
     const tp::Parameters& getParameters() const { return parameters; }
     tp::WaveTerrainSynthesizer& getWaveTerrainSynthesizer() { return *synthesizer.get(); }
@@ -50,6 +52,7 @@ private:
     juce::ValueTree state;
     juce::UndoManager undoManager;
     tp::Parameters parameters;
+    PresetManager presetManager;
     std::unique_ptr<tp::WaveTerrainSynthesizer> synthesizer;
     std::unique_ptr<juce::dsp::Oversampling<float>> overSampler;
     int storedFactor = -1; // initialize with invalid factor
@@ -164,7 +167,6 @@ private:
                                                                         juce::dsp::Oversampling<float>::FilterType::filterHalfBandPolyphaseIIR);
         overSampler->initProcessing (static_cast<size_t> (maxSamples));
     }
-
     void prepareOversampling (int bufferSize)
     {
         auto controlsTree = state.getChildWithName (id::CONTROLS);

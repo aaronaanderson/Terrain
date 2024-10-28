@@ -21,7 +21,8 @@ const juce::String MainProcessor::trajectoryNameFromIndex (int i)
 //==============================================================================
 MainProcessor::MainProcessor()
      : AudioProcessor (BusesProperties().withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
-       state (DefaultTree::create())
+       state (DefaultTree::create()), 
+       presetManager (this, state)
 {
 
     //======================================Trajectory Parameters
@@ -246,25 +247,15 @@ void MainProcessor::getStateInformation (juce::MemoryBlock& destData)
 { 
     std::unique_ptr<juce::XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
-    // std::cout << "output\n" << xml->toString() << std::endl;
-    // if (destData.getData() == nullptr) return;
-    // auto outputStream = juce::MemoryOutputStream (destData.getData(), destData.getSize());
-    // state.writeToStream (outputStream);
 }
 void MainProcessor::setStateInformation (const void* data, int sizeInBytes)
 { 
-    // juce::ignoreUnused (data, sizeInBytes);
     std::unique_ptr<juce::XmlElement> xml (getXmlFromBinary (data, sizeInBytes));
     if (xml.get() == nullptr) return; // make sure we have data
     if (!xml->hasTagName (state.getType())) return; // make sure it's the right data
     state = juce::ValueTree::fromXml (*xml);
-    //std::cout << "input\n" << xml->toString() << std::endl;
-    //state.addListener (this);
-    //createEditor();
+
     resetParameterState();
-    // state.readFromData (data, sizeInBytes);
-    // auto inputStream = juce::MemoryInputStream (data, sizeInBytes, false);
-    // state.readFromStream (inputStream);
 }
 void MainProcessor::resetParameterState()
 {

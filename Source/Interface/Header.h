@@ -5,16 +5,17 @@
 #include "LookAndFeel.h"
 #include "PopUpWindow.h"
 #include "../Identifiers.h"
+#include "../Utility/PresetManager.h"
 
 namespace ti{
 
 class PresetComponent : public juce::Component
 {
 public:
-    PresetComponent()
+    PresetComponent (PresetManager& pm)
       : viewport ("Preset Component Layout")
     {
-        viewport.setViewedComponent (new PresetComponentLayout (this));
+        viewport.setViewedComponent (new PresetComponentLayout (this, pm));
         viewport.setScrollBarsShown (false, false);
         addAndMakeVisible (viewport);
     };
@@ -27,18 +28,25 @@ public:
         auto vc = viewport.getViewedComponent();
         vc->setBounds (layoutViewBounds);
     }
+    void refreshList() 
+    {
+        auto pcl = dynamic_cast<PresetComponentLayout*> (viewport.getViewedComponent());
+        pcl->refreshList();
+    }
     void viewPresetMainComponent() { viewport.setViewPosition ({0, 0}); }
     void viewActionComponent()     { viewport.setViewPosition ({componentWidth,     0}); }
     void viewSaveComponent()       { viewport.setViewPosition ({componentWidth * 2, 0}); }
     void viewRenameComponent()     { viewport.setViewPosition ({componentWidth * 3, 0}); }
 private:
+
     juce::Viewport viewport;
     int componentWidth;
-
+    
     struct PresetRenameComponent : public juce::Component
     {
-        PresetRenameComponent (PresetComponent* pc)
-          : presetComponent (pc)
+        PresetRenameComponent (PresetComponent* pc, PresetManager& pm)
+          : presetComponent (pc),
+            presetManager (pm)
         {
             addAndMakeVisible (nameEditor);
 
@@ -69,19 +77,22 @@ private:
         }
     private:
         PresetComponent* presetComponent = nullptr;
+        PresetManager& presetManager;
         juce::TextEditor nameEditor;
         juce::TextButton renameButton {"Rename"};
         juce::TextButton cancelButton {"Cancel"};        
     };
     struct PresetSaveComponent : public juce::Component
     {
-        PresetSaveComponent (PresetComponent* pc)
-          : presetComponent (pc)
+        PresetSaveComponent (PresetComponent* pc, PresetManager& pm)
+          : presetComponent (pc),
+            presetManager (pm)
         {
             addAndMakeVisible (nameEditor);
             saveButton.onClick = [&]()
                 {
-                    // TODO: save preset
+                    presetManager.savePreset (nameEditor.getText());
+                    presetComponent->refreshList();
                     presetComponent->viewPresetMainComponent();
                 };
             addAndMakeVisible (saveButton);
@@ -106,14 +117,16 @@ private:
         }
     private:
         PresetComponent* presetComponent = nullptr;
+        PresetManager& presetManager;
         juce::TextEditor nameEditor;
         juce::TextButton saveButton {"Save"};
         juce::TextButton cancelButton {"Cancel"};
     };
     struct PresetActionComponent : public juce::Component
     {
-        PresetActionComponent (PresetComponent* pc)
-          : presetComponent (pc)
+        PresetActionComponent (PresetComponent* pc, PresetManager& pm)
+          : presetComponent (pc), 
+            presetManager (pm)
         {
             saveButton.onClick = [&](){ presetComponent->viewSaveComponent(); };
             addAndMakeVisible (saveButton);
@@ -149,6 +162,7 @@ private:
         }
     private:
         PresetComponent* presetComponent = nullptr;
+        PresetManager& presetManager;
         juce::TextButton saveButton   {"Save"};
         juce::TextButton renameButton {"Rename"};
         juce::TextButton deleteButton {"Delete"};
@@ -157,9 +171,11 @@ private:
     class PresetMainComponent : public juce::Component
     {
     public:
-        PresetMainComponent (PresetComponent* pc)
-          : presetComponent (pc)
+        PresetMainComponent (PresetComponent* pc, PresetManager& pm)
+          : presetComponent (pc), 
+            presetManager (pm)
         {
+            presets.addItemList (presetManager.getPresetNames(), 1);
             addAndMakeVisible (presets);
             presetLabel.setJustificationType (juce::Justification::centred);
             addAndMakeVisible (presetLabel);
@@ -190,8 +206,14 @@ private:
             randomizeButton.setBounds (b.removeFromTop (b.getHeight() / 2));
             randomizeAmountSlider.setBounds (b);
         }
+        void refreshList()
+        {
+            presets.clear();
+            presets.addItemList (presetManager.getPresetNames(), 1);
+        }
     private:
         PresetComponent* presetComponent = nullptr;
+        PresetManager&   presetManager;
         juce::ComboBox presets;
         juce::Label presetLabel {"Preset", "Preset"};
         juce::TextButton presetActionButton {"+"};
@@ -202,12 +224,11 @@ private:
     class PresetComponentLayout : public juce::Component
     {
     public:
-        PresetComponentLayout (PresetComponent* pc)
-          : presetComponent (pc), 
-            presetMainComponent (presetComponent), 
-            presetActionComponent (presetComponent), 
-            presetSaveComponent (presetComponent),
-            presetRenameComponent (presetComponent)
+        PresetComponentLayout (PresetComponent* pc, PresetManager& pm)
+          : presetMainComponent   (pc, pm), 
+            presetActionComponent (pc, pm), 
+            presetSaveComponent   (pc, pm),
+            presetRenameComponent (pc, pm)
         {
             addAndMakeVisible (presetMainComponent);
             addAndMakeVisible (presetActionComponent);
@@ -224,8 +245,8 @@ private:
             presetSaveComponent.setBounds   (b.removeFromLeft (oneFourth));
             presetRenameComponent.setBounds (b);
         }
+        void refreshList() { presetMainComponent.refreshList(); }
     private:
-        PresetComponent* presetComponent = nullptr;
         PresetMainComponent   presetMainComponent;
         PresetActionComponent presetActionComponent;
         PresetSaveComponent   presetSaveComponent;
@@ -236,7 +257,8 @@ private:
 class Header : public juce::Component
 {
 public:
-    Header()
+    Header (PresetManager& pm)
+      : presetComponent (pm)
     {
         addAndMakeVisible (presetComponent);
     }
