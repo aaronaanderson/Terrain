@@ -176,6 +176,7 @@ private:
             presetManager (pm)
         {
             presets.addItemList (presetManager.getPresetNames(), 1);
+            presets.onChange = [&](){ presetManager.loadPreset (presets.getItemText (presets.getSelectedItemIndex())); };
             addAndMakeVisible (presets);
             presetLabel.setJustificationType (juce::Justification::centred);
             addAndMakeVisible (presetLabel);

@@ -5,7 +5,7 @@
 class PresetManager
 {
 public:
-    PresetManager (juce::AudioProcessor* ap, juce::ValueTree tree)
+    PresetManager (juce::AudioProcessor* ap, juce::ValueTree& tree)
       : audioProcessor (ap), 
         state (tree)
     {
@@ -22,7 +22,15 @@ public:
     }
     void loadPreset (juce::String presetName)
     {
-
+        auto file = getPresetFolder().getChildFile (presetName + ".xml");
+        std::cout << file.getFullPathName() << std::endl;
+        if (file.existsAsFile())
+        {
+            auto xml = juce::XmlDocument::parse (file);
+            juce::MemoryBlock block;
+            audioProcessor->copyXmlToBinary (*xml.get(), block);
+            audioProcessor->setStateInformation (block.getData(), (int)block.getSize());
+        }
     }
     void deletePreset (juce::String presetName)
     {
@@ -43,7 +51,7 @@ public:
 
 private:
     juce::AudioProcessor* audioProcessor = nullptr;
-    juce::ValueTree state;
+    juce::ValueTree& state;
 
     juce::File getPresetFolder()
     {
