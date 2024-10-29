@@ -261,3 +261,47 @@ juce::AudioProcessorValueTreeState::ParameterLayout MainProcessor::createParamet
 
     return layout;
 } 
+void MainProcessor::allocateMaxSamplesPerBlock (int maxSamples)
+{
+    auto settingsTree = valueTreeState.state.getChildWithName (id::PRESET_SETTINGS);
+    auto overSamplingFactor = static_cast<int> (settingsTree.getProperty (id::oversampling));
+    synthesizer->allocate (maxSamples * static_cast<int> (std::pow (2, overSamplingFactor)));
+    overSampler = std::make_unique<juce::dsp::Oversampling<float>> (1, 
+                                                                    overSamplingFactor, 
+                                                                    juce::dsp::Oversampling<float>::FilterType::filterHalfBandPolyphaseIIR);
+    overSampler->initProcessing (static_cast<size_t> (maxSamples));
+}
+void MainProcessor::prepareOversampling (int bufferSize)
+{
+    auto presetsTree = valueTreeState.state.getChildWithName (id::PRESET_SETTINGS);
+    auto overSamplingFactor = static_cast<int> (presetsTree.getProperty (id::oversampling));
+    
+    if (overSamplingFactor == storedFactor && bufferSize == storedBufferSize) return;
+    //=============Very bad to allocate here, threaded solution instead of blocking should come in the future
+    //===The situation only arises if oversampling factor has changed
+    if (overSamplingFactor != storedFactor)
+    {
+        synthesizer->allocate (maxSamplesPerBlock * static_cast<int> (std::pow (2, overSamplingFactor)));
+        overSampler = std::make_unique<juce::dsp::Oversampling<float>> (1, 
+                                                                        overSamplingFactor, 
+                                                                        juce::dsp::Oversampling<float>::FilterType::filterHalfBandPolyphaseIIR);
+        overSampler->initProcessing (static_cast<size_t> (maxSamplesPerBlock));
+        
+        synthesizer->prepareToPlay (sampleRate * std::pow (2, overSamplingFactor), 
+                                    bufferSize * static_cast<int> (std::pow (2, overSamplingFactor)));
+        renderBuffer.setSize (1, bufferSize, false, false, true); // Don't re-allocate; maxBufferSize is set in prepareToPlay
+        renderBuffer.clear();
+        
+        storedFactor = overSamplingFactor;
+        storedBufferSize = bufferSize;
+    }
+    
+    if (bufferSize != storedBufferSize)
+    {
+        synthesizer->prepareToPlay (sampleRate * std::pow (2, overSamplingFactor), 
+                                    bufferSize * static_cast<int> (std::pow (2, overSamplingFactor)));
+        renderBuffer.setSize (1, bufferSize, false, false, true); // Don't re-allocate; maxBufferSize is set in prepareToPlay
+        renderBuffer.clear();
+        storedBufferSize = bufferSize;
+    }
+}

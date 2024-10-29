@@ -191,11 +191,9 @@ private:
             randomizeAmountSlider.setRange ({0.0, 1.0}, 0.0);
             randomizeAmountSlider.setValue (settings.getProperty (id::presetRandomizationScale), 
                                             juce::dontSendNotification);
-            randomizeAmountSlider.onValueChange = [&]() { 
-                std::cout << settings.getProperty (id::presetRandomizationScale).toString() << std::endl;
-                                                          settings.setProperty (id::presetRandomizationScale,
-                                                                                randomizeAmountSlider.getValue(), 
-                                                                                nullptr); };
+            randomizeAmountSlider.onValueChange = [&]() {settings.setProperty (id::presetRandomizationScale,
+                                                                               randomizeAmountSlider.getValue(), 
+                                                                               nullptr); };
             addAndMakeVisible (randomizeAmountSlider);
             randomizeButton.onClick = [&]() { presetManager.randomize(); };
             addAndMakeVisible (randomizeButton);
