@@ -5,8 +5,7 @@
 #include "Terrain.h"
 #include "Trajectory.h"
 namespace tp {
-class WaveTerrainSynthesizer : public juce::Synthesiser, 
-                               private juce::ValueTree::Listener
+class WaveTerrainSynthesizer : public juce::Synthesiser
 {
 public:
     WaveTerrainSynthesizer (Parameters& p)

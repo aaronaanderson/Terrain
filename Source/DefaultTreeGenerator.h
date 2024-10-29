@@ -146,7 +146,7 @@ struct SettingsTree
         juce::ValueTree tree (id::PRESET_SETTINGS);
         tree.setProperty (id::presetRandomizationScale, 0.2f, nullptr);
         tree.setProperty (id::oversampling, 1, nullptr);
-        tree.setProperty (id::presetName, "Default", nullptr);
+        // tree.setProperty (id::presetName, "Default", nullptr);
         return tree;
     }
 };

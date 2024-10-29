@@ -17,7 +17,7 @@ public:
         viewport.setViewedComponent (new PresetComponentLayout (this, pm, settingsBranch));
         viewport.setScrollBarsShown (false, false);
         addAndMakeVisible (viewport);
-    };
+    }
     void resized() override 
     {
         auto b = getLocalBounds();
@@ -61,7 +61,7 @@ private:
             cancelButton.onClick = [&](){ presetComponent->viewPresetMainComponent(); };
             addAndMakeVisible (cancelButton);
         }
-        void paint (juce::Graphics& g)
+        void paint (juce::Graphics& g) override
         {
             g.setColour (juce::Colours::black);
             auto b = getLocalBounds();
@@ -101,7 +101,7 @@ private:
             cancelButton.onClick = [&](){ presetComponent->viewPresetMainComponent(); };
             addAndMakeVisible (cancelButton);
         }
-        void paint (juce::Graphics& g)
+        void paint (juce::Graphics& g) override
         {
             g.setColour (juce::Colours::black);
             auto b = getLocalBounds();
@@ -151,7 +151,7 @@ private:
             g.setColour (juce::Colours::black);
             auto b = getLocalBounds();
             g.drawRect (b, 2);
-        };
+        }
         void resized() override 
         {
             auto b = getLocalBounds();
@@ -256,7 +256,7 @@ private:
             addAndMakeVisible (presetActionComponent);
             addAndMakeVisible (presetSaveComponent);
             addAndMakeVisible (presetRenameComponent);
-        };
+        }
         void resized() override
         {
             auto b = getLocalBounds();

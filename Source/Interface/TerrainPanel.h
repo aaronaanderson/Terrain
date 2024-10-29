@@ -8,7 +8,7 @@ class TerrainVariables : public juce::Component
 {
 public:
     TerrainVariables (juce::AudioProcessorValueTreeState& vts)
-      : saturation ("Saturation", "terrainSaturation", vts)
+      : saturation ("Saturation", "TerrainSaturation", vts)
     {
         addAndMakeVisible (saturation);
     }
@@ -77,9 +77,9 @@ public:
         modifierArray.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 8.0f)));
     }
 private:
+    TerrainModifierArray modifierArray;
     ParameterComboBox terrainList;
     juce::Label terrainListLabel;
-    TerrainModifierArray modifierArray;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TerrainSelector)       
 };

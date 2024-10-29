@@ -3,22 +3,6 @@
 
 #include "DefaultTreeGenerator.h"
 
-
-// static juce::StringArray getTrajectoryChoices()
-// {
-//     juce::StringArray sa;
-
-//     return sa;
-// }
-// static juce::StringArray getTerrainChoices()
-// {
-
-// }
-// const juce::String MainProcessor::trajectoryNameFromIndex (int i)
-// {
-//     auto trajectories = state.getChildWithName (id::TRAJECTORIES);
-//     return trajectories.getChild (i).getProperty (id::type).toString();
-// }
 //==============================================================================
 MainProcessor::MainProcessor()
      : AudioProcessor (BusesProperties().withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
@@ -154,7 +138,6 @@ juce::AudioProcessorValueTreeState::ParameterLayout MainProcessor::createParamet
 {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
     juce::NormalisableRange<float> range;
-
     //======================================Trajectory Parameters
     layout.add (std::make_unique<tp::ChoiceParameter> ("Current Trajectory", 
                                                         trajectoryStrings, 
@@ -182,7 +165,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout MainProcessor::createParamet
     layout.add (std::make_unique<tp::NormalizedFloatParameter> ("Meanderance Speed", 
                                                                 0.0f));
 
-    layout.add (std::make_unique<juce::AudioParameterBool> (juce::ParameterID {"envelopeSize", 1}, "Envelope Size", true));
+    layout.add (std::make_unique<juce::AudioParameterBool> (juce::ParameterID {"EnvelopeSize", 1}, "Envelope Size", true));
     range = juce::NormalisableRange<float> (2.0f, 2000.0f); range.setSkewForCentre (100.0f);
     layout.add (std::make_unique<tp::RangedFloatParameter> ("Attack", 
                                                             range, 

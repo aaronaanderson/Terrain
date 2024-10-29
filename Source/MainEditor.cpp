@@ -10,7 +10,7 @@ MainEditor::MainEditor (MainProcessor& p)
     trajectoryPanel = std::make_unique<ti::TrajectoryPanel> (processorRef.getValueTreeState()); 
     terrainPanel = std::make_unique<ti::TerrainPanel> (processorRef.getValueTreeState()); 
     controlPanel = std::make_unique<ti::ControlPanel> (processorRef.getValueTreeState());
-    visualizerPanel = std::make_unique<ti::VisualizerPanel> (processorRef.getWaveTerrainSynthesizer(), processorRef.getParameters());
+    visualizerPanel = std::make_unique<ti::VisualizerPanel> (processorRef.getWaveTerrainSynthesizer(), processorRef.getCastedParameters());
     header = std::make_unique<ti::Header> (processorRef.getPresetManager(), processorRef.getState().getChildWithName (id::PRESET_SETTINGS));
 
     addAndMakeVisible (trajectoryPanel.get());
