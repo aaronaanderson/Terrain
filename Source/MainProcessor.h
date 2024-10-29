@@ -42,14 +42,16 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-    juce::ValueTree& getState() { return state; }
+    juce::AudioProcessorValueTreeState& getValueTreeState() { return valueTreeState; }
+    juce::ValueTree& getState() { return valueTreeState.state; }
     juce::UndoManager& getUndoManager() { return undoManager; }
     PresetManager& getPresetManager() { return presetManager; }
 
     const tp::Parameters& getParameters() const { return parameters; }
     tp::WaveTerrainSynthesizer& getWaveTerrainSynthesizer() { return *synthesizer.get(); }
 private:
-    juce::ValueTree state;
+
+    juce::AudioProcessorValueTreeState valueTreeState;
     juce::UndoManager undoManager;
     tp::Parameters parameters;
     PresetManager presetManager;
@@ -68,98 +70,13 @@ private:
     int maxSamplesPerBlock;
     double sampleRate;
 
+    juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     const juce::String trajectoryNameFromIndex (int i);
-
-    void resetParameterState();
-    void valueTreePropertyChanged (juce::ValueTree& treeWhosePropertyHasChanged,
-                                   const juce::Identifier& property) override 
-    {
-        auto tree = treeWhosePropertyHasChanged;
-        if (tree.getType() == id::TRAJECTORIES)
-        {
-            if (property == id::currentTrajectory)
-                setCurrentTrajectoryParamFromString (tree.getProperty (property).toString());
-        }else if (tree.getType() == id::TERRAINS)
-        {
-            if (property == id::currentTerrain)
-                setCurrentTerrainFromString (tree.getProperty (property).toString());   
-        }else if (tree.getType() == id::MODIFIERS)
-        {
-            if (tree.getParent().getType() == id::TRAJECTORY)
-            {
-                if      (property == id::mod_A) parameters.trajectoryModA->setValueNotifyingHost (tree.getProperty (property));
-                else if (property == id::mod_B) parameters.trajectoryModB->setValueNotifyingHost (tree.getProperty (property));
-                else if (property == id::mod_C) parameters.trajectoryModC->setValueNotifyingHost (tree.getProperty (property));
-                else if (property == id::mod_D) parameters.trajectoryModD->setValueNotifyingHost (tree.getProperty (property));
-            }else if (tree.getParent().getType() == id::TERRAIN)
-            {
-                if      (property == id::mod_A) parameters.terrainModA->setValueNotifyingHost (tree.getProperty (property));
-                else if (property == id::mod_B) parameters.terrainModB->setValueNotifyingHost (tree.getProperty (property));
-                else if (property == id::mod_C) parameters.terrainModC->setValueNotifyingHost (tree.getProperty (property));
-                else if (property == id::mod_D) parameters.terrainModD->setValueNotifyingHost (tree.getProperty (property));
-            }
-        }else if (tree.getType() == id::TRAJECTORY_VARIABLES)
-        {
-            if      (property == id::size) 
-                parameters.trajectorySize->setValueNotifyingHost (tree.getProperty (property));
-            else if (property == id::rotation) 
-                parameters.trajectoryRotation->setValueNotifyingHost (parameters.trajectoryRotation->convertTo0to1 (tree.getProperty (property)));
-            else if (property == id::translation_x)  
-                parameters.trajectoryTranslationX->setValueNotifyingHost (parameters.trajectoryTranslationX->convertTo0to1 (tree.getProperty (property)));
-            else if (property == id::translation_y) 
-                parameters.trajectoryTranslationY->setValueNotifyingHost (parameters.trajectoryTranslationY->convertTo0to1 (tree.getProperty (property)));
-            else if (property == id::meanderanceScale)
-                parameters.meanderanceScale->setValueNotifyingHost (parameters.meanderanceScale->convertTo0to1 (tree.getProperty (property)));
-            else if (property == id::meanderanceSpeed)
-                parameters.meanderanceSpeed->setValueNotifyingHost (parameters.meanderanceSpeed->convertTo0to1 (tree.getProperty (property)));
-            else if (property == id::envelopeSize)
-                parameters.envelopeSize->setValueNotifyingHost (static_cast<float> (tree.getProperty (property)));
-            else if (property == id::attack) 
-                parameters.attack->setValueNotifyingHost (parameters.attack->convertTo0to1 (tree.getProperty (property)));
-            else if (property == id::decay) 
-                parameters.decay->setValueNotifyingHost (parameters.decay->convertTo0to1 (tree.getProperty (property)));
-            else if (property == id::sustain) 
-                parameters.sustain->setValueNotifyingHost (parameters.sustain->convertTo0to1 (tree.getProperty (property)));
-            else if (property == id::release) 
-                parameters.release->setValueNotifyingHost (parameters.release->convertTo0to1 (tree.getProperty (property)));
-        }else if (tree.getType() == id::FEEDBACK)
-        {
-            if      (property == id::feedbackTime)
-                parameters.feedbackTime->setValueNotifyingHost (parameters.feedbackTime->convertTo0to1 (tree.getProperty (property)));
-            else if (property == id::feedbackScalar)
-                parameters.feedbackScalar->setValueNotifyingHost (parameters.feedbackScalar->convertTo0to1 (tree.getProperty (property)));
-            else if (property == id::feedbackCompression)
-                parameters.feedbackCompression->setValueNotifyingHost (parameters.feedbackCompression->convertTo0to1 (tree.getProperty (property)));
-            else if (property == id::feedbackMix)
-                parameters.feedbackMix->setValueNotifyingHost (parameters.feedbackMix->convertTo0to1 (tree.getProperty (property)));
-        }else if (tree.getType() == id::TERRAIN_VARIABLES)
-        {
-            if (property == id::terrainSaturation)
-                parameters.terrainSaturation->setValueNotifyingHost (parameters.terrainSaturation->convertTo0to1 (tree.getProperty (property)));
-        }
-        else if (tree.getType() == id::CONTROLS)
-        {
-            if      (property == id::filterFrequency)
-                parameters.filterFrequency->setValueNotifyingHost (parameters.filterFrequency->convertTo0to1 (tree.getProperty (property)));
-            else if (property == id::filterResonance)
-                parameters.filterResonance->setValueNotifyingHost (parameters.filterResonance->convertTo0to1 (tree.getProperty (property)));
-            else if (property == id::filterOnOff)
-                parameters.filterOnOff->setValueNotifyingHost (static_cast<float> (tree.getProperty (property)));
-
-            else if (property == id::compressionThreshold)
-                parameters.compressorThreshold->setValueNotifyingHost (parameters.compressorThreshold->convertTo0to1 (tree.getProperty (property)));
-            else if (property == id::compressionRatio)
-                parameters.compressorRatio->setValueNotifyingHost (parameters.compressorRatio->convertTo0to1 (tree.getProperty (property)));
-            
-            else if (property == id::outputLevel)
-                parameters.outputLevel->setValueNotifyingHost (parameters.outputLevel->convertTo0to1 (tree.getProperty (property)));
-        }
-    }
 
     void allocateMaxSamplesPerBlock (int maxSamples)
     {
-        auto controlsTree = state.getChildWithName (id::CONTROLS);
-        auto overSamplingFactor = static_cast<int> (controlsTree.getProperty (id::oversampling));
+        auto settingsTree = valueTreeState.state.getChildWithName (id::PRESET_SETTINGS);
+        auto overSamplingFactor = static_cast<int> (settingsTree.getProperty (id::oversampling));
 
         synthesizer->allocate (maxSamples * static_cast<int> (std::pow (2, overSamplingFactor)));
         overSampler = std::make_unique<juce::dsp::Oversampling<float>> (1, 
@@ -169,8 +86,8 @@ private:
     }
     void prepareOversampling (int bufferSize)
     {
-        auto controlsTree = state.getChildWithName (id::CONTROLS);
-        auto overSamplingFactor = static_cast<int> (controlsTree.getProperty (id::oversampling));
+        auto presetsTree = valueTreeState.state.getChildWithName (id::PRESET_SETTINGS);
+        auto overSamplingFactor = static_cast<int> (presetsTree.getProperty (id::oversampling));
         
         if (overSamplingFactor == storedFactor && bufferSize == storedBufferSize) return;
         //=============Very bad to allocate here, threaded solution instead of blocking should come in the future

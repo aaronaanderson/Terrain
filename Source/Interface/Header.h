@@ -3,7 +3,6 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <juce_data_structures/juce_data_structures.h>
 #include "LookAndFeel.h"
-#include "PopUpWindow.h"
 #include "../Identifiers.h"
 #include "../Utility/PresetManager.h"
 

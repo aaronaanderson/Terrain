@@ -5,11 +5,11 @@ MainEditor::MainEditor (MainProcessor& p)
       state (processorRef.getState()), 
       undoManager (processorRef.getUndoManager())
 {
-    jassert (state.getType() == id::TERRAINSYNTH);
+    jassert (state.getType() == id::TERRAIN_SYNTH);
     
-    trajectoryPanel = std::make_unique<ti::TrajectoryPanel> (state, undoManager, globalTimer, processorRef.getParameters()); 
-    terrainPanel = std::make_unique<ti::TerrainPanel> (state, undoManager, globalTimer, processorRef.getParameters()); 
-    controlPanel = std::make_unique<ti::ControlPanel> (state, undoManager, globalTimer, processorRef.getParameters());
+    trajectoryPanel = std::make_unique<ti::TrajectoryPanel> (processorRef.getValueTreeState()); 
+    terrainPanel = std::make_unique<ti::TerrainPanel> (processorRef.getValueTreeState()); 
+    controlPanel = std::make_unique<ti::ControlPanel> (processorRef.getValueTreeState());
     visualizerPanel = std::make_unique<ti::VisualizerPanel> (processorRef.getWaveTerrainSynthesizer(), processorRef.getParameters());
     header = std::make_unique<ti::Header> (processorRef.getPresetManager(), processorRef.getState().getChildWithName (id::PRESET_SETTINGS));
 
@@ -79,9 +79,9 @@ void MainEditor::resetInterface()
     removeChildComponent (terrainPanel.get());
     removeChildComponent (controlPanel.get());
     
-    trajectoryPanel = std::make_unique<ti::TrajectoryPanel> (state, undoManager, globalTimer, processorRef.getParameters()); 
-    terrainPanel = std::make_unique<ti::TerrainPanel> (state, undoManager, globalTimer, processorRef.getParameters()); 
-    controlPanel = std::make_unique<ti::ControlPanel> (state, undoManager, globalTimer, processorRef.getParameters());
+    trajectoryPanel = std::make_unique<ti::TrajectoryPanel> (processorRef.getValueTreeState()); 
+    terrainPanel = std::make_unique<ti::TerrainPanel> (processorRef.getValueTreeState()); 
+    controlPanel = std::make_unique<ti::ControlPanel> (processorRef.getValueTreeState());
     
     addAndMakeVisible (trajectoryPanel.get());
     addAndMakeVisible (terrainPanel.get());

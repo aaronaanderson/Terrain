@@ -22,7 +22,6 @@ private:
     MainProcessor& processorRef; // Do NOT change order
     juce::ValueTree& state;       // of processorRef and state xoxo
     juce::UndoManager& undoManager;
-    GlobalTimer globalTimer;
 
     TerrainLookAndFeel lookAndFeel;
 
@@ -32,8 +31,8 @@ private:
     std::unique_ptr<ti::VisualizerPanel> visualizerPanel;
     std::unique_ptr<ti::Header>          header;
     std::unique_ptr<ValueTreeViewWindow> valueTreeViewWindow;
-    bool keyPressed (const juce::KeyPress& key) override;
     
+    bool keyPressed (const juce::KeyPress& key) override;
     void valueTreeRedirected (juce::ValueTree& treeWhichHasBeenChanged) override;
     void resetInterface();
 
