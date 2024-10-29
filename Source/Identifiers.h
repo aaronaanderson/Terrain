@@ -10,4 +10,5 @@ namespace id
     static const juce::Identifier presetName = "presetName";
     static const juce::Identifier presetRandomizationScale = "presetRandomizationScale";
     static const juce::Identifier oversampling = "oversampling";
+    static const juce::Identifier version = JucePlugin_VersionString;
 }

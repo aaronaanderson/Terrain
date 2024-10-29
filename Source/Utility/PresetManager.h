@@ -68,7 +68,11 @@ public:
             p->setValueNotifyingHost (p->getValue() + randomOffset);
         }
     }
-
+    void setState (juce::ValueTree& newState) 
+    { 
+        state = newState; 
+        settings = state.getChildWithName (id::PRESET_SETTINGS);
+    }
 private:
     juce::AudioProcessor* audioProcessor = nullptr;
     juce::ValueTree& state;

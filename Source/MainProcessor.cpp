@@ -2,6 +2,7 @@
 #include "MainEditor.h"
 
 #include "DefaultTreeGenerator.h"
+#include "Utility/VersionType.h"
 
 juce::StringArray trajectoryStrings {"Ellipse", 
                                      "Superellipse", 
@@ -150,8 +151,12 @@ void MainProcessor::setStateInformation (const void* data, int sizeInBytes)
     {
         if (xmlState->hasTagName (valueTreeState.state.getType()))
         {
+            auto version = Version (id::version.toString());
+            if (version.major < 1) return;
+            if (version.minor < 1) return;
+
             valueTreeState.replaceState (juce::ValueTree::fromXml (*xmlState));
-            presetManager = std::make_unique<PresetManager> (this, valueTreeState.state);
+            presetManager->setState (valueTreeState.state);
         }
     }
 }
