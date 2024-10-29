@@ -3,22 +3,6 @@
 
 #include "DefaultTreeGenerator.h"
 
-
-// static juce::StringArray getTrajectoryChoices()
-// {
-//     juce::StringArray sa;
-
-//     return sa;
-// }
-// static juce::StringArray getTerrainChoices()
-// {
-
-// }
-// const juce::String MainProcessor::trajectoryNameFromIndex (int i)
-// {
-//     auto trajectories = state.getChildWithName (id::TRAJECTORIES);
-//     return trajectories.getChild (i).getProperty (id::type).toString();
-// }
 //==============================================================================
 MainProcessor::MainProcessor()
      : AudioProcessor (BusesProperties().withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
@@ -27,7 +11,6 @@ MainProcessor::MainProcessor()
        presetManager (this, valueTreeState.state)
 {
     valueTreeState.state.addChild (SettingsTree::create(), -1, nullptr);
-
     synthesizer = std::make_unique<tp::WaveTerrainSynthesizer> (parameters);
     outputChain.reset();
 }

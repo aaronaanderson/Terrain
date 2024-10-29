@@ -5,7 +5,6 @@
 #include "Identifiers.h"
 #include "DSP/WaveTerrainSynthesizer.h"
 #include "Utility/PresetManager.h"
-#include "StateHelpers.h"
 
 //==============================================================================
 class MainProcessor  : public juce::AudioProcessor, 
@@ -119,7 +118,7 @@ private:
         }
     }
 
-    juce::Array<juce::String> trajectoryStrings {"Ellipse", 
+    juce::StringArray trajectoryStrings {"Ellipse", 
                                                  "Superellipse", 
                                                  "Limacon", 
                                                  "Butterfly", 
@@ -151,15 +150,15 @@ private:
         jassertfalse;
         return 0;
     }
-    juce::Array<juce::String> terrainStrings = {"Sinusoidal", 
-                                                "System 1", 
-                                                "System 2", 
-                                                "System 3", 
-                                                "System 9", 
-                                                "System 11",
-                                                "System 12", 
-                                                "System 14", 
-                                                "System 15"};
+    juce::StringArray terrainStrings = {"Sinusoidal", 
+                                        "System 1", 
+                                        "System 2", 
+                                        "System 3", 
+                                        "System 9", 
+                                        "System 11",
+                                        "System 12", 
+                                        "System 14", 
+                                        "System 15"};
     void setCurrentTerrainFromString (juce::String s)
     {
         for (int i = 0; i < terrainStrings.size(); i++)

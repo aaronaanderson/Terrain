@@ -68,7 +68,9 @@ struct Parameters
     Parameters (juce::AudioProcessorValueTreeState& vts)
       : valueTreeState (vts)
     {}
-
+private:
+    juce::AudioProcessorValueTreeState& valueTreeState;
+public:
     ChoiceParameter* currentTrajectory              = dynamic_cast<ChoiceParameter*> (valueTreeState.getParameter ("CurrentTrajectory"));
     NormalizedFloatParameter* trajectoryModA        = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter ("TrajectoryModA"));
     NormalizedFloatParameter* trajectoryModB        = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter ("TrajectoryModB"));
@@ -110,7 +112,5 @@ struct Parameters
     RangedFloatParameter*     compressorRatio = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter("CompressorRatio"));
 
     RangedFloatParameter*     outputLevel = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter("OutputLevel"));
-private:
-    juce::AudioProcessorValueTreeState& valueTreeState;
 };
 }
