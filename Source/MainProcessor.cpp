@@ -144,12 +144,13 @@ void MainProcessor::getStateInformation (juce::MemoryBlock& destData)
 }
 void MainProcessor::setStateInformation (const void* data, int sizeInBytes)
 { 
-
     std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
 
     if (xmlState.get() != nullptr)
         if (xmlState->hasTagName (valueTreeState.state.getType()))
             valueTreeState.replaceState (juce::ValueTree::fromXml (*xmlState));
+
+    presetManager = std::make_unique<PresetManager> (this, valueTreeState.state);
 }
 //==============================================================================
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter() { return new MainProcessor(); }

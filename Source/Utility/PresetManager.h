@@ -9,7 +9,9 @@ public:
       : audioProcessor (ap), 
         state (tree), 
         settings (state.getChildWithName (id::PRESET_SETTINGS))
-    {}
+    {
+        jassert (settings.getType() == id::PRESET_SETTINGS);
+    }
 
     void savePreset (juce::String presetName)
     {
@@ -57,11 +59,11 @@ public:
     juce::String getCurrentPresetName(){ return state.getProperty (id::presetName).toString(); }
     void randomize()
     {
+        std::cout << static_cast<float> (settings.getProperty (id::presetRandomizationScale)) << std::endl;
         auto r = juce::Random ();
         for (auto p : audioProcessor->getParameters())
         {
             auto randomOffset = r.nextFloat() - 0.5f;
-            std::cout << static_cast<float> (settings.getProperty (id::presetRandomizationScale)) << std::endl;
             randomOffset = randomOffset * static_cast<float> (settings.getProperty (id::presetRandomizationScale));
             p->setValueNotifyingHost (p->getValue() + randomOffset);
         }
