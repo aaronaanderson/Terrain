@@ -117,7 +117,7 @@ private:
         }
     }
 
-    juce::Array<juce::String> trajectoryStrings {"Ellipse", 
+    juce::StringArray trajectoryStrings {"Ellipse", 
                                                  "Superellipse", 
                                                  "Limacon", 
                                                  "Butterfly", 
@@ -128,27 +128,7 @@ private:
                                                  "Epitrochoid 3", "Epitrochoid 5", "Epitrochoid 7", 
                                                  "Hypocycloid 3", "Hypocycloid 5", "Hypocycloid 7", 
                                                  "Gear Curve 3", "Gear Curve 5", "Gear Curve 7"};
-    void setCurrentTrajectoryParamFromString (juce::String s) //Need something better here
-    {
-        for (int i = 0; i < trajectoryStrings.size(); i++)
-        {
-            if (trajectoryStrings[i] == s)
-            {
-                parameters.currentTrajectory->setIndex (i);
-                return;
-            }
-        }
-        jassertfalse; // Didn't find option
-    }
-    int getCurrentTrajectoryIndexFromString (juce::String trajectory)
-    {
-        for (int i = 0; i < trajectoryStrings.size(); i++)
-            if (trajectoryStrings[i] == trajectory)
-                return i;
 
-    //     jassertfalse;
-    //     return 0;
-    // }
     juce::StringArray terrainStrings = {"Sinusoidal", 
                                         "System 1", 
                                         "System 2", 
@@ -158,28 +138,6 @@ private:
                                         "System 12", 
                                         "System 14", 
                                         "System 15"};
-    // void setCurrentTerrainFromString (juce::String s)
-    // {
-    //     for (int i = 0; i < terrainStrings.size(); i++)
-    //     {
-    //         if (terrainStrings[i] == s)
-    //         {
-    //             parameters.currentTerrain->setIndex (i);
-    //             return;
-    //         }
-    //     }
-    //     jassertfalse; // Didn't find option;
-    // }
-    // int getCurrentTerrainIndexFromString (juce::String terrain)
-    // {
-       
-    //     for (int i = 0; i < terrainStrings.size(); i++)
-    //         if (terrainStrings[i] == terrain)
-    //             return i;
 
-    //     jassertfalse;
-    //     return 0;
-    // }
-    //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainProcessor)
 };
