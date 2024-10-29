@@ -76,9 +76,9 @@ public:
         // the audio processor with AudioProcessorValueTreeStates.
         // it is a really, really weird bug.
         //========================================================
-        juce::OpenGLPixelFormat pf;
-        pf.multisamplingLevel = 4;
-        glContext.setPixelFormat (pf);
+        // juce::OpenGLPixelFormat pf;
+        // pf.multisamplingLevel = 4;
+        // glContext.setPixelFormat (pf);
         glContext.setMultisamplingEnabled (true);
         glContext.setComponentPaintingEnabled(false);
         glContext.attachTo (*this);

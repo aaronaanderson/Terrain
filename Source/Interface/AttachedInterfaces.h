@@ -37,12 +37,16 @@ private:
 };
 struct ParameterComboBox : public juce::Component
 {
-    ParameterComboBox (const juce::String paramID, juce::AudioProcessorValueTreeState& vts)
+    ParameterComboBox (const juce::String paramID, 
+                       juce::AudioProcessorValueTreeState& vts, 
+                       std::function<void()> comboBoxChanged = nullptr)
+      : onComboBoxChange (comboBoxChanged)
     {
         auto apc = dynamic_cast<juce::AudioParameterChoice*> (vts.getParameter (paramID));
         jassert (apc != nullptr);
         auto options = apc->getAllValueStrings();
         comboBox.addItemList (options, 1);
+        comboBox.onChange = [&](){ if (onComboBoxChange != nullptr) onComboBoxChange(); };
         comboBoxAttachment.reset (new ComboBoxAttachment (vts, paramID, comboBox));
         addAndMakeVisible (comboBox);
     }
@@ -52,6 +56,8 @@ struct ParameterComboBox : public juce::Component
         comboBox.clear();
         comboBox.addItemList (options, 1);
     }
+    std::function<void()> onComboBoxChange = nullptr;
+    juce::String getCurrent() { return comboBox.getText(); }
 private:
     juce::ComboBox comboBox;
     std::unique_ptr<ComboBoxAttachment> comboBoxAttachment;

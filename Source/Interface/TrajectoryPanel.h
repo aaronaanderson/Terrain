@@ -29,6 +29,36 @@ public:
         cModifier.setBounds (b.removeFromTop (quarterHeight));
         dModifier.setBounds (b.removeFromTop (quarterHeight));
     }
+    void setVisibleSliders (int numberVisible)
+    {
+        jassert (numberVisible <= 4);
+        aModifier.setVisible (false);
+        bModifier.setVisible (false);
+        cModifier.setVisible (false);
+        dModifier.setVisible (false);
+        switch (numberVisible)
+        {
+            case 0: break;
+            case 1:
+                aModifier.setVisible (true);
+            break;
+            case 2:
+                aModifier.setVisible (true);
+                bModifier.setVisible (true);
+            break;
+            case 3:
+                aModifier.setVisible (true);
+                bModifier.setVisible (true);
+                cModifier.setVisible (true);
+            break;
+            case 4:
+                aModifier.setVisible (true);
+                bModifier.setVisible (true);
+                cModifier.setVisible (true);
+                dModifier.setVisible (true);
+            break;
+        }
+    }
 private:
     ParameterSlider aModifier;
     ParameterSlider bModifier;
@@ -42,7 +72,7 @@ class TrajectorySelector : public juce::Component
 {
 public:
     TrajectorySelector (juce::AudioProcessorValueTreeState& vts)
-      : trajectoryList ("CurrentTrajectory", vts), 
+      : trajectoryList ("CurrentTrajectory", vts, resetModifierArray), 
         modifierArray (vts)
     {
         trajectoryListLabel.setText ("Current Trajectory", juce::NotificationType::dontSendNotification);
@@ -60,10 +90,38 @@ public:
                                                                                         .withWidth (b.getWidth() - 4));
         modifierArray.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 8.0f)));
     }
+    std::function<void()> resetModifierArray = [&]()
+        {
+            auto numberOfVisibleSliders = trajectoryNameToVisibleSliders (trajectoryList.getCurrent());
+            modifierArray.setVisibleSliders (numberOfVisibleSliders);
+        };
 private:
+    ModifierArray modifierArray;
     ParameterComboBox trajectoryList;
     juce::Label trajectoryListLabel;
-    ModifierArray modifierArray;
+
+    int trajectoryNameToVisibleSliders (juce::String trajectoryName)
+    {
+        if (trajectoryName == "Ellipse") return 1;
+        else if (trajectoryName == "Superellipse") return 3;
+        else if (trajectoryName == "Limacon") return 2;
+        else if (trajectoryName == "Butterfly") return 1;
+        else if (trajectoryName == "Scarabaeus") return 2;
+        else if (trajectoryName == "Squarcle") return 1;
+        else if (trajectoryName == "Bicorn") return 0;
+        else if (trajectoryName == "Cornoid") return 1;
+        else if (trajectoryName == "Epitrochoid 3") return 1;
+        else if (trajectoryName == "Epitrochoid 5") return 1;
+        else if (trajectoryName == "Epitrochoid 7") return 1;
+        else if (trajectoryName == "Hypocycloid 3") return 1;
+        else if (trajectoryName == "Hypocycloid 5") return 1;
+        else if (trajectoryName == "Hypocycloid 7") return 1;
+        else if (trajectoryName == "Gear Curve 3") return 1;
+        else if (trajectoryName == "Gear Curve 5") return 1;
+        else if (trajectoryName == "Gear Curve 7") return 1;
+        jassertfalse; 
+        return 0;
+    }
    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TrajectorySelector)      
 };

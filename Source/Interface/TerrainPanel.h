@@ -46,6 +46,36 @@ public:
         cModifier.setBounds (b.removeFromTop (quarterHeight));
         dModifier.setBounds (b.removeFromTop (quarterHeight));
     }
+    void setVisibleSliders (int numberVisible)
+    {
+        jassert (numberVisible <= 4);
+        aModifier.setVisible (false);
+        bModifier.setVisible (false);
+        cModifier.setVisible (false);
+        dModifier.setVisible (false);
+        switch (numberVisible)
+        {
+            case 0: break;
+            case 1:
+                aModifier.setVisible (true);
+            break;
+            case 2:
+                aModifier.setVisible (true);
+                bModifier.setVisible (true);
+            break;
+            case 3:
+                aModifier.setVisible (true);
+                bModifier.setVisible (true);
+                cModifier.setVisible (true);
+            break;
+            case 4:
+                aModifier.setVisible (true);
+                bModifier.setVisible (true);
+                cModifier.setVisible (true);
+                dModifier.setVisible (true);
+            break;
+        }
+    }
 private:
     ParameterSlider aModifier;
     ParameterSlider bModifier;
@@ -59,7 +89,7 @@ class TerrainSelector : public juce::Component
 public:
     TerrainSelector (juce::AudioProcessorValueTreeState& vts)
       : modifierArray (vts), 
-        terrainList ("CurrentTerrain", vts)
+        terrainList ("CurrentTerrain", vts, resetModifierArray)
     {
 
         addAndMakeVisible (terrainList);
@@ -78,10 +108,30 @@ public:
                                                                                      .withWidth (b.getWidth() - 4));
         modifierArray.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 8.0f)));
     }
+    std::function<void()> resetModifierArray = [&]()
+        {
+            auto numberOfVisibleSliders = trajectoryNameToVisibleSliders (terrainList.getCurrent());
+            modifierArray.setVisibleSliders (numberOfVisibleSliders);
+        };
 private:
     TerrainModifierArray modifierArray;
     ParameterComboBox terrainList;
     juce::Label terrainListLabel;
+
+    int trajectoryNameToVisibleSliders (juce::String trajectoryName)
+    {
+        if (trajectoryName == "Sinusoidal") return 2;
+        else if (trajectoryName == "System 1") return 2;
+        else if (trajectoryName == "System 2") return 2;
+        else if (trajectoryName == "System 3") return 1;
+        else if (trajectoryName == "System 9") return 2;
+        else if (trajectoryName == "System 11") return 3;
+        else if (trajectoryName == "System 12") return 2;
+        else if (trajectoryName == "System 14") return 3;
+        else if (trajectoryName == "System 15") return 1;
+        jassertfalse; 
+        return 0;
+    }
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TerrainSelector)       
 };
