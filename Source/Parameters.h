@@ -11,7 +11,7 @@ public:
                     juce::StringArray iChoices, 
                     juce::String unit,
                     int defaultChoice = 0)
-      : juce::AudioParameterChoice ({parameterName.removeCharacters(" ") + juce::String("Choice"), 1}, 
+      : juce::AudioParameterChoice ({parameterName.removeCharacters(" ")/* + juce::String("Choice")*/, 1}, 
                                     parameterName, 
                                     iChoices, 
                                     defaultChoice,
@@ -35,7 +35,7 @@ public:
     NormalizedFloatParameter (juce::String parameterName, 
                               float defaultValue = 0.0f,
                               juce::String unit = "")
-    : juce::AudioParameterFloat ({parameterName.removeCharacters(" ") + juce::String("float"), 1}, 
+    : juce::AudioParameterFloat ({parameterName.removeCharacters(" ")/* + juce::String("float")*/, 1}, 
                                  parameterName,
                                  {0.0f, 1.0f},  
                                  defaultValue,
@@ -53,7 +53,7 @@ public:
                           juce::NormalisableRange<float> pRange,
                           float defaultValue = 0.0f,
                           juce::String unit = "")
-    : juce::AudioParameterFloat ({parameterName.removeCharacters(" ") + juce::String("float"), 1}, 
+    : juce::AudioParameterFloat ({parameterName.removeCharacters(" ")/* + juce::String("float")*/, 1}, 
                                  parameterName,
                                  pRange,  
                                  defaultValue,
@@ -68,49 +68,49 @@ struct Parameters
     Parameters (juce::AudioProcessorValueTreeState& vts)
       : valueTreeState (vts)
     {}
-private:
-    juce::AudioProcessorValueTreeState& valueTreeState;
-public:
+
     ChoiceParameter* currentTrajectory              = dynamic_cast<ChoiceParameter*> (valueTreeState.getParameter ("CurrentTrajectory"));
     NormalizedFloatParameter* trajectoryModA        = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter ("TrajectoryModA"));
     NormalizedFloatParameter* trajectoryModB        = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter ("TrajectoryModB"));
     NormalizedFloatParameter* trajectoryModC        = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter ("TrajectoryModC"));
     NormalizedFloatParameter* trajectoryModD        = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter ("TrajectoryModD"));
 
-    NormalizedFloatParameter* trajectorySize = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter("Size"));       
-    RangedFloatParameter*     trajectoryRotation = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter("Rotation"));
-    RangedFloatParameter*     trajectoryTranslationX = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter("TranslationX"));
-    RangedFloatParameter*     trajectoryTranslationY = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter("TranslationY"));
-    NormalizedFloatParameter* meanderanceScale = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter("MeanderanceScale"));
-    RangedFloatParameter*     meanderanceSpeed = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter("MeanderanceSpeed"));
+    NormalizedFloatParameter* trajectorySize = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter     ("Size"));       
+    RangedFloatParameter*     trajectoryRotation = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter     ("Rotation"));
+    RangedFloatParameter*     trajectoryTranslationX = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter ("TranslationX"));
+    RangedFloatParameter*     trajectoryTranslationY = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter ("TranslationY"));
+    NormalizedFloatParameter* meanderanceScale = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter   ("MeanderanceScale"));
+    RangedFloatParameter*     meanderanceSpeed = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter       ("MeanderanceSpeed"));
 
 
-    RangedFloatParameter*     feedbackTime = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter("FeedbackTime"));
-    RangedFloatParameter*     feedbackScalar = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter("Feedback"));
-    RangedFloatParameter*     feedbackCompression = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter("FeedbackCompression"));
-    RangedFloatParameter*     feedbackMix = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter("FeedbackMix"));
+    RangedFloatParameter*     feedbackTime = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter        ("FeedbackTime"));
+    RangedFloatParameter*     feedbackScalar = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter      ("Feedback"));
+    RangedFloatParameter*     feedbackCompression = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter ("FeedbackCompression"));
+    RangedFloatParameter*     feedbackMix = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter         ("FeedbackMix"));
 
-    ChoiceParameter* currentTerrain = dynamic_cast<ChoiceParameter*> (valueTreeState.getParameter ("CurrentTerrain"));
+    ChoiceParameter* currentTerrain = dynamic_cast<ChoiceParameter*> (valueTreeState.getParameter                ("CurrentTerrain"));
     NormalizedFloatParameter* terrainModA = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter ("TerrainModA"));
     NormalizedFloatParameter* terrainModB = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter ("TerrainModB"));
     NormalizedFloatParameter* terrainModC = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter ("TerrainModC"));
     NormalizedFloatParameter* terrainModD = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter ("TerrainModD"));
 
-    RangedFloatParameter* terrainSaturation = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter ("terrainSaturation"));
+    RangedFloatParameter* terrainSaturation = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter ("TerrainSaturation"));
 
-    juce::AudioParameterBool* envelopeSize = dynamic_cast<juce::AudioParameterBool*> (valueTreeState.getParameter ("envelopeSize"));
-    RangedFloatParameter* attack = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter ("Attack"));
-    RangedFloatParameter* decay = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter ("Decay"));
-    RangedFloatParameter* sustain = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter ("Sustain"));
-    RangedFloatParameter* release = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter ("Release"));
+    juce::AudioParameterBool* envelopeSize = dynamic_cast<juce::AudioParameterBool*> (valueTreeState.getParameter ("EnvelopeSize"));
+    RangedFloatParameter* attack = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter               ("Attack"));
+    RangedFloatParameter* decay = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter                ("Decay"));
+    RangedFloatParameter* sustain = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter              ("Sustain"));
+    RangedFloatParameter* release = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter              ("Release"));
 
-    NormalizedFloatParameter* filterResonance = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter("FilterResonance"));
-    RangedFloatParameter*     filterFrequency = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter("FilterFrequency"));
-    juce::AudioParameterBool* filterOnOff = dynamic_cast<juce::AudioParameterBool*> (valueTreeState.getParameter("FilterOnOff"));
+    NormalizedFloatParameter* filterResonance = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter ("FilterResonance"));
+    RangedFloatParameter*     filterFrequency = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter     ("FilterFrequency"));
+    juce::AudioParameterBool* filterOnOff = dynamic_cast<juce::AudioParameterBool*> (valueTreeState.getParameter     ("FilterOnOff"));
 
-    RangedFloatParameter*     compressorThreshold = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter("CompressorThreshold"));
-    RangedFloatParameter*     compressorRatio = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter("CompressorRatio"));
+    RangedFloatParameter*     compressorThreshold = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter ("CompressorThreshold"));
+    RangedFloatParameter*     compressorRatio = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter     ("CompressorRatio"));
 
     RangedFloatParameter*     outputLevel = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter("OutputLevel"));
+private:
+    juce::AudioProcessorValueTreeState& valueTreeState;
 };
 }

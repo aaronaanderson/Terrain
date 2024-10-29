@@ -46,10 +46,10 @@ public:
     juce::UndoManager& getUndoManager() { return undoManager; }
     PresetManager& getPresetManager() { return presetManager; }
 
-    const tp::Parameters& getParameters() const { return parameters; }
+    const tp::Parameters& getCastedParameters() const { return parameters; }
     tp::WaveTerrainSynthesizer& getWaveTerrainSynthesizer() { return *synthesizer.get(); }
 private:
-
+    juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     juce::AudioProcessorValueTreeState valueTreeState;
     juce::UndoManager undoManager;
     tp::Parameters parameters;
@@ -69,8 +69,7 @@ private:
     int maxSamplesPerBlock;
     double sampleRate;
 
-    juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
-    const juce::String trajectoryNameFromIndex (int i);
+    // const juce::String trajectoryNameFromIndex (int i);
 
     void allocateMaxSamplesPerBlock (int maxSamples)
     {
@@ -118,7 +117,7 @@ private:
         }
     }
 
-    juce::StringArray trajectoryStrings {"Ellipse", 
+    juce::Array<juce::String> trajectoryStrings {"Ellipse", 
                                                  "Superellipse", 
                                                  "Limacon", 
                                                  "Butterfly", 
@@ -147,9 +146,9 @@ private:
             if (trajectoryStrings[i] == trajectory)
                 return i;
 
-        jassertfalse;
-        return 0;
-    }
+    //     jassertfalse;
+    //     return 0;
+    // }
     juce::StringArray terrainStrings = {"Sinusoidal", 
                                         "System 1", 
                                         "System 2", 
@@ -159,28 +158,28 @@ private:
                                         "System 12", 
                                         "System 14", 
                                         "System 15"};
-    void setCurrentTerrainFromString (juce::String s)
-    {
-        for (int i = 0; i < terrainStrings.size(); i++)
-        {
-            if (terrainStrings[i] == s)
-            {
-                parameters.currentTerrain->setIndex (i);
-                return;
-            }
-        }
-        jassertfalse; // Didn't find option;
-    }
-    int getCurrentTerrainIndexFromString (juce::String terrain)
-    {
+    // void setCurrentTerrainFromString (juce::String s)
+    // {
+    //     for (int i = 0; i < terrainStrings.size(); i++)
+    //     {
+    //         if (terrainStrings[i] == s)
+    //         {
+    //             parameters.currentTerrain->setIndex (i);
+    //             return;
+    //         }
+    //     }
+    //     jassertfalse; // Didn't find option;
+    // }
+    // int getCurrentTerrainIndexFromString (juce::String terrain)
+    // {
        
-        for (int i = 0; i < terrainStrings.size(); i++)
-            if (terrainStrings[i] == terrain)
-                return i;
+    //     for (int i = 0; i < terrainStrings.size(); i++)
+    //         if (terrainStrings[i] == terrain)
+    //             return i;
 
-        jassertfalse;
-        return 0;
-    }
+    //     jassertfalse;
+    //     return 0;
+    // }
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainProcessor)
 };

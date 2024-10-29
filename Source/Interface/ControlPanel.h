@@ -142,7 +142,7 @@ class Envelope : public juce::Component
 {
 public:
     Envelope (juce::AudioProcessorValueTreeState& vts)
-      : envelopeSize ("ES", "envelopeSize", vts),
+      : envelopeSize ("ES", "EnvelopeSize", vts),
         attack ("Attack","Attack", vts),
         decay ("Decay","Decay", vts),
         sustain ("Sustain","Sustain", vts),

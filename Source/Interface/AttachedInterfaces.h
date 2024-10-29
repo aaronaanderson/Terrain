@@ -11,7 +11,7 @@ namespace ti
 struct ParameterToggle : public juce::Component
 {
     ParameterToggle (juce::String labelText, 
-                     juce::StringRef paramID, 
+                     const juce::String paramID, 
                      juce::AudioProcessorValueTreeState& vts)
     {
         label.setText (labelText, juce::dontSendNotification);
@@ -37,7 +37,7 @@ private:
 };
 struct ParameterComboBox : public juce::Component
 {
-    ParameterComboBox (juce::StringRef parmID, juce::AudioProcessorValueTreeState& vts)
+    ParameterComboBox (const juce::String parmID, juce::AudioProcessorValueTreeState& vts)
     {
         comboBoxAttachment.reset (new ComboBoxAttachment (vts, parmID, comboBox));
     }
@@ -50,7 +50,7 @@ private:
 struct ParameterSlider : public juce::Component
 {
     ParameterSlider (juce::String labelText, 
-                     juce::StringRef paramID, 
+                     const juce::String paramID, 
                      juce::AudioProcessorValueTreeState& vts)
 
     {
