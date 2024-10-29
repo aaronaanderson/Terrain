@@ -2,8 +2,7 @@
 #include "Interface/Renderer/glUtility.h"
 MainEditor::MainEditor (MainProcessor& p)
     : AudioProcessorEditor (&p), processorRef (p), 
-      state (processorRef.getState()), 
-      undoManager (processorRef.getUndoManager())
+      state (processorRef.getState())
 {
     jassert (state.getType() == id::TERRAIN_SYNTH);
     
