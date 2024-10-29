@@ -63,12 +63,16 @@ public:
         valueChanged (defaultValue);
     }
 };
+
+
 struct Parameters
 {
     Parameters (juce::AudioProcessorValueTreeState& vts)
       : valueTreeState (vts)
     {}
-
+private:
+    juce::AudioProcessorValueTreeState& valueTreeState;
+public:
     ChoiceParameter* currentTrajectory              = dynamic_cast<ChoiceParameter*> (valueTreeState.getParameter ("CurrentTrajectory"));
     NormalizedFloatParameter* trajectoryModA        = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter ("TrajectoryModA"));
     NormalizedFloatParameter* trajectoryModB        = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter ("TrajectoryModB"));
@@ -80,13 +84,13 @@ struct Parameters
     RangedFloatParameter*     trajectoryTranslationX = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter ("TranslationX"));
     RangedFloatParameter*     trajectoryTranslationY = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter ("TranslationY"));
     NormalizedFloatParameter* meanderanceScale = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter   ("MeanderanceScale"));
-    RangedFloatParameter*     meanderanceSpeed = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter       ("MeanderanceSpeed"));
+    NormalizedFloatParameter*     meanderanceSpeed = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter       ("MeanderanceSpeed"));
 
 
     RangedFloatParameter*     feedbackTime = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter        ("FeedbackTime"));
     RangedFloatParameter*     feedbackScalar = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter      ("Feedback"));
     RangedFloatParameter*     feedbackCompression = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter ("FeedbackCompression"));
-    RangedFloatParameter*     feedbackMix = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter         ("FeedbackMix"));
+    NormalizedFloatParameter*     feedbackMix = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter         ("FeedbackMix"));
 
     ChoiceParameter* currentTerrain = dynamic_cast<ChoiceParameter*> (valueTreeState.getParameter                ("CurrentTerrain"));
     NormalizedFloatParameter* terrainModA = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter ("TerrainModA"));
@@ -110,7 +114,6 @@ struct Parameters
     RangedFloatParameter*     compressorRatio = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter     ("CompressorRatio"));
 
     RangedFloatParameter*     outputLevel = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter("OutputLevel"));
-private:
-    juce::AudioProcessorValueTreeState& valueTreeState;
+
 };
 }

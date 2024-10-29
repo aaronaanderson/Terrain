@@ -40,8 +40,14 @@ struct ParameterComboBox : public juce::Component
     ParameterComboBox (const juce::String parmID, juce::AudioProcessorValueTreeState& vts)
     {
         comboBoxAttachment.reset (new ComboBoxAttachment (vts, parmID, comboBox));
+        addAndMakeVisible (comboBox);
     }
     void resized() override { comboBox.setBounds (getLocalBounds()); }
+    void setOptions (juce::StringArray options)
+    {
+        comboBox.clear();
+        comboBox.addItemList (options, 1);
+    }
 private:
     juce::ComboBox comboBox;
     std::unique_ptr<ComboBoxAttachment> comboBoxAttachment;

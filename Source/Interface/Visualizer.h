@@ -75,7 +75,7 @@ public:
         glContext.setPixelFormat (pf);
         glContext.setMultisamplingEnabled (true);
         glContext.setComponentPaintingEnabled(false);
-        glContext.attachTo (*this);
+        // glContext.attachTo (*this);
         startTimerHz (60);
     }
     ~Visualizer() override 
@@ -122,7 +122,6 @@ private:
     }
     void newOpenGLContextCreated() override 
     {
-        std::cout << juce::gl::glGetString (juce::gl::GL_VERSION) << std::endl;
         terrain = std::make_unique<Terrain> (glContext);
         trajectories = std::make_unique<Trajectories> (glContext, waveTerrainSynthesizer);
     }

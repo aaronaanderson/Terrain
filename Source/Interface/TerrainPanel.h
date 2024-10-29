@@ -59,8 +59,9 @@ class TerrainSelector : public juce::Component
 public:
     TerrainSelector (juce::AudioProcessorValueTreeState& vts)
       : modifierArray (vts), 
-        terrainList ("CurrentTererain", vts)
+        terrainList ("CurrentTerrain", vts)
     {
+
         addAndMakeVisible (terrainList);
         terrainListLabel.setText ("Current Terrain", juce::NotificationType::dontSendNotification);
         terrainListLabel.setJustificationType (juce::Justification::centred);

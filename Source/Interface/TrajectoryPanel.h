@@ -2,7 +2,7 @@
 
 #include "Panel.h"
 #include "AttachedInterfaces.h"
-
+#include "../Parameters.h"
 namespace ti
 {
 class ModifierArray : public juce::Component,

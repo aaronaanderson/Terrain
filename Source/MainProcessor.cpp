@@ -3,14 +3,35 @@
 
 #include "DefaultTreeGenerator.h"
 
+juce::StringArray trajectoryStrings {"Ellipse", 
+                                     "Superellipse", 
+                                     "Limacon", 
+                                     "Butterfly", 
+                                     "Scarabaeus", 
+                                     "Squarcle", 
+                                     "Bicorn", 
+                                     "Cornoid", 
+                                     "Epitrochoid 3", "Epitrochoid 5", "Epitrochoid 7", 
+                                     "Hypocycloid 3", "Hypocycloid 5", "Hypocycloid 7", 
+                                     "Gear Curve 3", "Gear Curve 5", "Gear Curve 7"};
+juce::StringArray terrainStrings = {"Sinusoidal", 
+                                    "System 1", 
+                                    "System 2", 
+                                    "System 3", 
+                                    "System 9", 
+                                    "System 11",
+                                    "System 12", 
+                                    "System 14", 
+                                    "System 15"};
+
 //==============================================================================
 MainProcessor::MainProcessor()
      : AudioProcessor (BusesProperties().withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
        valueTreeState (*this, &undoManager, id::TERRAIN_SYNTH, createParameterLayout()),
-       parameters (valueTreeState),
-       presetManager (this, valueTreeState.state)
+       parameters (valueTreeState)
 {
     valueTreeState.state.addChild (SettingsTree::create(), -1, nullptr);
+    presetManager = std::make_unique<PresetManager> (this, valueTreeState.state);
     synthesizer = std::make_unique<tp::WaveTerrainSynthesizer> (parameters);
     outputChain.reset();
 }
@@ -126,9 +147,9 @@ void MainProcessor::setStateInformation (const void* data, int sizeInBytes)
 
     std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
 
-    if (xmlState.get() != nullptr)
-        if (xmlState->hasTagName (valueTreeState.state.getType()))
-            valueTreeState.replaceState (juce::ValueTree::fromXml (*xmlState));
+    // if (xmlState.get() != nullptr)
+    //     if (xmlState->hasTagName (valueTreeState.state.getType()))
+    //         valueTreeState.replaceState (juce::ValueTree::fromXml (*xmlState));
 }
 //==============================================================================
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter() { return new MainProcessor(); }

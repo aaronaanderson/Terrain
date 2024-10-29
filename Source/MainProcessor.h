@@ -44,7 +44,7 @@ public:
     juce::AudioProcessorValueTreeState& getValueTreeState() { return valueTreeState; }
     juce::ValueTree& getState() { return valueTreeState.state; }
     juce::UndoManager& getUndoManager() { return undoManager; }
-    PresetManager& getPresetManager() { return presetManager; }
+    PresetManager& getPresetManager() { return *presetManager.get(); }
 
     const tp::Parameters& getCastedParameters() const { return parameters; }
     tp::WaveTerrainSynthesizer& getWaveTerrainSynthesizer() { return *synthesizer.get(); }
@@ -53,7 +53,7 @@ private:
     juce::AudioProcessorValueTreeState valueTreeState;
     juce::UndoManager undoManager;
     tp::Parameters parameters;
-    PresetManager presetManager;
+    std::unique_ptr<PresetManager> presetManager;
     std::unique_ptr<tp::WaveTerrainSynthesizer> synthesizer;
     std::unique_ptr<juce::dsp::Oversampling<float>> overSampler;
     int storedFactor = -1; // initialize with invalid factor
@@ -117,27 +117,7 @@ private:
         }
     }
 
-    juce::StringArray trajectoryStrings {"Ellipse", 
-                                                 "Superellipse", 
-                                                 "Limacon", 
-                                                 "Butterfly", 
-                                                 "Scarabaeus", 
-                                                 "Squarcle", 
-                                                 "Bicorn", 
-                                                 "Cornoid", 
-                                                 "Epitrochoid 3", "Epitrochoid 5", "Epitrochoid 7", 
-                                                 "Hypocycloid 3", "Hypocycloid 5", "Hypocycloid 7", 
-                                                 "Gear Curve 3", "Gear Curve 5", "Gear Curve 7"};
 
-    juce::StringArray terrainStrings = {"Sinusoidal", 
-                                        "System 1", 
-                                        "System 2", 
-                                        "System 3", 
-                                        "System 9", 
-                                        "System 11",
-                                        "System 12", 
-                                        "System 14", 
-                                        "System 15"};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainProcessor)
 };

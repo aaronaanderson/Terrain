@@ -26,8 +26,6 @@ MainEditor::MainEditor (MainProcessor& p)
     setResizable (true, false);
     setResizeLimits (756, 620, 2400, 1600);
     setSize (1200, 800);
-
-    setWantsKeyboardFocus (true);
 }
 MainEditor::~MainEditor() 
 {
