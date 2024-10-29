@@ -37,9 +37,13 @@ private:
 };
 struct ParameterComboBox : public juce::Component
 {
-    ParameterComboBox (const juce::String parmID, juce::AudioProcessorValueTreeState& vts)
+    ParameterComboBox (const juce::String paramID, juce::AudioProcessorValueTreeState& vts)
     {
-        comboBoxAttachment.reset (new ComboBoxAttachment (vts, parmID, comboBox));
+        auto apc = dynamic_cast<juce::AudioParameterChoice*> (vts.getParameter (paramID));
+        jassert (apc != nullptr);
+        auto options = apc->getAllValueStrings();
+        comboBox.addItemList (options, 1);
+        comboBoxAttachment.reset (new ComboBoxAttachment (vts, paramID, comboBox));
         addAndMakeVisible (comboBox);
     }
     void resized() override { comboBox.setBounds (getLocalBounds()); }
