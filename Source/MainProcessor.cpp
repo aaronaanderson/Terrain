@@ -4,27 +4,6 @@
 #include "DefaultTreeGenerator.h"
 #include "Utility/VersionType.h"
 
-juce::StringArray trajectoryStrings {"Ellipse", 
-                                     "Superellipse", 
-                                     "Limacon", 
-                                     "Butterfly", 
-                                     "Scarabaeus", 
-                                     "Squarcle", 
-                                     "Bicorn", 
-                                     "Cornoid", 
-                                     "Epitrochoid 3", "Epitrochoid 5", "Epitrochoid 7", 
-                                     "Hypocycloid 3", "Hypocycloid 5", "Hypocycloid 7", 
-                                     "Gear Curve 3", "Gear Curve 5", "Gear Curve 7"};
-juce::StringArray terrainStrings = {"Sinusoidal", 
-                                    "System 1", 
-                                    "System 2", 
-                                    "System 3", 
-                                    "System 9", 
-                                    "System 11",
-                                    "System 12", 
-                                    "System 14", 
-                                    "System 15"};
-
 //==============================================================================
 MainProcessor::MainProcessor()
      : AudioProcessor (BusesProperties().withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
@@ -169,7 +148,17 @@ juce::AudioProcessorValueTreeState::ParameterLayout MainProcessor::createParamet
     juce::NormalisableRange<float> range;
     //======================================Trajectory Parameters
     layout.add (std::make_unique<tp::ChoiceParameter> ("Current Trajectory", 
-                                                        trajectoryStrings, 
+                                                        juce::StringArray {"Ellipse", 
+                                                            "Superellipse", 
+                                                            "Limacon", 
+                                                            "Butterfly", 
+                                                            "Scarabaeus", 
+                                                            "Squarcle", 
+                                                            "Bicorn", 
+                                                            "Cornoid", 
+                                                            "Epitrochoid 3", "Epitrochoid 5", "Epitrochoid 7", 
+                                                            "Hypocycloid 3", "Hypocycloid 5", "Hypocycloid 7", 
+                                                            "Gear Curve 3", "Gear Curve 5", "Gear Curve 7"}, 
                                                         "", 
                                                         0));
     layout.add (std::make_unique<tp::NormalizedFloatParameter> ("Trajectory Mod A", 0.5f));
@@ -229,7 +218,15 @@ juce::AudioProcessorValueTreeState::ParameterLayout MainProcessor::createParamet
 
     //=======================================Terrain Parameters
     layout.add (std::make_unique<tp::ChoiceParameter> ("Current Terrain", 
-                                                       terrainStrings, 
+                                                       juce::StringArray {"Sinusoidal", 
+                                                                          "System 1", 
+                                                                          "System 2", 
+                                                                          "System 3", 
+                                                                          "System 9", 
+                                                                          "System 11",
+                                                                          "System 12", 
+                                                                          "System 14", 
+                                                                          "System 15"}, 
                                                        "",  
                                                        0));
     layout.add (std::make_unique<tp::NormalizedFloatParameter> ("Terrain Mod A", 0.5f));
