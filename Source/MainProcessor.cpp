@@ -147,9 +147,9 @@ void MainProcessor::setStateInformation (const void* data, int sizeInBytes)
 
     std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
 
-    // if (xmlState.get() != nullptr)
-    //     if (xmlState->hasTagName (valueTreeState.state.getType()))
-    //         valueTreeState.replaceState (juce::ValueTree::fromXml (*xmlState));
+    if (xmlState.get() != nullptr)
+        if (xmlState->hasTagName (valueTreeState.state.getType()))
+            valueTreeState.replaceState (juce::ValueTree::fromXml (*xmlState));
 }
 //==============================================================================
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter() { return new MainProcessor(); }

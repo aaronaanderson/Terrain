@@ -74,7 +74,8 @@ public:
         auto b = getLocalBounds();
         auto unitHeight = b.getHeight() / static_cast<float> (2 + 2 + 8);
         terrainListLabel.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 2.0f)));
-        terrainList.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 2.0f)));
+        terrainList.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 2.0f)).withX (2)
+                                                                                     .withWidth (b.getWidth() - 4));
         modifierArray.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 8.0f)));
     }
 private:
