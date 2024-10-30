@@ -8,9 +8,9 @@ namespace tp {
 class WaveTerrainSynthesizer : public juce::Synthesiser
 {
 public:
-    WaveTerrainSynthesizer (Parameters& p)
+    WaveTerrainSynthesizer (Parameters& p, juce::ValueTree settings)
     {
-        setPolyphony (24, p);
+        setPolyphony (24, p, settings);
         addSound (new Terrain (p));
     }
     void prepareToPlay (double sr, int blockSize)
@@ -58,15 +58,26 @@ public:
 
         return v;
     }
+    void setState (juce::ValueTree settings)
+    {
+        jassert (settings.getType() == id::PRESET_SETTINGS);
+        for (int i = 0; i < getNumVoices(); i++)
+        {
+            auto v = getVoice (i);
+            auto trajectory = dynamic_cast<Trajectory*> (v);
+            if (trajectory != nullptr)
+                trajectory->setState (settings);
+        }
+    }
 private:
     VoiceListener* voiceListener = nullptr;
-    void setPolyphony (int newPolyphony, Parameters& p)
+    void setPolyphony (int newPolyphony, Parameters& p, juce::ValueTree settings)
     {
         jassert (newPolyphony > 0);
         clearVoices();
         juce::Array<juce::SynthesiserVoice*> v;
         for (int i = 0; i < newPolyphony; i++)
-            v.add (addVoice (new Trajectory (p)));
+            v.add (addVoice (new Trajectory (p, settings)));
 
         if (voiceListener != nullptr)
             voiceListener->voicesReset (v);

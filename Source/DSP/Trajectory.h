@@ -21,11 +21,14 @@ static Point normalize (const Point p, const float n = 1.0f)
 class Trajectory : public juce::SynthesiserVoice
 {
 public:
-    Trajectory (Parameters& p)
-      : voiceParameters (p)
+    Trajectory (Parameters& p, juce::ValueTree settingsBranch)
+      : voiceParameters (p), 
+        settings (settingsBranch), 
+        pitchBendRange (settings, id::pitchBendRange, nullptr)
     {
         envelope.prepare (sampleRate);
         envelope.setParameters ({200.0f, 20.0f, 0.7f, 1000.0f});
+        jassert (settings.getType() == id::PRESET_SETTINGS);
         functions = 
         {
             [&](float theta, ModSet m){ return Point (std::sin(theta) * m.a, std::cos(theta));} 
@@ -136,6 +139,7 @@ public:
             }
         };
     }
+    ~Trajectory() { }
     bool canPlaySound (juce::SynthesiserSound* s) override { return dynamic_cast<Terrain*>(s) != nullptr; }
     void startNote (int midiNoteNumber,
                     float velocity,
@@ -226,7 +230,13 @@ public:
         voiceParameters.resetSampleRate (newRate);
     }
     const float* getRawData() { return history.getRawData(); }
+    void setState (juce::ValueTree settingsBranch)
+    {
+        settings = settingsBranch;
+        pitchBendRange.referTo (settings, id::pitchBendRange, nullptr);
+    }
 private:
+    juce::ValueTree settings;
     ADSR envelope;
     Terrain* terrain;
     juce::Array<std::function<Point(float, ModSet)>> functions;
@@ -311,6 +321,7 @@ private:
     double phase = 0.0;
     double phaseIncrement;
     double pitchWheelIncrementScalar = 1.0;
+    juce::CachedValue<float> pitchBendRange;
     double sampleRate = 48000.0;
 
     juce::Array<Point> feedbackBuffer;
@@ -357,7 +368,7 @@ private:
         else
             normalizedBend = (pitchWheelPosition - 8191) / 8192.0f;
         
-        float bendRangeSemitones = 12.0f; // this will be a variable later; for now a constant bend range of a whole step
+        float bendRangeSemitones = pitchBendRange.get(); // this will be a variable later; for now a constant bend range of a whole step
         float semitoneBend = normalizedBend * bendRangeSemitones;
         pitchWheelIncrementScalar = std::pow (2.0, semitoneBend / 12.0);
     }

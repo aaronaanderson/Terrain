@@ -290,6 +290,9 @@ public:
         slider.setRange ({0.0, 24.0}, 0.0);
         slider.setTextBoxStyle (juce::Slider::TextEntryBoxPosition::TextBoxLeft, false, 60, 20);
         slider.setValue (settings.getProperty (id::pitchBendRange), juce::dontSendNotification);
+        slider.onValueChange = [&]() { settings.setProperty (id::pitchBendRange, 
+                                                             slider.getValue(), 
+                                                             nullptr); };
         addAndMakeVisible (slider);
     }
     void resized() override
@@ -300,7 +303,7 @@ public:
     }
 private:
     juce::ValueTree settings;
-    juce::Label label {"PitchBend", "Pitch Bend"};
+    juce::Label label {"PitchBend", "Pitch Bend (Semitones)"};
     juce::Slider slider;
 };
 

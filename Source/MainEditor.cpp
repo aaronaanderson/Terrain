@@ -77,13 +77,17 @@ void MainEditor::resetInterface()
     removeChildComponent (trajectoryPanel.get());
     removeChildComponent (terrainPanel.get());
     removeChildComponent (controlPanel.get());
+    removeChildComponent (header.get());
     
     trajectoryPanel = std::make_unique<ti::TrajectoryPanel> (processorRef.getValueTreeState()); 
     terrainPanel = std::make_unique<ti::TerrainPanel> (processorRef.getValueTreeState()); 
     controlPanel = std::make_unique<ti::ControlPanel> (processorRef.getValueTreeState());
-    
+    header = std::make_unique<ti::Header> (processorRef.getPresetManager(), 
+                                           processorRef.getState().getChildWithName (id::PRESET_SETTINGS));
+
     addAndMakeVisible (trajectoryPanel.get());
     addAndMakeVisible (terrainPanel.get());
     addAndMakeVisible (controlPanel.get());
+    addAndMakeVisible (header.get());
     resized(); repaint();
 }

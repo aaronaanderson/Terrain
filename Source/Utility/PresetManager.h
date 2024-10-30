@@ -63,7 +63,7 @@ public:
         for (auto p : audioProcessor->getParameters())
         {
             if (p->getName (20) == "Output Level") continue;
-            auto randomOffset = r.nextFloat() - 0.5f;
+            auto randomOffset = (r.nextFloat() - 0.5f) * 0.5f;
             randomOffset = randomOffset * static_cast<float> (settings.getProperty (id::presetRandomizationScale));
             p->setValueNotifyingHost (p->getValue() + randomOffset);
         }

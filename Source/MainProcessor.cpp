@@ -12,7 +12,7 @@ MainProcessor::MainProcessor()
 {
     valueTreeState.state.addChild (SettingsTree::create(), -1, nullptr);
     presetManager = std::make_unique<PresetManager> (this, valueTreeState.state);
-    synthesizer = std::make_unique<tp::WaveTerrainSynthesizer> (parameters);
+    synthesizer = std::make_unique<tp::WaveTerrainSynthesizer> (parameters, valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
     outputChain.reset();
 }
 
@@ -136,6 +136,7 @@ void MainProcessor::setStateInformation (const void* data, int sizeInBytes)
 
             valueTreeState.replaceState (juce::ValueTree::fromXml (*xmlState));
             presetManager->setState (valueTreeState.state);
+            synthesizer->setState (valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
         }
     }
 }
