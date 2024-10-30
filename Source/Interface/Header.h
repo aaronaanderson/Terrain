@@ -76,6 +76,7 @@ private:
             renameButton.setBounds (b.removeFromLeft (halfBounds / 2).reduced (4));
             cancelButton.setBounds (b.reduced (4));
         }
+        void setText (juce::String text) { nameEditor.setText (text); }
     private:
         PresetComponent* presetComponent = nullptr;
         PresetManager& presetManager;
@@ -116,6 +117,7 @@ private:
             saveButton.setBounds (b.removeFromLeft (halfBounds / 2).reduced (4));
             cancelButton.setBounds (b.reduced (4));
         }
+        void setText (juce::String text) { nameEditor.setText (text); }
     private:
         PresetComponent* presetComponent = nullptr;
         PresetManager& presetManager;
@@ -123,56 +125,8 @@ private:
         juce::TextButton saveButton {"Save"};
         juce::TextButton cancelButton {"Cancel"};
     };
-    struct PresetActionComponent : public juce::Component
+    struct PresetMainComponent : public juce::Component
     {
-        PresetActionComponent (PresetComponent* pc, PresetManager& pm)
-          : presetComponent (pc), 
-            presetManager (pm)
-        {
-            saveButton.onClick = [&](){ presetComponent->viewSaveComponent(); };
-            addAndMakeVisible (saveButton);
-            
-            renameButton.onClick = [&](){ presetComponent->viewRenameComponent(); };
-            addAndMakeVisible (renameButton);
-
-            deleteButton.onClick = [&]()
-                {
-                    presetManager.deletePreset (presetManager.getCurrentPresetName());
-                    presetComponent->refreshList();
-                    presetComponent->viewPresetMainComponent();
-                };
-            addAndMakeVisible (deleteButton);
-
-            cancelButton.onClick = [&](){ presetComponent->viewPresetMainComponent(); };
-            addAndMakeVisible (cancelButton);
-        }
-        void paint(juce::Graphics& g) override
-        {
-            g.setColour (juce::Colours::black);
-            auto b = getLocalBounds();
-            g.drawRect (b, 2);
-        }
-        void resized() override 
-        {
-            auto b = getLocalBounds();
-            auto oneFourth = b.getWidth() / 4;
-    
-            saveButton.setBounds (b.removeFromLeft (oneFourth).reduced (4));
-            renameButton.setBounds (b.removeFromLeft (oneFourth).reduced (4));
-            deleteButton.setBounds (b.removeFromLeft (oneFourth).reduced (4));
-            cancelButton.setBounds (b.removeFromLeft (oneFourth).reduced (4));
-        }
-    private:
-        PresetComponent* presetComponent = nullptr;
-        PresetManager& presetManager;
-        juce::TextButton saveButton   {"Save"};
-        juce::TextButton renameButton {"Rename"};
-        juce::TextButton deleteButton {"Delete"};
-        juce::TextButton cancelButton {"Cancel"};
-    };
-    class PresetMainComponent : public juce::Component
-    {
-    public:
         PresetMainComponent (PresetComponent* pc, PresetManager& pm, juce::ValueTree settingsBranch)
           : presetComponent (pc), 
             presetManager (pm), 
@@ -234,6 +188,7 @@ private:
             }
             presets.setSelectedItemIndex (currentPresetIndex, juce::NotificationType::dontSendNotification);
         }
+        juce::String getCurrentText() { return presets.getText(); }
     private:
         PresetComponent* presetComponent = nullptr;
         PresetManager&   presetManager;
@@ -245,12 +200,78 @@ private:
         juce::Slider randomizeAmountSlider;
         juce::TextButton randomizeButton {"Randomize"};
     };  
-    class PresetComponentLayout : public juce::Component
+    struct PresetActionComponent : public juce::Component
     {
-    public:
-        PresetComponentLayout (PresetComponent* pc, PresetManager& pm, juce::ValueTree settingsBranch)
+        PresetActionComponent (PresetComponent* pc, 
+                               PresetSaveComponent* psc,
+                               PresetRenameComponent* prc, 
+                               PresetMainComponent* pmc, 
+                               PresetManager& pm)
+          : presetComponent (pc), 
+            presetSaveComponent (psc),
+            presetRenameComponent (prc),
+            presetMainComponent (pmc),
+            presetManager (pm)
+        {
+            saveButton.onClick = [&]()
+            { 
+                presetSaveComponent->setText (presetMainComponent->getCurrentText());
+                presetComponent->viewSaveComponent(); 
+            };
+            addAndMakeVisible (saveButton);
+            
+            renameButton.onClick = [&]()
+            { 
+                presetRenameComponent->setText (presetMainComponent->getCurrentText());
+                presetComponent->viewRenameComponent(); 
+            };
+            addAndMakeVisible (renameButton);
+
+            deleteButton.onClick = [&]()
+                {
+                    presetManager.deletePreset (presetManager.getCurrentPresetName());
+                    presetComponent->refreshList();
+                    presetComponent->viewPresetMainComponent();
+                };
+            addAndMakeVisible (deleteButton);
+
+            cancelButton.onClick = [&](){ presetComponent->viewPresetMainComponent(); };
+            addAndMakeVisible (cancelButton);
+        }
+        void paint(juce::Graphics& g) override
+        {
+            g.setColour (juce::Colours::black);
+            auto b = getLocalBounds();
+            g.drawRect (b, 2);
+        }
+        void resized() override 
+        {
+            auto b = getLocalBounds();
+            auto oneFourth = b.getWidth() / 4;
+    
+            saveButton.setBounds (b.removeFromLeft (oneFourth).reduced (4));
+            renameButton.setBounds (b.removeFromLeft (oneFourth).reduced (4));
+            deleteButton.setBounds (b.removeFromLeft (oneFourth).reduced (4));
+            cancelButton.setBounds (b.removeFromLeft (oneFourth).reduced (4));
+        }
+    private:
+        PresetComponent* presetComponent = nullptr;
+        PresetSaveComponent* presetSaveComponent = nullptr;
+        PresetRenameComponent* presetRenameComponent = nullptr;
+        PresetMainComponent* presetMainComponent = nullptr;
+        PresetManager& presetManager;
+        juce::TextButton saveButton   {"Save"};
+        juce::TextButton renameButton {"Rename"};
+        juce::TextButton deleteButton {"Delete"};
+        juce::TextButton cancelButton {"Cancel"};
+    };
+    struct PresetComponentLayout : public juce::Component
+    {
+        PresetComponentLayout (PresetComponent* pc, 
+                               PresetManager& pm, 
+                               juce::ValueTree settingsBranch)
           : presetMainComponent   (pc, pm, settingsBranch), 
-            presetActionComponent (pc, pm), 
+            presetActionComponent (pc, &presetSaveComponent, &presetRenameComponent, &presetMainComponent, pm), 
             presetSaveComponent   (pc, pm),
             presetRenameComponent (pc, pm)
         {
