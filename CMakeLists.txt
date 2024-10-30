@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 3.22)
 project(TERRAIN VERSION 1.1.0)
 
 find_package(OpenGL REQUIRED)
-
 add_subdirectory(JUCE)                    # If you've put JUCE in a subdirectory called JUCE
+add_subdirectory(clap-juce-extensions EXCLUDE_FROM_ALL)
 
 juce_add_plugin(WaveTerrainSynth
     VERSION "1.1.0"                               # Set this if the plugin version is different to the project version
@@ -23,9 +23,13 @@ juce_add_plugin(WaveTerrainSynth
                                                 # GarageBand 10.3 requires the first letter to be upper-case, and the remaining letters to be lower-case
     APP_SANDBOX_ENABLED TRUE        # Needed for GarageBand
     FORMATS Standalone VST3 AU     # The formats to build. Other valid formats are: AAX Unity VST AU AUv3
-    PRODUCT_NAME "Terrain"         # The name of the final executable, which can differ from the target name
-    
+    PRODUCT_NAME "Terrain"         # The name of the final executable, which can differ from the target name    
 )    
+
+clap_juce_extensions_plugin(TARGET WaveTerrainSynth
+    CLAP_ID "com.AaronAnderson.WaveTerrainSynth"
+    CLAP_FEATURES instrument synthesizer
+)
 
 set_target_properties(WaveTerrainSynth PROPERTIES 
     CXX_STANDARD 17
