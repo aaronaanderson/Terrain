@@ -19,3 +19,14 @@ codesign \
     --options=runtime \
     --sign "Developer ID Application: Aaron Anderson" \
     AU/Terrain.component
+
+    codesign \
+    --verbose \
+    --display \
+    --verify \
+    --force \
+    --strict \
+    --timestamp \
+    --options=runtime \
+    --sign "Developer ID Application: Aaron Anderson" \
+    CLAP/Terrain.clap
