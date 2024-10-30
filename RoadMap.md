@@ -1,11 +1,5 @@
 # In Progress
 
-## 1.1.0
-* Presets/Preset Menu - complete
-* Randomly Generated Preset button - complete
-* Change backend to AudioProcessorValueTreeState
-* Add CLAP support
-
 ## 1.2.0
 * Microtonality via MTS-ESP
 
@@ -22,6 +16,12 @@
 * Panning/Spatial spread control
 
 # Completed
+
+## 1.1.0
+* Presets/Preset Menu - complete
+* Randomly Generated Preset button - complete
+* Change backend to AudioProcessorValueTreeState
+* Add CLAP support
 
 ## 1.0.3
 * Pitch Bend - complete
