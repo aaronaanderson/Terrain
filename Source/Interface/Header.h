@@ -278,13 +278,41 @@ private:
     };
 };
 
+class PitchBendComponent : public juce::Component
+{
+public:
+    PitchBendComponent (juce::ValueTree settingsBranch)
+      : settings (settingsBranch)
+    {
+        jassert (settings.getType() == id::PRESET_SETTINGS);
+        label.setJustificationType (juce::Justification::centred);
+        addAndMakeVisible (label);
+        slider.setRange ({0.0, 24.0}, 0.0);
+        slider.setTextBoxStyle (juce::Slider::TextEntryBoxPosition::TextBoxLeft, false, 60, 20);
+        slider.setValue (settings.getProperty (id::pitchBendRange), juce::dontSendNotification);
+        addAndMakeVisible (slider);
+    }
+    void resized() override
+    {
+        auto b = getLocalBounds();
+        label.setBounds (b.removeFromTop (b.getHeight() / 2));
+        slider.setBounds (b);
+    }
+private:
+    juce::ValueTree settings;
+    juce::Label label {"PitchBend", "Pitch Bend"};
+    juce::Slider slider;
+};
+
 class Header : public juce::Component
 {
 public:
     Header (PresetManager& pm, juce::ValueTree settingsBranch)
-      : presetComponent (pm, settingsBranch)
+      : presetComponent (pm, settingsBranch), 
+        pitchBendComponent (settingsBranch)
     {
         addAndMakeVisible (presetComponent);
+        addAndMakeVisible (pitchBendComponent);
     }
     void paint (juce::Graphics& g) override 
     {
@@ -297,13 +325,17 @@ public:
         auto b = getLocalBounds();
         auto oneThird = b.getWidth() / 3;
 
-        auto presetRect = juce::Rectangle<int>().withHeight(b.getHeight())
-                                                .withWidth (oneThird);
-        presetComponent.setBounds (presetRect.withCentre (b.getCentre()));
-                                                          
+        // auto presetRect = juce::Rectangle<int>().withHeight(b.getHeight())
+        //                                         .withWidth (oneThird);
+        // presetComponent.setBounds (presetRect.withCentre (b.getCentre()));
+        b.removeFromLeft (oneThird);
+        presetComponent.setBounds (b.removeFromLeft (oneThird));
+
+        b.removeFromLeft (b.getWidth() / 2);
+        pitchBendComponent.setBounds (b);                                                  
     }
 private:
     PresetComponent presetComponent;
-
+    PitchBendComponent pitchBendComponent;
 };
 } // end namespace ti
