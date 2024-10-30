@@ -9,7 +9,7 @@ struct Version
         major = version[0];
         minor = version[2];
         patch = version[4];
-    };
+    }
     int major;
     int minor;
     int patch;

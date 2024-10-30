@@ -23,12 +23,11 @@ class Trajectory : public juce::SynthesiserVoice
 public:
     Trajectory (Parameters& p, juce::ValueTree settingsBranch)
       : voiceParameters (p), 
-        settings (settingsBranch), 
-        pitchBendRange (settings, id::pitchBendRange, nullptr)
+        pitchBendRange (settingsBranch, id::pitchBendRange, nullptr)
     {
         envelope.prepare (sampleRate);
         envelope.setParameters ({200.0f, 20.0f, 0.7f, 1000.0f});
-        jassert (settings.getType() == id::PRESET_SETTINGS);
+
         functions = 
         {
             [&](float theta, ModSet m){ return Point (std::sin(theta) * m.a, std::cos(theta));} 
@@ -139,7 +138,6 @@ public:
             }
         };
     }
-    ~Trajectory() { }
     bool canPlaySound (juce::SynthesiserSound* s) override { return dynamic_cast<Terrain*>(s) != nullptr; }
     void startNote (int midiNoteNumber,
                     float velocity,
@@ -233,11 +231,10 @@ public:
     const float* getRawData() { return history.getRawData(); }
     void setState (juce::ValueTree settingsBranch)
     {
-        settings = settingsBranch;
-        pitchBendRange.referTo (settings, id::pitchBendRange, nullptr);
+        pitchBendRange.referTo (settingsBranch, id::pitchBendRange, nullptr);
     }
 private:
-    juce::ValueTree settings;
+
     ADSR envelope;
     Terrain* terrain;
     juce::Array<std::function<Point(float, ModSet)>> functions;

@@ -96,8 +96,8 @@ public:
             modifierArray.setVisibleSliders (numberOfVisibleSliders);
         };
 private:
-    ModifierArray modifierArray;
     ParameterComboBox trajectoryList;
+    ModifierArray modifierArray;
     juce::Label trajectoryListLabel;
 
     int trajectoryNameToVisibleSliders (juce::String trajectoryName)
