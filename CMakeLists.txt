@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22) 
 
-project(TERRAIN VERSION 1.0.2)
+project(TERRAIN VERSION 1.1.0)
 
 find_package(OpenGL REQUIRED)
 

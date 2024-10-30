@@ -76,11 +76,17 @@ public:
         // the audio processor with AudioProcessorValueTreeStates.
         // it is a really, really weird bug.
         //========================================================
-        // juce::OpenGLPixelFormat pf;
-        // pf.multisamplingLevel = 4;
-        // glContext.setPixelFormat (pf);
+#ifdef JUCE_MAC 
+        juce::OpenGLPixelFormat pf;
+        pf.multisamplingLevel = 4;
+        glContext.setPixelFormat (pf);
+#elifdef JUCE_LINUX
+        juce::OpenGLPixelFormat pf;
+        pf.multisamplingLevel = 4;
+        glContext.setPixelFormat (pf);
+#endif 
         glContext.setMultisamplingEnabled (true);
-        glContext.setComponentPaintingEnabled(false);
+        glContext.setComponentPaintingEnabled (false);
         glContext.attachTo (*this);
         startTimerHz (60);
     }
