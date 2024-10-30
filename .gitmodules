@@ -7,3 +7,6 @@
 [submodule "PerlinNoise"]
 	path = PerlinNoise
 	url = https://github.com/Reputeless/PerlinNoise.git
+[submodule "clap-juce-extensions"]
+	path = clap-juce-extensions
+	url = https://github.com/free-audio/clap-juce-extensions.git
