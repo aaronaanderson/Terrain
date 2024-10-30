@@ -1,16 +1,18 @@
 # In Progress
 
-## 1.0.4
-* Presets/Preset Menu
-* Randomly Generated Preset button
-
 ## 1.1.0
-* Microtonality via MTS-ESP
-
-## 1.1.1
-* MIDI Learn
+* Presets/Preset Menu - complete
+* Randomly Generated Preset button - complete
+* Change backend to AudioProcessorValueTreeState
+* Add CLAP support
 
 ## 1.2.0
+* Microtonality via MTS-ESP
+
+## 1.3.1
+* MIDI Learn
+
+## 1.4.0
 * MPE Support
 
 # Completed
