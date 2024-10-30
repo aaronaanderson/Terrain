@@ -72,8 +72,8 @@ class TrajectorySelector : public juce::Component
 {
 public:
     TrajectorySelector (juce::AudioProcessorValueTreeState& vts)
-      : trajectoryList ("CurrentTrajectory", vts, resetModifierArray), 
-        modifierArray (vts)
+      : modifierArray (vts),
+        trajectoryList ("CurrentTrajectory", vts, resetModifierArray)
     {
         trajectoryListLabel.setText ("Current Trajectory", juce::NotificationType::dontSendNotification);
         trajectoryListLabel.setJustificationType (juce::Justification::centred);
@@ -96,8 +96,8 @@ public:
             modifierArray.setVisibleSliders (numberOfVisibleSliders);
         };
 private:
-    ParameterComboBox trajectoryList;
     ModifierArray modifierArray;
+    ParameterComboBox trajectoryList;
     juce::Label trajectoryListLabel;
 
     int trajectoryNameToVisibleSliders (juce::String trajectoryName)
