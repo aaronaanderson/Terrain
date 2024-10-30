@@ -228,6 +228,7 @@ public:
     {
         juce::ignoreUnused (blockSize);
         voiceParameters.resetSampleRate (newRate);
+        pitchWheelIncrementScalar.reset (newRate, 0.01);
     }
     const float* getRawData() { return history.getRawData(); }
     void setState (juce::ValueTree settingsBranch)
@@ -320,7 +321,7 @@ private:
     float amplitude = 1.0;
     double phase = 0.0;
     double phaseIncrement;
-    juce::SmoothedValue<double> pitchWheelIncrementScalar {1.0};
+    juce::SmoothedValue<double, juce::ValueSmoothingTypes::Multiplicative> pitchWheelIncrementScalar {1.0};
     juce::CachedValue<float> pitchBendRange;
     double sampleRate = 48000.0;
 
