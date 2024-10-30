@@ -70,21 +70,7 @@ public:
         glContext.setOpenGLVersionRequired (juce::OpenGLContext::OpenGLVersion::defaultGLVersion);
 #endif
         glContext.setRenderer (this);
-        //========================================================
-        // Note: MultiSampling somehow completely breaks
-        // the renderer. This problem only occurred after updating
-        // the audio processor with AudioProcessorValueTreeStates.
-        // it is a really, really weird bug.
-        //========================================================
-// #ifdef JUCE_MAC 
-//         juce::OpenGLPixelFormat pf;
-//         pf.multisamplingLevel = 4;
-//         glContext.setPixelFormat (pf);
-// #elifdef JUCE_LINUX
-//         juce::OpenGLPixelFormat pf;
-//         pf.multisamplingLevel = 4;
-//         glContext.setPixelFormat (pf);
-// #endif 
+
         juce::OpenGLPixelFormat pf;
         pf.multisamplingLevel = 4;
         glContext.setPixelFormat (pf);

@@ -136,6 +136,8 @@ void MainProcessor::setStateInformation (const void* data, int sizeInBytes)
 
             valueTreeState.replaceState (juce::ValueTree::fromXml (*xmlState));
             presetManager->setState (valueTreeState.state);
+            if (valueTreeState.state.getChildWithName (id::PRESET_SETTINGS) == juce::ValueTree())
+                valueTreeState.state.addChild (SettingsTree::create(), -1, nullptr);
             synthesizer->setState (valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
         }
     }
