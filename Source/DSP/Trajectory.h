@@ -203,7 +203,7 @@ public:
                 history.feedNext (point, outputSample);
                 o[i] += outputSample * static_cast<float> (envelope.calculateNext());
             }
-            phase = std::fmod (phase + (phaseIncrement * pitchWheelIncrementScalar), juce::MathConstants<double>::twoPi);
+            phase = std::fmod (phase + (phaseIncrement * pitchWheelIncrementScalar.getNextValue()), juce::MathConstants<double>::twoPi);
             if(!envelope.isActive())
             {
                 history.clear();
@@ -320,7 +320,7 @@ private:
     float amplitude = 1.0;
     double phase = 0.0;
     double phaseIncrement;
-    double pitchWheelIncrementScalar = 1.0;
+    juce::SmoothedValue<double> pitchWheelIncrementScalar {1.0};
     juce::CachedValue<float> pitchBendRange;
     double sampleRate = 48000.0;
 
@@ -370,7 +370,7 @@ private:
         
         float bendRangeSemitones = pitchBendRange.get(); // this will be a variable later; for now a constant bend range of a whole step
         float semitoneBend = normalizedBend * bendRangeSemitones;
-        pitchWheelIncrementScalar = std::pow (2.0, semitoneBend / 12.0);
+        pitchWheelIncrementScalar.setTargetValue (std::pow (2.0, semitoneBend / 12.0));
     }
     void setFrequency (float newFrequency)
     {
