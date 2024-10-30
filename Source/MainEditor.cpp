@@ -5,8 +5,6 @@ MainEditor::MainEditor (MainProcessor& p)
       state (processorRef.getState())
 {
     jassert (state.getType() == id::TERRAIN_SYNTH);
-    
-    getTopLevelComponent()->setName ("Terrain " + id::version.toString());
 
     trajectoryPanel = std::make_unique<ti::TrajectoryPanel> (processorRef.getValueTreeState()); 
     terrainPanel = std::make_unique<ti::TerrainPanel> (processorRef.getValueTreeState()); 
