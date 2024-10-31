@@ -14,4 +14,5 @@ namespace id
     static const juce::Identifier version = JucePlugin_VersionString;
 
     static const juce::Identifier noteOnOrContinuous = "noteOnOrContinuous";
+    static const juce::Identifier mtsConnection = "mtsConnection";
 }

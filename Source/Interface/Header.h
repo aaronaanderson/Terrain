@@ -328,13 +328,80 @@ private:
     juce::Slider slider;
 };
 
+struct ConnectionIndicator : public juce::Component
+{
+    void paint (juce::Graphics& g) override
+    {
+        auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
+        g.fillAll (laf->getBackgroundColour());
+        
+        g.setColour (juce::Colours::black);
+        g.fillEllipse (getLocalBounds().toFloat());
+
+        g.setColour (laf->getBaseColour());
+        g.fillEllipse (getLocalBounds().toFloat().reduced (2));
+
+        if (connected)
+        {
+            g.setColour (laf->getAccentColour());
+            g.fillEllipse (getLocalBounds().reduced (4).toFloat());
+        }
+    }
+    void setConnected (bool isConnected) { connected = isConnected; }
+private:
+    bool connected  = true;
+};
+class MTSComponent : public juce::Component
+{
+public:
+    MTSComponent (juce::ValueTree settingsBranch)
+      : settings (settingsBranch)
+    {
+        connectionIndicator.setConnected (settings.getProperty (id::mtsConnection));
+        addAndMakeVisible (connectionIndicator);
+
+        addAndMakeVisible (noteOnOrContinuousLabel);
+        noteOnOrContinuous.onClick = [&]()
+            {
+                if (noteOnOrContinuous.getToggleState())
+                {
+                    settings.setProperty (id::noteOnOrContinuous, true, nullptr);
+                    noteOnOrContinuousLabel.setText ("Continuous", juce::dontSendNotification);
+                }
+                else 
+                {
+                    settings.setProperty (id::noteOnOrContinuous, false, nullptr);
+                    noteOnOrContinuousLabel.setText ("Note On", juce::dontSendNotification);
+                }
+            };
+        noteOnOrContinuous.setToggleState (settings.getProperty (id::noteOnOrContinuous), 
+                                           juce::sendNotification);
+        addAndMakeVisible (noteOnOrContinuous);
+    }
+    void resized() override
+    {
+        auto b = getLocalBounds();
+        connectionIndicator.setBounds (b.removeFromLeft (40).reduced (10));
+        noteOnOrContinuous.setBounds (b.removeFromLeft (30).reduced (2));
+        noteOnOrContinuousLabel.setBounds (b.removeFromLeft (100));
+    }
+private:
+    juce::ValueTree settings;
+    ConnectionIndicator connectionIndicator;
+
+    juce::Label noteOnOrContinuousLabel;
+    juce::ToggleButton noteOnOrContinuous;
+};
+
 class Header : public juce::Component
 {
 public:
     Header (PresetManager& pm, juce::ValueTree settingsBranch)
-      : presetComponent (pm, settingsBranch), 
+      : mtsComponent (settingsBranch),
+        presetComponent (pm, settingsBranch), 
         pitchBendComponent (settingsBranch)
     {
+        addAndMakeVisible (mtsComponent);
         addAndMakeVisible (presetComponent);
         addAndMakeVisible (pitchBendComponent);
     }
@@ -349,16 +416,14 @@ public:
         auto b = getLocalBounds();
         auto oneThird = b.getWidth() / 3;
 
-        // auto presetRect = juce::Rectangle<int>().withHeight(b.getHeight())
-        //                                         .withWidth (oneThird);
-        // presetComponent.setBounds (presetRect.withCentre (b.getCentre()));
-        b.removeFromLeft (oneThird);
+        mtsComponent.setBounds (b.removeFromLeft (oneThird));
         presetComponent.setBounds (b.removeFromLeft (oneThird));
 
         b.removeFromLeft (b.getWidth() / 2);
         pitchBendComponent.setBounds (b);                                                  
     }
 private:
+    MTSComponent mtsComponent;
     PresetComponent presetComponent;
     PitchBendComponent pitchBendComponent;
 };

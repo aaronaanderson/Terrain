@@ -153,7 +153,8 @@ public:
         setFrequencyImmediate (static_cast<float> (MTS_NoteToFrequency (&mtsClient, 
                                                                         static_cast<char> (midiNote),
                                                                         -1)));
-        if (MTS_ShouldFilterNote (&mtsClient, midiNote, -1)) stopNote (0.0f, false);
+        if (MTS_ShouldFilterNote (&mtsClient, static_cast<char> (midiNote), -1)) 
+            stopNote (0.0f, false);
 
         amplitude = velocity;
         terrain = dynamic_cast<Terrain*> (sound);

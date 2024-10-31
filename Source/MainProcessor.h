@@ -47,6 +47,8 @@ public:
 
     const tp::Parameters& getCastedParameters() const { return parameters; }
     tp::WaveTerrainSynthesizer& getWaveTerrainSynthesizer() { return *synthesizer.get(); }
+
+    bool getMTSConnectionStatus() { return synthesizer->getMTSConnectionStatus(); }
 private:
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     juce::AudioProcessorValueTreeState valueTreeState;
