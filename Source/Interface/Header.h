@@ -361,7 +361,7 @@ public:
         addAndMakeVisible (connectionIndicator);
 
         addAndMakeVisible (noteOnOrContinuousLabel);
-        noteOnOrContinuous.onClick = [&]()
+        noteOnOrContinuous.onStateChange = [&]()
             {
                 if (noteOnOrContinuous.getToggleState())
                 {

@@ -134,11 +134,22 @@ void MainProcessor::setStateInformation (const void* data, int sizeInBytes)
             if (version.major < 1) return;
             if (version.minor < 1) return;
 
-            valueTreeState.replaceState (juce::ValueTree::fromXml (*xmlState));
-            presetManager->setState (valueTreeState.state);
-            if (valueTreeState.state.getChildWithName (id::PRESET_SETTINGS) == juce::ValueTree())
-                valueTreeState.state.addChild (SettingsTree::create(), -1, nullptr);
+            auto newState = juce::ValueTree::fromXml (*xmlState);
+            auto verifiedSettingsBranch = verifiedSettings (newState.getChildWithName (id::PRESET_SETTINGS));
             
+            for (int i =  newState.getNumChildren() - 1; i >= 0; i--)
+            {
+                if (newState.getChild (i).getType() == id::PRESET_SETTINGS)
+                {
+                    // std::cout << i << std::endl;
+                    // std::cout << newState.getChild(i).toXmlString() << std::endl;
+                    newState.removeChild (i, nullptr);
+                }
+            }
+
+            newState.addChild (verifiedSettingsBranch, -1, nullptr);
+            valueTreeState.replaceState (newState);
+            presetManager->setState (valueTreeState.state);
             synthesizer->setState (valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
         }
     }
@@ -308,4 +319,18 @@ void MainProcessor::prepareOversampling (int bufferSize)
         renderBuffer.clear();
         storedBufferSize = bufferSize;
     }
+}
+juce::ValueTree MainProcessor::verifiedSettings (juce::ValueTree settings)
+{  
+    if (settings == juce::ValueTree()) return SettingsTree::create();
+    if (!settings.hasProperty (id::mtsConnection))
+        settings.setProperty (id::mtsConnection, SettingsTree::DefaultSettings::mtsConnection, nullptr);
+    if (!settings.hasProperty (id::noteOnOrContinuous))
+        settings.setProperty (id::noteOnOrContinuous, SettingsTree::DefaultSettings::noteOnOrContinuous, nullptr);
+    if (!settings.hasProperty (id::pitchBendRange))
+        settings.setProperty (id::pitchBendRange, SettingsTree::DefaultSettings::pitchBendRange, nullptr);
+    if (!settings.hasProperty (id::presetRandomizationScale))
+        settings.setProperty (id::presetRandomizationScale, SettingsTree::DefaultSettings::presetRandomizationScale, nullptr);
+
+    return settings;
 }

@@ -69,6 +69,7 @@ private:
 
     void allocateMaxSamplesPerBlock (int maxSamples);
     void prepareOversampling (int bufferSize);
+    juce::ValueTree verifiedSettings (juce::ValueTree);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainProcessor)
 };
