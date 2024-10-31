@@ -17,7 +17,7 @@ juce_add_plugin(WaveTerrainSynth
     IS_MIDI_EFFECT FALSE                 # Is this plugin a MIDI effect?
     # VST3_COPY_DIR "./vst3" 
     BUNDLE_ID com.AaronAnderson.WaveTerrainSynth
-    COPY_PLUGIN_AFTER_BUILD TRUE
+    COPY_PLUGIN_AFTER_BUILD FALSE
     PLUGIN_MANUFACTURER_CODE Aaro               # A four-character manufacturer id with at least one upper-case character
     PLUGIN_CODE JEe9                        # A unique four-character plugin id with exactly one upper-case character
                                                 # GarageBand 10.3 requires the first letter to be upper-case, and the remaining letters to be lower-case
