@@ -1,6 +1,7 @@
 #pragma once 
 
 #include <juce_audio_basics/juce_audio_basics.h>
+#include <MTS-ESP/Client/libMTSClient.h>
 #include "../Parameters.h"
 #include "DataTypes.h"
 #include "ADSR.h"
@@ -21,9 +22,10 @@ static Point normalize (const Point p, const float n = 1.0f)
 class Trajectory : public juce::SynthesiserVoice
 {
 public:
-    Trajectory (Parameters& p, juce::ValueTree settingsBranch)
+    Trajectory (Parameters& p, juce::ValueTree settingsBranch, MTSClient& mtsc)
       : voiceParameters (p), 
-        pitchBendRange (settingsBranch, id::pitchBendRange, nullptr)
+        pitchBendRange (settingsBranch, id::pitchBendRange, nullptr),
+        mtsClient (mtsc)
     {
         envelope.prepare (sampleRate);
         envelope.setParameters ({200.0f, 20.0f, 0.7f, 1000.0f});
@@ -145,7 +147,8 @@ public:
                     int currentPitchWheelPosition) override 
     {   
         setPitchWheelIncrementScalar (currentPitchWheelPosition);
-        setFrequency (static_cast<float> (juce::MidiMessage::getMidiNoteInHertz (midiNoteNumber)));
+        // setFrequency (static_cast<float> (juce::MidiMessage::getMidiNoteInHertz (midiNoteNumber)));
+        setFrequency (MTS_NoteToFrequency (&mtsClient, midiNoteNumber, -1));
         amplitude = velocity;
         terrain = dynamic_cast<Terrain*> (sound);
         envelope.noteOn();
@@ -321,7 +324,7 @@ private:
     juce::SmoothedValue<double, juce::ValueSmoothingTypes::Multiplicative> pitchWheelIncrementScalar {1.0};
     juce::CachedValue<float> pitchBendRange;
     double sampleRate = 48000.0;
-
+    MTSClient& mtsClient;
     juce::Array<Point> feedbackBuffer;
     int feedbackWriteIndex = 0;
     int feedbackReadIndex;

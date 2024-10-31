@@ -5,7 +5,6 @@
 #include "Identifiers.h"
 #include "DSP/WaveTerrainSynthesizer.h"
 #include "Utility/PresetManager.h"
-
 //==============================================================================
 class MainProcessor  : public juce::AudioProcessor, 
                        private juce::ValueTree::Listener
@@ -57,16 +56,14 @@ private:
     std::unique_ptr<tp::WaveTerrainSynthesizer> synthesizer;
     std::unique_ptr<juce::dsp::Oversampling<float>> overSampler;
     int storedFactor = -1; // initialize with invalid factor
+    int storedBufferSize = 0;
+    int maxSamplesPerBlock;
+    double sampleRate;
     juce::AudioBuffer<float> renderBuffer;
-
     juce::dsp::ProcessorChain<juce::dsp::IIR::Filter<float>, // DC Offset filter
                               juce::dsp::LadderFilter<float>, 
                               juce::dsp::Compressor<float>, 
                               juce::dsp::Gain<float>> outputChain;
-
-    int storedBufferSize = 0;
-    int maxSamplesPerBlock;
-    double sampleRate;
 
     void allocateMaxSamplesPerBlock (int maxSamples);
     void prepareOversampling (int bufferSize);

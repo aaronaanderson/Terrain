@@ -31,6 +31,8 @@ clap_juce_extensions_plugin(TARGET WaveTerrainSynth
     CLAP_FEATURES instrument synthesizer
 )
 
+
+
 set_target_properties(WaveTerrainSynth PROPERTIES 
     CXX_STANDARD 17
     COMPILE_WARNING_AS_ERROR ON
@@ -43,7 +45,12 @@ target_sources(WaveTerrainSynth
         Source/MainEditor.cpp
         Source/MainProcessor.cpp)
 
-target_include_directories(WaveTerrainSynth PRIVATE PerlinNoise)
+add_library(MTS-ESP STATIC MTS-ESP/Client/LibMTSClient.cpp)
+
+target_include_directories(WaveTerrainSynth PRIVATE 
+    PerlinNoise 
+    MTS-ESP/Client
+    glm/glm)
 
 target_compile_definitions(WaveTerrainSynth
     PUBLIC
@@ -66,7 +73,7 @@ if(WIN32)
         glu32.lib   
     )
 endif()
-target_include_directories(WaveTerrainSynth PRIVATE glm/glm)
+# target_include_directories(WaveTerrainSynth PRIVATE glm/glm)
 target_link_libraries(WaveTerrainSynth
     PRIVATE
         BinaryData
@@ -74,6 +81,7 @@ target_link_libraries(WaveTerrainSynth
         juce::juce_audio_utils
         juce::juce_dsp
         juce::juce_opengl
+        MTS-ESP
     PUBLIC
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
