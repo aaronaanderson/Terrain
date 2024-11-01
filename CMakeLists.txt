@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22) 
 
-project(TERRAIN VERSION 1.1.0)
+project(TERRAIN VERSION 1.2.1)
 
 find_package(OpenGL REQUIRED)
 add_subdirectory(JUCE)                    # If you've put JUCE in a subdirectory called JUCE
@@ -43,7 +43,10 @@ target_sources(WaveTerrainSynth
         Source/MainEditor.cpp
         Source/MainProcessor.cpp)
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON) #necessary for GCC linking
 add_library(MTS-ESP STATIC MTS-ESP/Client/libMTSClient.cpp)
+
+
 
 target_include_directories(WaveTerrainSynth PRIVATE 
     PerlinNoise 
@@ -56,7 +59,7 @@ target_compile_definitions(WaveTerrainSynth
         JUCE_WEB_BROWSER=0  # If you remove this, add `NEEDS_WEB_BROWSER TRUE` to the `juce_add_plugin` call
         JUCE_USE_CURL=0     # If you remove this, add `NEEDS_CURL TRUE` to the `juce_add_plugin` call
         JUCE_VST3_CAN_REPLACE_VST2=0)
-        
+
 juce_add_binary_data(BinaryData SOURCES
     Source/Interface/Renderer/Shaders/TrajectoryPoint.frag 
     Source/Interface/Renderer/Shaders/TrajectoryPoint.vert
@@ -71,7 +74,7 @@ if(WIN32)
         glu32.lib   
     )
 endif()
-# target_include_directories(WaveTerrainSynth PRIVATE glm/glm)
+
 target_link_libraries(WaveTerrainSynth
     PRIVATE
         BinaryData
