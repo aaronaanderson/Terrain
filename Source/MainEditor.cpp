@@ -33,7 +33,7 @@ MainEditor::MainEditor (MainProcessor& p)
     getLookAndFeel().setDefaultLookAndFeel (&lookAndFeel);
 
     setResizable (true, false);
-    setResizeLimits (756, 620, 2400, 1600);
+    setResizeLimits (776, 620, 2400, 1600);
     setSize (1200, 800);
 }
 MainEditor::~MainEditor() 
@@ -49,7 +49,7 @@ void MainEditor::resized()
 {
     auto b = getLocalBounds();
 
-    header->setBounds (b.removeFromTop (40));
+    header->setBounds (b.removeFromTop (60));
     
     int controlPanelHeight = b.getHeight() / 5;
     controlPanel->setBounds (b.removeFromBottom (controlPanelHeight));

@@ -3,16 +3,18 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <juce_data_structures/juce_data_structures.h>
 #include "LookAndFeel.h"
+#include "Panel.h"
 #include "../Utility/Identifiers.h"
 #include "../Utility/PresetManager.h"
 
 namespace ti{
 
-class PresetComponent : public juce::Component
+class PresetComponent : public Panel
 {
 public:
     PresetComponent (PresetManager& pm, juce::ValueTree settingsBranch)
-      : viewport ("Preset Component Layout")
+      : Panel ("Presets"),
+        viewport ("Preset Component Layout")
     {
         viewport.setViewedComponent (new PresetComponentLayout (this, pm, settingsBranch));
         viewport.setScrollBarsShown (false, false);
@@ -20,7 +22,8 @@ public:
     }
     void resized() override 
     {
-        auto b = getLocalBounds();
+        Panel::resized();
+        auto b = getAdjustedBounds();
         componentWidth = b.getWidth();
         viewport.setBounds (b);
         juce::Rectangle<int> layoutViewBounds = b.withWidth (componentWidth * 4);
@@ -61,12 +64,6 @@ private:
             cancelButton.onClick = [&](){ presetComponent->viewPresetMainComponent(); };
             addAndMakeVisible (cancelButton);
         }
-        void paint (juce::Graphics& g) override
-        {
-            g.setColour (juce::Colours::black);
-            auto b = getLocalBounds();
-            g.drawRect (b, 2);            
-        }
         void resized() override 
         {
             auto b = getLocalBounds();
@@ -102,12 +99,6 @@ private:
             cancelButton.onClick = [&](){ presetComponent->viewPresetMainComponent(); };
             addAndMakeVisible (cancelButton);
         }
-        void paint (juce::Graphics& g) override
-        {
-            g.setColour (juce::Colours::black);
-            auto b = getLocalBounds();
-            g.drawRect (b, 2);            
-        }
         void resized() override 
         {
             auto b = getLocalBounds();
@@ -136,8 +127,6 @@ private:
             refreshList();
             presets.onChange = [&](){ presetManager.loadPreset (presets.getItemText (presets.getSelectedItemIndex())); };
             addAndMakeVisible (presets);
-            presetLabel.setJustificationType (juce::Justification::centred);
-            addAndMakeVisible (presetLabel);
             presetActionButton.onClick = [&](){ presetComponent->viewActionComponent(); };
             addAndMakeVisible (presetActionButton);
     
@@ -152,19 +141,12 @@ private:
             randomizeButton.onClick = [&]() { presetManager.randomize(); };
             addAndMakeVisible (randomizeButton);
         }  
-        void paint (juce::Graphics& g) override 
-        {
-            g.setColour (juce::Colours::black);
-            auto b = getLocalBounds();
-            g.drawRect (b, 2);
-        }
         void resized() override
         {
             auto b = getLocalBounds().reduced (2);
             auto twoThirds = b.getWidth() * 2 / 3;
     
             auto p = b.removeFromLeft (twoThirds);
-            presetLabel.setBounds (p.removeFromTop (p.getHeight() / 2));
             auto sevenEighths = p.getWidth() * 7 / 8;
             presets.setBounds (p.removeFromLeft (sevenEighths));
             presetActionButton.setBounds (p);
@@ -194,7 +176,6 @@ private:
         PresetManager&   presetManager;
         juce::ValueTree settings;
         juce::ComboBox presets;
-        juce::Label presetLabel {"Preset", "Preset"};
         juce::TextButton presetActionButton {"+"};
     
         juce::Slider randomizeAmountSlider;
@@ -237,12 +218,6 @@ private:
 
             cancelButton.onClick = [&](){ presetComponent->viewPresetMainComponent(); };
             addAndMakeVisible (cancelButton);
-        }
-        void paint(juce::Graphics& g) override
-        {
-            g.setColour (juce::Colours::black);
-            auto b = getLocalBounds();
-            g.drawRect (b, 2);
         }
         void resized() override 
         {
@@ -298,15 +273,14 @@ private:
         PresetRenameComponent presetRenameComponent;
     };
 };
-class PitchBendComponent : public juce::Component
+class PitchBendComponent : public Panel
 {
 public:
     PitchBendComponent (juce::ValueTree settingsBranch)
-      : settings (settingsBranch)
+      : Panel ("Pitch Bend (Semitones)"),
+        settings (settingsBranch)
     {
         jassert (settings.getType() == id::PRESET_SETTINGS);
-        label.setJustificationType (juce::Justification::centred);
-        addAndMakeVisible (label);
         slider.setDoubleClickReturnValue (true, 2.0);
         slider.setRange ({0.0, 12.0}, 0.0);
         slider.setTextBoxStyle (juce::Slider::TextEntryBoxPosition::TextBoxLeft, false, 60, 20);
@@ -318,32 +292,37 @@ public:
     }
     void resized() override
     {
-        auto b = getLocalBounds();
-        label.setBounds (b.removeFromTop (b.getHeight() / 2));
+        Panel::resized();
+        auto b = getAdjustedBounds();
+        b.removeFromLeft (b.getWidth() / 2);
         slider.setBounds (b);
     }
 private:
     juce::ValueTree settings;
-    juce::Label label {"PitchBend", "Pitch Bend (Semitones)"};
     juce::Slider slider;
 };
 struct ConnectionIndicator : public juce::Component
 {
     void paint (juce::Graphics& g) override
     {
+        auto b = getLocalBounds();
+        int shortestSide = b.getWidth() < b.getHeight() ? b.getWidth() : b.getHeight();
+        auto adjustedBounds = juce::Rectangle<int> (shortestSide, shortestSide);
+        adjustedBounds = adjustedBounds.withCentre (b.getCentre());
+
         auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
         g.fillAll (laf->getBackgroundColour());
         
         g.setColour (juce::Colours::black);
-        g.fillEllipse (getLocalBounds().toFloat());
+        g.fillEllipse (adjustedBounds.toFloat());
 
         g.setColour (laf->getBaseColour());
-        g.fillEllipse (getLocalBounds().toFloat().reduced (2));
+        g.fillEllipse (adjustedBounds.toFloat().reduced (2));
 
         if (connected)
         {
             g.setColour (laf->getAccentColour());
-            g.fillEllipse (getLocalBounds().reduced (4).toFloat());
+            g.fillEllipse (adjustedBounds.reduced (4).toFloat());
         }
     }
     void setConnected (bool isConnected) 
@@ -354,13 +333,14 @@ struct ConnectionIndicator : public juce::Component
 private:
     bool connected  = true;
 };
-class MTSComponent : public juce::Component, 
+class MTSComponent : public Panel, 
                      private juce::ValueTree::Listener
 {
 public:
     MTSComponent (juce::ValueTree settingsBranch, 
                   juce::ValueTree ephemeralBranch)
-      : settings (settingsBranch),
+      : Panel ("MTS-ESP"),
+        settings (settingsBranch),
         ephemeralState (ephemeralBranch)
     {
         jassert (settings.getType() == id::PRESET_SETTINGS);
@@ -371,7 +351,8 @@ public:
         connectionIndicator.setConnected (ephemeralState.getProperty (id::tuningSystemConnected));
         addAndMakeVisible (connectionIndicator);
         addAndMakeVisible (connectionStatusLabel);
-
+        
+        noteOnOrContinuousLabel.setJustificationType (juce::Justification::left);
         addAndMakeVisible (noteOnOrContinuousLabel);
         noteOnOrContinuous.onStateChange = [&]()
             {
@@ -401,13 +382,17 @@ public:
     ~MTSComponent() override { ephemeralState.removeListener (this); }
     void resized() override
     {
-        auto b = getLocalBounds();
-        connectionIndicator.setBounds (b.removeFromLeft (40).reduced (10));
-        connectionStatusLabel.setBounds (b.removeFromLeft (60));
-        noteOnOrContinuous.setBounds (b.removeFromLeft (30).reduced (2));
-        noteOnOrContinuousLabel.setBounds (b.removeFromLeft (60));
+        Panel::resized();
+        auto b = getAdjustedBounds();
+        juce::Point<float> scalar = {b.getWidth() / 400.0f, b.getHeight() / 40.0f};
+        
+        b.removeFromLeft (static_cast<int> (10 * scalar.x));
+        connectionIndicator.setBounds     (b.removeFromLeft (static_cast<int> (juce::jmax (20 * scalar.x, 22.0f))).reduced (2));
+        connectionStatusLabel.setBounds   (b.removeFromLeft (static_cast<int> (60 * scalar.x)) );
+        noteOnOrContinuous.setBounds      (b.removeFromLeft (22));
+        noteOnOrContinuousLabel.setBounds (b.removeFromLeft (static_cast<int> (60 * scalar.x)));
 
-        currentTuningSystemLabel.setBounds (b.removeFromTop(b.getHeight() / 2));
+        currentTuningSystemLabel.setBounds (b.removeFromTop (b.getHeight() / 2));
         currentTuningSystem.setBounds (b);
     }
 private:
@@ -432,7 +417,6 @@ private:
         }
     }
 };
-
 class Header : public juce::Component
 {
 public:
@@ -447,12 +431,6 @@ public:
         addAndMakeVisible (presetComponent);
         addAndMakeVisible (pitchBendComponent);
     }
-    void paint (juce::Graphics& g) override 
-    {
-        g.setColour (juce::Colours::black);
-        auto b = getLocalBounds();
-        g.drawRect (b, 2);
-    }
     void resized() override
     {
         auto b = getLocalBounds();
@@ -460,8 +438,6 @@ public:
 
         mtsComponent.setBounds (b.removeFromLeft (oneThird));
         presetComponent.setBounds (b.removeFromLeft (oneThird));
-
-        b.removeFromLeft (b.getWidth() / 2);
         pitchBendComponent.setBounds (b);                                                  
     }
 private:
