@@ -155,6 +155,6 @@ To install the plugin binary, use the file explorer to navigate to Documents/Ter
 
 Thank you to my professors John Thompson and Karl Yerkes for their endless patience and dedication while passing me a portion of their vast knowledge. 
 
-Thank you to Rodney DuPlessis for helping me with the Linux build and for being an all-around good friend: rodneyduplessis.com
+Thank you to Rodney DuPlessis for helping me with the Linux build and for being an all-around good friend: [rodneyduplessis.com](https://rodneyduplessis.com/)
 
-Thank you to Jacky Ligon for testing the MTS-ESP build and encouraging me with their great music: jackyligon.com
+Thank you to Jacky Ligon for testing the MTS-ESP build and encouraging me with their great music: [jackyligon.com](https://jackyligon.com/)
