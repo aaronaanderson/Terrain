@@ -1,5 +1,6 @@
 #pragma once
 
+#include <MTS-ESP/Client/libMTSClient.h>
 #include "../Parameters.h"
 #include "DataTypes.h"
 #include "Terrain.h"
@@ -10,8 +11,17 @@ class WaveTerrainSynthesizer : public juce::Synthesiser
 public:
     WaveTerrainSynthesizer (Parameters& p, juce::ValueTree settings)
     {
-        setPolyphony (24, p, settings);
+        mtsClient = MTS_RegisterClient();
+        settings.setProperty (id::mtsConnection, false, nullptr);
+        if (MTS_HasMaster (mtsClient))
+            settings.setProperty (id::mtsConnection, true, nullptr);
+
         addSound (new Terrain (p));
+        setPolyphony (24, p, settings, *mtsClient);
+    }
+    ~WaveTerrainSynthesizer()
+    {
+        MTS_DeregisterClient (mtsClient);
     }
     void prepareToPlay (double sr, int blockSize)
     {
@@ -69,15 +79,20 @@ public:
                 trajectory->setState (settings);
         }
     }
+    bool getMTSConnectionStatus() {return MTS_HasMaster (mtsClient); }
 private:
     VoiceListener* voiceListener = nullptr;
-    void setPolyphony (int newPolyphony, Parameters& p, juce::ValueTree settings)
+    MTSClient* mtsClient = nullptr;
+    void setPolyphony (int newPolyphony, 
+                       Parameters& p, 
+                       juce::ValueTree settings, 
+                       MTSClient& mtsc)
     {
         jassert (newPolyphony > 0);
         clearVoices();
         juce::Array<juce::SynthesiserVoice*> v;
         for (int i = 0; i < newPolyphony; i++)
-            v.add (addVoice (new Trajectory (p, settings)));
+            v.add (addVoice (new Trajectory (p, settings, mtsc)));
 
         if (voiceListener != nullptr)
             voiceListener->voicesReset (v);

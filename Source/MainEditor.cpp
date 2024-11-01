@@ -6,6 +6,11 @@ MainEditor::MainEditor (MainProcessor& p)
 {
     jassert (state.getType() == id::TERRAIN_SYNTH);
 
+    auto settings = state.getChildWithName (id::PRESET_SETTINGS);
+    settings.setProperty (id::mtsConnection, 
+                          processorRef.getMTSConnectionStatus(), 
+                          nullptr);
+
     trajectoryPanel = std::make_unique<ti::TrajectoryPanel> (processorRef.getValueTreeState()); 
     terrainPanel = std::make_unique<ti::TerrainPanel> (processorRef.getValueTreeState()); 
     controlPanel = std::make_unique<ti::ControlPanel> (processorRef.getValueTreeState());

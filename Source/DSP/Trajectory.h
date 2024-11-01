@@ -1,6 +1,7 @@
 #pragma once 
 
 #include <juce_audio_basics/juce_audio_basics.h>
+#include <MTS-ESP/Client/libMTSClient.h>
 #include "../Parameters.h"
 #include "DataTypes.h"
 #include "ADSR.h"
@@ -21,9 +22,11 @@ static Point normalize (const Point p, const float n = 1.0f)
 class Trajectory : public juce::SynthesiserVoice
 {
 public:
-    Trajectory (Parameters& p, juce::ValueTree settingsBranch)
+    Trajectory (Parameters& p, juce::ValueTree settingsBranch, MTSClient& mtsc)
       : voiceParameters (p), 
-        pitchBendRange (settingsBranch, id::pitchBendRange, nullptr)
+        smoothFrequencyEnabled (settingsBranch, id::noteOnOrContinuous, nullptr),
+        pitchBendRange (settingsBranch, id::pitchBendRange, nullptr),
+        mtsClient (mtsc)
     {
         envelope.prepare (sampleRate);
         envelope.setParameters ({200.0f, 20.0f, 0.7f, 1000.0f});
@@ -145,7 +148,14 @@ public:
                     int currentPitchWheelPosition) override 
     {   
         setPitchWheelIncrementScalar (currentPitchWheelPosition);
-        setFrequency (static_cast<float> (juce::MidiMessage::getMidiNoteInHertz (midiNoteNumber)));
+        // setFrequency (static_cast<float> (juce::MidiMessage::getMidiNoteInHertz (midiNoteNumber)));
+        midiNote = midiNoteNumber;
+        setFrequencyImmediate (static_cast<float> (MTS_NoteToFrequency (&mtsClient, 
+                                                                        static_cast<char> (midiNote),
+                                                                        -1)));
+        if (MTS_ShouldFilterNote (&mtsClient, static_cast<char> (midiNote), -1)) 
+            stopNote (0.0f, false);
+
         amplitude = velocity;
         terrain = dynamic_cast<Terrain*> (sound);
         envelope.noteOn();
@@ -167,6 +177,10 @@ public:
                           int startSample, int numSamples) override 
     {
         auto* o = outputBuffer.getWritePointer(0);
+        if (smoothFrequencyEnabled.get())
+            setFrequencySmooth (static_cast<float> (MTS_NoteToFrequency (&mtsClient, 
+                                                                         static_cast<char> (midiNote), 
+                                                                         -1)));
         for(int i = startSample; i < startSample + numSamples; i++)
         {
             if(!envelope.isActive()) break;
@@ -199,9 +213,12 @@ public:
             {
                 float outputSample = terrain->sampleAt (point, i);
                 history.feedNext (point, outputSample);
-                o[i] += outputSample * static_cast<float> (envelope.calculateNext());
+                o[i] += outputSample * static_cast<float> (envelope.calculateNext()) * amplitude;
             }
-            phase = std::fmod (phase + (phaseIncrement * pitchWheelIncrementScalar.getNextValue()), juce::MathConstants<double>::twoPi);
+
+            phase = std::fmod (phase + (phaseIncrement.getNextValue() * pitchWheelIncrementScalar.getNextValue()),
+                               juce::MathConstants<double>::twoPi);
+
             if(!envelope.isActive())
             {
                 history.clear();
@@ -215,7 +232,7 @@ public:
         {
             sampleRate = newRate;
             envelope.prepare (sampleRate);
-            setFrequency (frequency);
+            setFrequencyImmediate (frequency);
             perlinVector.setSampleRate (newRate);
         }
         // two second max delay
@@ -227,14 +244,15 @@ public:
         juce::ignoreUnused (blockSize);
         voiceParameters.resetSampleRate (newRate);
         pitchWheelIncrementScalar.reset (newRate, 0.01);
+        phaseIncrement.reset (blockSize);
     }
     const float* getRawData() { return history.getRawData(); }
     void setState (juce::ValueTree settingsBranch)
     {
         pitchBendRange.referTo (settingsBranch, id::pitchBendRange, nullptr);
+        smoothFrequencyEnabled.referTo (settingsBranch, id::noteOnOrContinuous, nullptr);
     }
 private:
-
     ADSR envelope;
     Terrain* terrain;
     juce::Array<std::function<Point(float, ModSet)>> functions;
@@ -317,11 +335,13 @@ private:
     float frequency = 440.0f;
     float amplitude = 1.0;
     double phase = 0.0;
-    double phaseIncrement;
+    int midiNote;
+    juce::CachedValue<bool> smoothFrequencyEnabled;
+    juce::SmoothedValue<double, juce::ValueSmoothingTypes::Multiplicative> phaseIncrement;
     juce::SmoothedValue<double, juce::ValueSmoothingTypes::Multiplicative> pitchWheelIncrementScalar {1.0};
     juce::CachedValue<float> pitchBendRange;
     double sampleRate = 48000.0;
-
+    MTSClient& mtsClient;
     juce::Array<Point> feedbackBuffer;
     int feedbackWriteIndex = 0;
     int feedbackReadIndex;
@@ -370,11 +390,17 @@ private:
         float semitoneBend = normalizedBend * bendRangeSemitones;
         pitchWheelIncrementScalar.setTargetValue (std::pow (2.0, semitoneBend / 12.0));
     }
-    void setFrequency (float newFrequency)
+    void setFrequencyImmediate (float newFrequency)
     {
         jassert (newFrequency > 0.0f);
         frequency = newFrequency;
-        phaseIncrement = (frequency * juce::MathConstants<float>::twoPi) / sampleRate;
+        phaseIncrement.setCurrentAndTargetValue ((frequency * juce::MathConstants<float>::twoPi) / sampleRate);
+    }
+    void setFrequencySmooth (float newFrequency)
+    {
+        jassert (newFrequency > 0.0f);
+        frequency = newFrequency;
+        phaseIncrement.setTargetValue ((frequency * juce::MathConstants<float>::twoPi) / sampleRate);
     }
     Point rotate (const Point p, const float theta)
     {

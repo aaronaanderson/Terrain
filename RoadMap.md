@@ -9,6 +9,12 @@
 ## 1.4.0
 * MPE Support
 
+## 1.5.0
+* Multiple Oscillators
+* Detuning spread control
+* Trajectory spacing spread control
+* Panning/Spatial spread control
+
 # Completed
 
 ## 1.1.0

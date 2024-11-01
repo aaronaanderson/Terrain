@@ -10,3 +10,6 @@
 [submodule "clap-juce-extensions"]
 	path = clap-juce-extensions
 	url = https://github.com/free-audio/clap-juce-extensions.git
+[submodule "MTS-ESP"]
+	path = MTS-ESP
+	url = https://github.com/ODDSound/MTS-ESP.git

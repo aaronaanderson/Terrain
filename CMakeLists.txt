@@ -15,9 +15,9 @@ juce_add_plugin(WaveTerrainSynth
     NEEDS_MIDI_INPUT TRUE              # Does the plugin need midi input?
     # NEEDS_MIDI_OUTPUT TRUE/FALSE              # Does the plugin need midi output?
     IS_MIDI_EFFECT FALSE                 # Is this plugin a MIDI effect?
-    VST3_COPY_DIR "./vst3" 
+    # VST3_COPY_DIR "./vst3" 
     BUNDLE_ID com.AaronAnderson.WaveTerrainSynth
-    COPY_PLUGIN_AFTER_BUILD TRUE
+    COPY_PLUGIN_AFTER_BUILD FALSE
     PLUGIN_MANUFACTURER_CODE Aaro               # A four-character manufacturer id with at least one upper-case character
     PLUGIN_CODE JEe9                        # A unique four-character plugin id with exactly one upper-case character
                                                 # GarageBand 10.3 requires the first letter to be upper-case, and the remaining letters to be lower-case
@@ -31,6 +31,8 @@ clap_juce_extensions_plugin(TARGET WaveTerrainSynth
     CLAP_FEATURES instrument synthesizer
 )
 
+
+
 set_target_properties(WaveTerrainSynth PROPERTIES 
     CXX_STANDARD 17
     COMPILE_WARNING_AS_ERROR ON
@@ -43,7 +45,12 @@ target_sources(WaveTerrainSynth
         Source/MainEditor.cpp
         Source/MainProcessor.cpp)
 
-target_include_directories(WaveTerrainSynth PRIVATE PerlinNoise)
+add_library(MTS-ESP STATIC MTS-ESP/Client/LibMTSClient.cpp)
+
+target_include_directories(WaveTerrainSynth PRIVATE 
+    PerlinNoise 
+    MTS-ESP/Client
+    glm/glm)
 
 target_compile_definitions(WaveTerrainSynth
     PUBLIC
@@ -66,7 +73,7 @@ if(WIN32)
         glu32.lib   
     )
 endif()
-target_include_directories(WaveTerrainSynth PRIVATE glm/glm)
+# target_include_directories(WaveTerrainSynth PRIVATE glm/glm)
 target_link_libraries(WaveTerrainSynth
     PRIVATE
         BinaryData
@@ -74,6 +81,7 @@ target_link_libraries(WaveTerrainSynth
         juce::juce_audio_utils
         juce::juce_dsp
         juce::juce_opengl
+        MTS-ESP
     PUBLIC
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
