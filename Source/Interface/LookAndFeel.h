@@ -220,4 +220,10 @@ public:
             g.fillRoundedRectangle (tickBounds.reduced (2.0f), 4.0f);
         }
     }
+    int getTabButtonBestWidth (juce::TabBarButton& button, int /*tabDepth*/) override
+    {
+        return button.getTabbedButtonBar().getWidth() / 
+               button.getTabbedButtonBar().getNumTabs();
+    }
+
 };
