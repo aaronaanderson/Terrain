@@ -90,8 +90,12 @@ struct ParameterSlider : public juce::Component
         {
             slider.setSliderStyle (juce::Slider::SliderStyle::RotaryVerticalDrag);
             label.setJustificationType (juce::Justification::centred);
+        } 
+        else
+        {
+            slider.setSliderStyle (juce::Slider::SliderStyle::LinearHorizontal);
+            label.setJustificationType (juce::Justification::left);
         }
-
         slider.setBounds (b);
     }
 private:

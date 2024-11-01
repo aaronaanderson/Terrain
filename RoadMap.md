@@ -7,7 +7,7 @@
 * Double-click default pitch-bend to 2 semitones - complete
 * Fix Slider->knob resizing issue
 * Add MTS-ESP labeling - complete
-* Fix Reaper Presets
+* Fix Reaper Presets - complete
 
 ## 1.3.0
 * MPE Support
