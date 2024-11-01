@@ -30,7 +30,7 @@ The envelope generator mimics an analog style. The ES toggle determines whether 
 Given the flexibility of trajectory behavior and terrain shape, alias frequencies are nearly impossible to predict and therefore cannot be prevented at the source. Anti-aliasing in Terrain is thus handled by oversampling. Be wary of using high oversampling factors for live performance as this method of alias reduction comes at a great computational cost.
 
 
-## Building
+# Building
 
 The following sections are instructions to build Terrain from source on various platforms. These instructions assume that a machine is not prepared for software development, and that the user knows little about compiling code from source. If you are familiar with CMake build systems, you may safely ignore the following and build with tools that you are already comfortable with.
 
@@ -150,3 +150,9 @@ Use CMake to make the build files.
 `make -j4`
 
 To install the plugin binary, use the file explorer to navigate to Documents/Terrain/build/WaveTerrainSynth_artefacts/Release/VST3/ and copy Terrain.vst3. Paste this file in location /lib/vst3/. Note that copying files to this location may require elevated privileges
+
+# Gratitude 
+
+Thank you to my professors John Thompson and Karl Yerkes for their endless patience and dedication while passing me a portion of their vast knowledge. 
+Thank you to Rodney DuPlessis for helping me with the Linux build and for being an all-around bro.
+Thank you to Jacky Ligon for testing the MTS-ESP build and encouraging me with their great music: jackyligon.com
