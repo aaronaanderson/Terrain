@@ -329,6 +329,8 @@ juce::ValueTree MainProcessor::verifiedSettings (juce::ValueTree settings)
         settings.setProperty (id::pitchBendRange, SettingsTree::DefaultSettings::pitchBendRange, nullptr);
     if (!settings.hasProperty (id::presetRandomizationScale))
         settings.setProperty (id::presetRandomizationScale, SettingsTree::DefaultSettings::presetRandomizationScale, nullptr);
+    if (!settings.hasProperty (id::mpeEnabled))
+        settings.setProperty (id::mpeEnabled, SettingsTree::DefaultSettings::mpeEnabled, nullptr);
 
     return settings;
 }

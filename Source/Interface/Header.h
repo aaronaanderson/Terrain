@@ -294,7 +294,6 @@ public:
     {
         Panel::resized();
         auto b = getAdjustedBounds();
-        b.removeFromLeft (b.getWidth() / 2);
         slider.setBounds (b);
     }
 private:
@@ -417,6 +416,35 @@ private:
         }
     }
 };
+class MPEComponent : public Panel
+{
+public:
+    MPEComponent (juce::ValueTree settingsBranch)
+      : Panel ("MPE"),
+        settings (settingsBranch)
+    {
+        mpeEnableToggle.onStateChange = [&]()
+            {
+                settings.setProperty (id::mpeEnabled, 
+                                      mpeEnableToggle.getToggleState(), 
+                                      nullptr);
+            };
+        mpeEnableToggle.setToggleState (settings.getProperty (id::mpeEnabled), 
+                                        juce::sendNotification);
+        mpeEnableToggle.setButtonText ("MPE Enabled");
+        addAndMakeVisible (mpeEnableToggle);
+    }
+    void resized() override
+    {
+        Panel::resized();
+        auto b = getAdjustedBounds();
+        juce::Rectangle<int> r = {0, 0, 22, 80};
+        mpeEnableToggle.setBounds (r.withCentre (b.getCentre()));
+    }
+private:
+    juce::ValueTree settings;
+    juce::ToggleButton mpeEnableToggle;
+};
 class Header : public juce::Component
 {
 public:
@@ -425,10 +453,12 @@ public:
             juce::ValueTree ephemeralState)
       : mtsComponent (settingsBranch, ephemeralState),
         presetComponent (pm, settingsBranch), 
+        mpeComponent (settingsBranch),
         pitchBendComponent (settingsBranch)
     {
         addAndMakeVisible (mtsComponent);
         addAndMakeVisible (presetComponent);
+        addAndMakeVisible (mpeComponent);
         addAndMakeVisible (pitchBendComponent);
     }
     void resized() override
@@ -438,11 +468,15 @@ public:
 
         mtsComponent.setBounds (b.removeFromLeft (oneThird));
         presetComponent.setBounds (b.removeFromLeft (oneThird));
-        pitchBendComponent.setBounds (b);                                                  
+
+        auto remainingThird = oneThird / 3;
+        mpeComponent.setBounds (b.removeFromLeft (remainingThird));
+        pitchBendComponent.setBounds (b);                                                 
     }
 private:
     MTSComponent mtsComponent;
     PresetComponent presetComponent;
+    MPEComponent mpeComponent;
     PitchBendComponent pitchBendComponent;
 };
 } // end namespace ti

@@ -11,6 +11,7 @@ struct SettingsTree
         static constexpr int oversampling = 1;
         static constexpr float pitchBendRange = 2.0f;
         static constexpr bool noteOnOrContinuous = false;
+        static constexpr bool mpeEnabled = false;
     };
     static juce::ValueTree create()
     {
@@ -18,7 +19,7 @@ struct SettingsTree
         tree.setProperty (id::presetRandomizationScale, DefaultSettings::presetRandomizationScale, nullptr);
         tree.setProperty (id::oversampling, DefaultSettings::oversampling, nullptr);
         tree.setProperty (id::pitchBendRange, DefaultSettings::pitchBendRange, nullptr);
-        
+        tree.setProperty (id::mpeEnabled, DefaultSettings::mpeEnabled, nullptr);
         // true = continuous
         tree.setProperty (id::noteOnOrContinuous, DefaultSettings::noteOnOrContinuous, nullptr);
         return tree;

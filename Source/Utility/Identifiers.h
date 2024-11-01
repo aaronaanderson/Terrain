@@ -11,6 +11,7 @@ namespace id
     static const juce::Identifier presetRandomizationScale = "presetRandomizationScale";
     static const juce::Identifier oversampling = "oversampling";
     static const juce::Identifier pitchBendRange = "pitchBendRange";
+    static const juce::Identifier mpeEnabled = "mpeEnabled";
     static const juce::Identifier version = JucePlugin_VersionString;
 
     static const juce::Identifier noteOnOrContinuous = "noteOnOrContinuous";
