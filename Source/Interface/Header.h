@@ -431,7 +431,6 @@ public:
             };
         mpeEnableToggle.setToggleState (settings.getProperty (id::mpeEnabled), 
                                         juce::sendNotification);
-        mpeEnableToggle.setButtonText ("MPE Enabled");
         addAndMakeVisible (mpeEnableToggle);
     }
     void resized() override
