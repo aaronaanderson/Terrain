@@ -213,7 +213,7 @@ public:
             {
                 float outputSample = terrain->sampleAt (point, i);
                 history.feedNext (point, outputSample);
-                o[i] += outputSample * static_cast<float> (envelope.calculateNext());
+                o[i] += outputSample * static_cast<float> (envelope.calculateNext()) * amplitude;
             }
 
             phase = std::fmod (phase + (phaseIncrement.getNextValue() * pitchWheelIncrementScalar.getNextValue()),
