@@ -2,14 +2,15 @@
 #include "Interface/Renderer/glUtility.h"
 MainEditor::MainEditor (MainProcessor& p)
     : AudioProcessorEditor (&p), processorRef (p), 
-      state (processorRef.getState())
+      state (processorRef.getState()), 
+      ephemeralState (processorRef)
 {
     jassert (state.getType() == id::TERRAIN_SYNTH);
 
-    auto settings = state.getChildWithName (id::PRESET_SETTINGS);
-    settings.setProperty (id::mtsConnection, 
-                          processorRef.getMTSConnectionStatus(), 
-                          nullptr);
+    // auto settings = state.getChildWithName (id::PRESET_SETTINGS);
+    // settings.setProperty (id::mtsConnection, 
+    //                       processorRef.getMTSConnectionStatus(), 
+    //                       nullptr);
 
     trajectoryPanel = std::make_unique<ti::TrajectoryPanel> (processorRef.getValueTreeState()); 
     terrainPanel = std::make_unique<ti::TerrainPanel> (processorRef.getValueTreeState()); 
@@ -17,7 +18,8 @@ MainEditor::MainEditor (MainProcessor& p)
     visualizerPanel = std::make_unique<ti::VisualizerPanel> (processorRef.getWaveTerrainSynthesizer(), 
                                                              processorRef.getCastedParameters());
     header = std::make_unique<ti::Header> (processorRef.getPresetManager(), 
-                                           processorRef.getState().getChildWithName (id::PRESET_SETTINGS));
+                                           processorRef.getState().getChildWithName (id::PRESET_SETTINGS), 
+                                           ephemeralState.getState());
 
     addAndMakeVisible (trajectoryPanel.get());
     addAndMakeVisible (terrainPanel.get());
@@ -88,7 +90,8 @@ void MainEditor::resetInterface()
     terrainPanel = std::make_unique<ti::TerrainPanel> (processorRef.getValueTreeState()); 
     controlPanel = std::make_unique<ti::ControlPanel> (processorRef.getValueTreeState());
     header = std::make_unique<ti::Header> (processorRef.getPresetManager(), 
-                                           processorRef.getState().getChildWithName (id::PRESET_SETTINGS));
+                                           processorRef.getState().getChildWithName (id::PRESET_SETTINGS),
+                                           ephemeralState.getState());
 
     addAndMakeVisible (trajectoryPanel.get());
     addAndMakeVisible (terrainPanel.get());

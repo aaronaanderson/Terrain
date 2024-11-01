@@ -14,5 +14,9 @@ namespace id
     static const juce::Identifier version = JucePlugin_VersionString;
 
     static const juce::Identifier noteOnOrContinuous = "noteOnOrContinuous";
-    static const juce::Identifier mtsConnection = "mtsConnection";
+
+
+    static const juce::Identifier EPHEMERAL_STATE = "EPHEMERAL_STATE";
+    static const juce::Identifier tuningSystemName = "tuningSystemName";
+    static const juce::Identifier tuningSystemConnected = "tuningSystemConnected";
 }

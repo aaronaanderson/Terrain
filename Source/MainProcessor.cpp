@@ -323,8 +323,6 @@ void MainProcessor::prepareOversampling (int bufferSize)
 juce::ValueTree MainProcessor::verifiedSettings (juce::ValueTree settings)
 {  
     if (settings == juce::ValueTree()) return SettingsTree::create();
-    if (!settings.hasProperty (id::mtsConnection))
-        settings.setProperty (id::mtsConnection, SettingsTree::DefaultSettings::mtsConnection, nullptr);
     if (!settings.hasProperty (id::noteOnOrContinuous))
         settings.setProperty (id::noteOnOrContinuous, SettingsTree::DefaultSettings::noteOnOrContinuous, nullptr);
     if (!settings.hasProperty (id::pitchBendRange))

@@ -49,6 +49,7 @@ public:
     tp::WaveTerrainSynthesizer& getWaveTerrainSynthesizer() { return *synthesizer.get(); }
 
     bool getMTSConnectionStatus() { return synthesizer->getMTSConnectionStatus(); }
+    juce::String getTuningSystemName() { return synthesizer->getTuningSystemName(); }
 private:
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     juce::AudioProcessorValueTreeState valueTreeState;

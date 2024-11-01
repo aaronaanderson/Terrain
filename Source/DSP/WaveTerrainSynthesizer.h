@@ -12,9 +12,6 @@ public:
     WaveTerrainSynthesizer (Parameters& p, juce::ValueTree settings)
     {
         mtsClient = MTS_RegisterClient();
-        settings.setProperty (id::mtsConnection, false, nullptr);
-        if (MTS_HasMaster (mtsClient))
-            settings.setProperty (id::mtsConnection, true, nullptr);
 
         addSound (new Terrain (p));
         setPolyphony (24, p, settings, *mtsClient);
@@ -79,7 +76,8 @@ public:
                 trajectory->setState (settings);
         }
     }
-    bool getMTSConnectionStatus() {return MTS_HasMaster (mtsClient); }
+    bool getMTSConnectionStatus() { return MTS_HasMaster (mtsClient); }
+    juce::String getTuningSystemName() { return MTS_GetScaleName (mtsClient); }
 private:
     VoiceListener* voiceListener = nullptr;
     MTSClient* mtsClient = nullptr;

@@ -327,7 +327,6 @@ private:
     juce::Label label {"PitchBend", "Pitch Bend (Semitones)"};
     juce::Slider slider;
 };
-
 struct ConnectionIndicator : public juce::Component
 {
     void paint (juce::Graphics& g) override
@@ -347,18 +346,31 @@ struct ConnectionIndicator : public juce::Component
             g.fillEllipse (getLocalBounds().reduced (4).toFloat());
         }
     }
-    void setConnected (bool isConnected) { connected = isConnected; }
+    void setConnected (bool isConnected) 
+    { 
+        connected = isConnected; 
+        repaint();
+    }
 private:
     bool connected  = true;
 };
-class MTSComponent : public juce::Component
+class MTSComponent : public juce::Component, 
+                     private juce::ValueTree::Listener
 {
 public:
-    MTSComponent (juce::ValueTree settingsBranch)
-      : settings (settingsBranch)
+    MTSComponent (juce::ValueTree settingsBranch, 
+                  juce::ValueTree ephemeralBranch)
+      : settings (settingsBranch),
+        ephemeralState (ephemeralBranch)
     {
-        connectionIndicator.setConnected (settings.getProperty (id::mtsConnection));
+        jassert (settings.getType() == id::PRESET_SETTINGS);
+        jassert (ephemeralState.getType() == id::EPHEMERAL_STATE);
+        
+        ephemeralState.addListener (this);
+
+        connectionIndicator.setConnected (ephemeralState.getProperty (id::tuningSystemConnected));
         addAndMakeVisible (connectionIndicator);
+        addAndMakeVisible (connectionStatusLabel);
 
         addAndMakeVisible (noteOnOrContinuousLabel);
         noteOnOrContinuous.onStateChange = [&]()
@@ -378,27 +390,56 @@ public:
                                            juce::sendNotification);
         noteOnOrContinuous.onStateChange();
         addAndMakeVisible (noteOnOrContinuous);
+
+        currentTuningSystemLabel.setJustificationType (juce::Justification::centred);  
+        addAndMakeVisible (currentTuningSystemLabel);
+        currentTuningSystem.setJustificationType (juce::Justification::centred);
+        currentTuningSystem.setText (ephemeralState.getProperty (id::tuningSystemName).toString(), 
+                                     juce::dontSendNotification);
+        addAndMakeVisible (currentTuningSystem);
     }
+    ~MTSComponent() override { ephemeralState.removeListener (this); }
     void resized() override
     {
         auto b = getLocalBounds();
         connectionIndicator.setBounds (b.removeFromLeft (40).reduced (10));
+        connectionStatusLabel.setBounds (b.removeFromLeft (60));
         noteOnOrContinuous.setBounds (b.removeFromLeft (30).reduced (2));
-        noteOnOrContinuousLabel.setBounds (b.removeFromLeft (100));
+        noteOnOrContinuousLabel.setBounds (b.removeFromLeft (60));
+
+        currentTuningSystemLabel.setBounds (b.removeFromTop(b.getHeight() / 2));
+        currentTuningSystem.setBounds (b);
     }
 private:
     juce::ValueTree settings;
+    juce::ValueTree ephemeralState;
     ConnectionIndicator connectionIndicator;
-
+    juce::Label connectionStatusLabel { "connectionStatus", "Connection Status"};
     juce::Label noteOnOrContinuousLabel;
     juce::ToggleButton noteOnOrContinuous;
+    juce::Label currentTuningSystemLabel {"CTS", "Current Tuning System"};
+    juce::Label currentTuningSystem;
+
+    void valueTreePropertyChanged (juce::ValueTree& tree,
+                                   const juce::Identifier& property) override
+    {
+        if (tree.getType() == id::EPHEMERAL_STATE)
+        {
+            if (property == id::tuningSystemConnected)
+                connectionIndicator.setConnected (tree.getProperty (property));
+            else if (property == id::tuningSystemName)
+                currentTuningSystem.setText (tree.getProperty (property).toString(), juce::dontSendNotification);
+        }
+    }
 };
 
 class Header : public juce::Component
 {
 public:
-    Header (PresetManager& pm, juce::ValueTree settingsBranch)
-      : mtsComponent (settingsBranch),
+    Header (PresetManager& pm, 
+            juce::ValueTree settingsBranch,
+            juce::ValueTree ephemeralState)
+      : mtsComponent (settingsBranch, ephemeralState),
         presetComponent (pm, settingsBranch), 
         pitchBendComponent (settingsBranch)
     {
