@@ -45,7 +45,7 @@ target_sources(WaveTerrainSynth
         Source/MainEditor.cpp
         Source/MainProcessor.cpp)
 
-add_library(MTS-ESP STATIC MTS-ESP/Client/LibMTSClient.cpp)
+add_library(MTS-ESP STATIC MTS-ESP/Client/libMTSClient.cpp)
 
 target_include_directories(WaveTerrainSynth PRIVATE 
     PerlinNoise 
