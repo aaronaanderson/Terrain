@@ -6,6 +6,7 @@
     extern const char *MTS_GetScaleName(MTSClient *client);
 * Double-click default pitch-bend to 2 semitones
 * Fix Slider->knob resizing issue
+* Add MTS-ESP labeling
 
 ## 1.3.0
 * MPE Support
