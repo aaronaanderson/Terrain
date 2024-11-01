@@ -8,16 +8,11 @@ MainEditor::MainEditor (MainProcessor& p)
 {
     jassert (state.getType() == id::TERRAIN_SYNTH);
 
-    // auto settings = state.getChildWithName (id::PRESET_SETTINGS);
-    // settings.setProperty (id::mtsConnection, 
-    //                       processorRef.getMTSConnectionStatus(), 
-    //                       nullptr);
-
     trajectoryPanel = std::make_unique<ti::TrajectoryPanel> (processorRef.getValueTreeState()); 
     terrainPanel = std::make_unique<ti::TerrainPanel> (processorRef.getValueTreeState()); 
     controlPanel = std::make_unique<ti::ControlPanel> (processorRef.getValueTreeState());
-    visualizerPanel = std::make_unique<ti::VisualizerPanel> (processorRef.getWaveTerrainSynthesizer(), 
-                                                             processorRef.getCastedParameters());
+    centerConsole = std::make_unique<ti::CenterConsole> (processorRef.getWaveTerrainSynthesizer(), 
+                                                         processorRef.getCastedParameters());
     header = std::make_unique<ti::Header> (processorRef.getPresetManager(), 
                                            processorRef.getState().getChildWithName (id::PRESET_SETTINGS), 
                                            ephemeralState.getState());
@@ -25,7 +20,7 @@ MainEditor::MainEditor (MainProcessor& p)
     addAndMakeVisible (trajectoryPanel.get());
     addAndMakeVisible (terrainPanel.get());
     addAndMakeVisible (controlPanel.get());
-    addAndMakeVisible (visualizerPanel.get());
+    addAndMakeVisible (centerConsole.get());
     addAndMakeVisible (header.get());
 
     state.addListener (this);
@@ -61,7 +56,7 @@ void MainEditor::resized()
     auto terrainPanelBounds = b.removeFromRight (quarterWidth);
     terrainPanel->setBounds (terrainPanelBounds);
 
-    visualizerPanel->setBounds (b);
+    centerConsole->setBounds (b);
 }
 bool MainEditor::keyPressed (const juce::KeyPress& key) 
 {   

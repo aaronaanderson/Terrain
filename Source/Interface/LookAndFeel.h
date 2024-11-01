@@ -1,6 +1,7 @@
 #pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
+#include <BinaryData.h>
 
 static const juce::Colour accent = juce::Colour::fromString ("#FFff5c00").darker (0.2f);
 static const juce::Colour base = juce::Colour::fromString ("#FF00a3ff").darker (1.0f);
