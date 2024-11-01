@@ -1,7 +1,7 @@
 # In Progress
 
 # 1.2.2
-* Add Tuning Name
+* Add Tuning Name - complete
     // Returns the name of the current scale.
     extern const char *MTS_GetScaleName(MTSClient *client);
 * Double-click default pitch-bend to 2 semitones - complete
