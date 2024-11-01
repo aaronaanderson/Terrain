@@ -298,7 +298,6 @@ private:
         PresetRenameComponent presetRenameComponent;
     };
 };
-
 class PitchBendComponent : public juce::Component
 {
 public:
@@ -308,6 +307,7 @@ public:
         jassert (settings.getType() == id::PRESET_SETTINGS);
         label.setJustificationType (juce::Justification::centred);
         addAndMakeVisible (label);
+        slider.setDoubleClickReturnValue (true, 2.0);
         slider.setRange ({0.0, 12.0}, 0.0);
         slider.setTextBoxStyle (juce::Slider::TextEntryBoxPosition::TextBoxLeft, false, 60, 20);
         slider.setValue (settings.getProperty (id::pitchBendRange), juce::dontSendNotification);
