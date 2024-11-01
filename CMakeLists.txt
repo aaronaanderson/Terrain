@@ -46,8 +46,6 @@ target_sources(WaveTerrainSynth
 set(CMAKE_POSITION_INDEPENDENT_CODE ON) #necessary for GCC linking
 add_library(MTS-ESP STATIC MTS-ESP/Client/libMTSClient.cpp)
 
-
-
 target_include_directories(WaveTerrainSynth PRIVATE 
     PerlinNoise 
     MTS-ESP/Client

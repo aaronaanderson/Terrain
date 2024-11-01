@@ -376,6 +376,7 @@ public:
             };
         noteOnOrContinuous.setToggleState (settings.getProperty (id::noteOnOrContinuous), 
                                            juce::sendNotification);
+        noteOnOrContinuous.onStateChange();
         addAndMakeVisible (noteOnOrContinuous);
     }
     void resized() override
