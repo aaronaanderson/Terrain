@@ -10,7 +10,7 @@ struct SettingsTree
         static constexpr float presetRandomizationScale = 0.2f;
         static constexpr int oversampling = 1;
         static constexpr float pitchBendRange = 2.0f;
-        static constexpr bool noteOnOrContinuous = true;
+        static constexpr bool noteOnOrContinuous = false;
         static constexpr bool mtsConnection = false;
     };
     static juce::ValueTree create()
