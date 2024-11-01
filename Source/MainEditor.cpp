@@ -1,5 +1,6 @@
 #include "MainEditor.h"
 #include "Interface/Renderer/glUtility.h"
+
 MainEditor::MainEditor (MainProcessor& p)
     : AudioProcessorEditor (&p), processorRef (p), 
       state (processorRef.getState()), 

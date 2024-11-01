@@ -1,7 +1,7 @@
 #include "MainProcessor.h"
 #include "MainEditor.h"
 
-#include "DefaultTreeGenerator.h"
+#include "Utility/DefaultTreeGenerator.h"
 #include "Utility/VersionType.h"
 
 //==============================================================================

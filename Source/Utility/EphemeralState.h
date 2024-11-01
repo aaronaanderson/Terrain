@@ -1,6 +1,6 @@
 #pragma once 
 
-#include "../DefaultTreeGenerator.h"
+#include "DefaultTreeGenerator.h"
 
 struct EphemeralState : private juce::Timer
 {
