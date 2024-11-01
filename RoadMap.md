@@ -1,13 +1,10 @@
 # In Progress
 
-## 1.2.0
-* Microtonality via MTS-ESP
-
-## 1.3.1
-* MIDI Learn
+## 1.3.0
+* MPE Support
 
 ## 1.4.0
-* MPE Support
+* MIDI Learn
 
 ## 1.5.0
 * Multiple Oscillators
@@ -16,6 +13,13 @@
 * Panning/Spatial spread control
 
 # Completed
+
+## 1.2.1
+* Expand envelope ranges
+* Attach note velocity to amplitude
+
+## 1.2.0
+* Microtonality via MTS-ESP
 
 ## 1.1.0
 * Presets/Preset Menu - complete
