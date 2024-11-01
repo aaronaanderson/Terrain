@@ -33,8 +33,7 @@ MainEditor::MainEditor (MainProcessor& p)
     getLookAndFeel().setDefaultLookAndFeel (&lookAndFeel);
 
     setResizable (true, false);
-    // setResizeLimits (776, 620, 2400, 1600);
-    setResizeLimits (22, 22, 2400, 1600);
+    setResizeLimits (730, 505, 2400, 1600);
     setSize (1200, 800);
 }
 MainEditor::~MainEditor() 

@@ -168,7 +168,7 @@ public:
         auto b = getLocalBounds();
         label.setBounds (b.removeFromTop (20));
         auto unitWidth = b.getWidth() / 43.0f;
-        envelopeSize.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 3.0f)));
+        envelopeSize.setBounds (b.removeFromLeft (static_cast<int> (juce::jmax (unitWidth * 3.0f, 22.0f))));
         attack.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 10.0f)));
         decay.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 10.0f)));
         sustain.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 10.0f)));

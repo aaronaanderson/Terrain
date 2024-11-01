@@ -5,9 +5,10 @@
     // Returns the name of the current scale.
     extern const char *MTS_GetScaleName(MTSClient *client);
 * Double-click default pitch-bend to 2 semitones - complete
-* Fix Slider->knob resizing issue
+* Fix Slider->knob resizing issue - complete
 * Add MTS-ESP labeling - complete
 * Fix Reaper Presets - complete
+* Fix text scaling on resize
 
 ## 1.3.0
 * MPE Support

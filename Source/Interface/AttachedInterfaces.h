@@ -86,7 +86,13 @@ struct ParameterSlider : public juce::Component
         else
             label.setBounds (b.removeFromLeft (static_cast<int> (b.getWidth() / 12.0f)));
         
-        if (b.getHeight() * 2 >= b.getWidth())
+        
+        if (b.getHeight() > b.getWidth() * 1.5)
+        {
+            slider.setSliderStyle (juce::Slider::SliderStyle::LinearVertical);
+            label.setJustificationType (juce::Justification::centred);
+        }
+        else if (b.getHeight() * 2 >= b.getWidth())
         {
             slider.setSliderStyle (juce::Slider::SliderStyle::RotaryVerticalDrag);
             label.setJustificationType (juce::Justification::centred);

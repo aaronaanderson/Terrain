@@ -67,7 +67,6 @@ private:
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ModifierArray)
 };
-
 class TrajectorySelector : public juce::Component
 {
 public:
