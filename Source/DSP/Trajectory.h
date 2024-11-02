@@ -157,9 +157,29 @@ public:
                                                                         -1)));
         readyToClear = false;
         if (MTS_ShouldFilterNote (&mtsClient, static_cast<char> (midiNote), -1)) 
-            readyToClear = true; // stopNote
+            readyToClear = true; 
 
-        amplitude = velocity;
+        amplitude.setCurrentAndTargetValue (velocity);
+        envelope.noteOn();
+        voiceParameters.noteOn();
+        feedbackBuffer.fill (Point(0.0f, 0.0f));
+    }
+    void startNote (int midiNoteNumber,
+                    float velocity, 
+                    float frequencyHz) 
+    {   
+        // setPitchWheelIncrementScalar (pitchBendSemitones);
+        midiNote = midiNoteNumber;
+        setFrequencyImmediate (static_cast<float> (MTS_NoteToFrequency (&mtsClient, 
+                                                                        (MTS_FrequencyToNote (&mtsClient, 
+                                                                                              static_cast<double> (frequencyHz), 
+                                                                                              -1)),
+                                                                        -1)));
+        readyToClear = false;
+        if (MTS_ShouldFilterNote (&mtsClient, static_cast<char> (midiNote), -1)) 
+            readyToClear = true; 
+
+        amplitude.setCurrentAndTargetValue (velocity);
         envelope.noteOn();
         voiceParameters.noteOn();
         feedbackBuffer.fill (Point(0.0f, 0.0f));
@@ -188,7 +208,8 @@ public:
             auto point = functions[*voiceParameters.currentTrajectory](static_cast<float> (phase), getModSet());
             
             point = rotate (point, voiceParameters.rotation.getNext());
-            point = scale (point, voiceParameters.size.getNext() * amplitude);
+            float smoothAmplitude = amplitude.getNextValue();
+            point = scale (point, voiceParameters.size.getNext() * smoothAmplitude);
             if (*voiceParameters.envelopeSize)
                 point = scale (point, static_cast<float> (envelope.getCurrentValue()));
             point = feedback (point, 
@@ -206,7 +227,7 @@ public:
 
             float outputSample = terrain.sampleAt (point, i);
             history.feedNext (point, outputSample);
-            o[i] += outputSample * static_cast<float> (envelope.calculateNext()) * amplitude;
+            o[i] += outputSample * static_cast<float> (envelope.calculateNext()) * smoothAmplitude;
 
             phase = std::fmod (phase + (phaseIncrement.getNextValue() * pitchWheelIncrementScalar.getNextValue()),
                                juce::MathConstants<double>::twoPi);
@@ -237,6 +258,7 @@ public:
         voiceParameters.resetSampleRate (newRate);
         pitchWheelIncrementScalar.reset (newRate, 0.01);
         phaseIncrement.reset (blockSize);
+        amplitude.reset (blockSize);
     }
     const float* getRawData() { return history.getRawData(); }
     void setState (juce::ValueTree settingsBranch)
@@ -245,6 +267,19 @@ public:
         smoothFrequencyEnabled.referTo (settingsBranch, id::noteOnOrContinuous, nullptr);
     }
     bool shouldClear() { return readyToClear; }
+    void setFrequencyImmediate (float newFrequency)
+    {
+        jassert (newFrequency > 0.0f);
+        frequency = newFrequency;
+        phaseIncrement.setCurrentAndTargetValue ((frequency * juce::MathConstants<float>::twoPi) / sampleRate);
+    }
+    void setFrequencySmooth (float newFrequency)
+    {
+        jassert (newFrequency > 0.0f);
+        frequency = newFrequency;
+        phaseIncrement.setTargetValue ((frequency * juce::MathConstants<float>::twoPi) / sampleRate);
+    }
+    void setAmplitude (float newAmplitude) { amplitude.setTargetValue (newAmplitude); }
 private:
     Terrain& terrain;
     ADSR envelope;
@@ -326,7 +361,7 @@ private:
     VoiceParameters voiceParameters;
     PerlinVector perlinVector;
     float frequency = 440.0f;
-    float amplitude = 1.0;
+    juce::SmoothedValue<float, juce::ValueSmoothingTypes::Multiplicative> amplitude;
     double phase = 0.0;
     int midiNote;
     juce::CachedValue<bool> smoothFrequencyEnabled;
@@ -384,17 +419,9 @@ private:
         float semitoneBend = normalizedBend * bendRangeSemitones;
         pitchWheelIncrementScalar.setTargetValue (std::pow (2.0, semitoneBend / 12.0));
     }
-    void setFrequencyImmediate (float newFrequency)
+    void setPitchWheelIncrementScalar (double semitones)
     {
-        jassert (newFrequency > 0.0f);
-        frequency = newFrequency;
-        phaseIncrement.setCurrentAndTargetValue ((frequency * juce::MathConstants<float>::twoPi) / sampleRate);
-    }
-    void setFrequencySmooth (float newFrequency)
-    {
-        jassert (newFrequency > 0.0f);
-        frequency = newFrequency;
-        phaseIncrement.setTargetValue ((frequency * juce::MathConstants<float>::twoPi) / sampleRate);
+        pitchWheelIncrementScalar.setTargetValue (std::pow (2.0, semitones / 12.0f));
     }
     Point rotate (const Point p, const float theta)
     {

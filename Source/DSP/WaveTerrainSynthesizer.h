@@ -5,6 +5,7 @@
 #include "DataTypes.h"
 #include "Terrain.h"
 #include "StandardVoice.h"
+#include "MPEVoice.h"
 namespace tp {
 class WaveTerrainSynthesizer
 {
