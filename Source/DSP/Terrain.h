@@ -6,11 +6,17 @@
 #include "../Parameters.h"
 
 namespace  tp {
+// Juce::Synthesiser requires a SynthesiserSound, 
+// but we will not be using this.
 struct DummySound : public juce::SynthesiserSound
 {
     bool appliesToNote (int /*midiNoteNumber*/) override { return true; };
     bool appliesToChannel (int /*midiChannel*/) override { return true; };
 };
+// Instead each voice will have a reference to a
+// Terrain. This helps making it compatible with
+// juce::MPESynthesiser since it doesn't make use
+// of the Sound paradigm 
 class Terrain
 {
 public:

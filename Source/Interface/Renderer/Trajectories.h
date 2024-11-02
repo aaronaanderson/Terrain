@@ -119,7 +119,7 @@ private:
 };
 struct TrajectoryMesh : PointsMesh // must be constructed on GL Initialize
 {
-    TrajectoryMesh(juce::OpenGLContext& c, tp::Trajectory* t,  int numVertices = 4096)
+    TrajectoryMesh(juce::OpenGLContext& c, tp::StandardVoice* t,  int numVertices = 4096)
       : PointsMesh (numVertices),
         glContext (c),
         voice (t)
@@ -170,7 +170,7 @@ struct TrajectoryMesh : PointsMesh // must be constructed on GL Initialize
     }
 private:
     juce::OpenGLContext& glContext;
-    tp::Trajectory* voice; // non-owning 
+    tp::StandardVoice* voice; // non-owning 
     std::unique_ptr<juce::OpenGLShaderProgram>  shaders; // tell GL how to draw
     std::unique_ptr<Attributes>           attributes; // tell shaders about vertex data
     std::unique_ptr<TrajectoryUniforms>   uniforms;
@@ -211,7 +211,7 @@ private:
         trajectories.clear();
         for(auto v : voices)
         {
-            auto* trajectory = dynamic_cast<tp::Trajectory*>(v);
+            auto* trajectory = dynamic_cast<tp::StandardVoice*>(v);
             jassert (trajectory != nullptr);
 
             trajectories.add(std::make_unique<TrajectoryMesh>(context, trajectory));

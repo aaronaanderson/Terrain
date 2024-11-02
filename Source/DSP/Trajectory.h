@@ -1,6 +1,7 @@
 #pragma once 
 
 #include <juce_audio_basics/juce_audio_basics.h>
+#include <juce_data_structures/juce_data_structures.h>
 #include <MTS-ESP/Client/libMTSClient.h>
 #include "../Parameters.h"
 #include "DataTypes.h"
@@ -19,10 +20,13 @@ static Point normalize (const Point p, const float n = 1.0f)
     return Point (p.x * adjustmentScalar, p.y * adjustmentScalar);
 }
 
-class Trajectory : public juce::SynthesiserVoice
+class Trajectory
 {
 public:
-    Trajectory (Terrain& t, Parameters& p, juce::ValueTree settingsBranch, MTSClient& mtsc)
+    Trajectory (Terrain& t, 
+                Parameters& p, 
+                juce::ValueTree settingsBranch, 
+                MTSClient& mtsc)
       : terrain (t),
         voiceParameters (p), 
         smoothFrequencyEnabled (settingsBranch, id::noteOnOrContinuous, nullptr),
@@ -142,38 +146,30 @@ public:
             }
         };
     }
-    bool canPlaySound (juce::SynthesiserSound* s) override { return dynamic_cast<DummySound*>(s) != nullptr; }
     void startNote (int midiNoteNumber,
                     float velocity,
-                    juce::SynthesiserSound* /*sound*/,
-                    int currentPitchWheelPosition) override 
+                    int currentPitchWheelPosition) 
     {   
         setPitchWheelIncrementScalar (currentPitchWheelPosition);
         midiNote = midiNoteNumber;
         setFrequencyImmediate (static_cast<float> (MTS_NoteToFrequency (&mtsClient, 
                                                                         static_cast<char> (midiNote),
                                                                         -1)));
+        readyToClear = false;
         if (MTS_ShouldFilterNote (&mtsClient, static_cast<char> (midiNote), -1)) 
-            stopNote (0.0f, false);
+            readyToClear = true; // stopNote
 
         amplitude = velocity;
         envelope.noteOn();
         voiceParameters.noteOn();
         feedbackBuffer.fill (Point(0.0f, 0.0f));
     }
-    void stopNote (float velocity, bool allowTailOff) override 
-    { 
-        juce::ignoreUnused (velocity, allowTailOff); 
-        envelope.noteOff();
-    }
-    void pitchWheelMoved (int newPitchWheelValue) override 
-    { 
-        setPitchWheelIncrementScalar (newPitchWheelValue);
-    }
-    void controllerMoved (int controllerNumber, int newControllerValue) override { juce::ignoreUnused (controllerNumber, newControllerValue); }
-    void renderNextBlock (juce::AudioBuffer<double>& ob, int ss, int nums) override { juce::ignoreUnused (ob, ss, nums); }
+    void stopNote () { envelope.noteOff(); }
+    void pitchWheelMoved (int newPitchWheelValue) { setPitchWheelIncrementScalar (newPitchWheelValue); }
+    void controllerMoved () {}
+    void renderNextBlock (juce::AudioBuffer<double>& ob, int ss, int nums) { juce::ignoreUnused (ob, ss, nums); }
     void renderNextBlock (juce::AudioBuffer<float>& outputBuffer, 
-                          int startSample, int numSamples) override 
+                          int startSample, int numSamples) 
     {
         auto* o = outputBuffer.getWritePointer(0);
         if (smoothFrequencyEnabled.get())
@@ -218,11 +214,12 @@ public:
             if(!envelope.isActive())
             {
                 history.clear();
-                clearCurrentNote();
+                // clearCurrentNote();
+                readyToClear = true;
             }
         }
     } 
-    void setCurrentPlaybackSampleRate (double newRate) override 
+    void setCurrentPlaybackSampleRate (double newRate) 
     {
         if (newRate > 0.0)
         {
@@ -237,7 +234,6 @@ public:
     }
     void prepareToPlay (double newRate, int blockSize)
     {
-        juce::ignoreUnused (blockSize);
         voiceParameters.resetSampleRate (newRate);
         pitchWheelIncrementScalar.reset (newRate, 0.01);
         phaseIncrement.reset (blockSize);
@@ -248,6 +244,7 @@ public:
         pitchBendRange.referTo (settingsBranch, id::pitchBendRange, nullptr);
         smoothFrequencyEnabled.referTo (settingsBranch, id::noteOnOrContinuous, nullptr);
     }
+    bool shouldClear() { return readyToClear; }
 private:
     Terrain& terrain;
     ADSR envelope;
@@ -341,6 +338,7 @@ private:
     juce::Array<Point> feedbackBuffer;
     int feedbackWriteIndex = 0;
     int feedbackReadIndex;
+    bool readyToClear = false;
     class History
     {
     public:
