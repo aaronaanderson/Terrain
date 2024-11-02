@@ -1,5 +1,8 @@
 # In Progress
 
+## 1.2.3
+* Fix ASCII Keyboard Steal
+
 ## 1.3.0
 * MPE Support
 
