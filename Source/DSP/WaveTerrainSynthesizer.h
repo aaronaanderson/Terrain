@@ -6,6 +6,52 @@
 #include "Terrain.h"
 #include "Trajectory.h"
 namespace tp {
+
+class TrajectoryInterface
+{
+public:
+
+private:
+
+};
+class WaveTerrainSynthesizerBase
+{
+public:
+    WaveTerrainSynthesizerBase()
+    {
+        mtsClient = MTS_RegisterClient();
+    }
+    virtual ~WaveTerrainSynthesizerBase()
+    {
+        MTS_DeregisterClient (mtsClient);
+    }
+
+    virtual void prepareToPlay (double sampleRate, int blockSize) = 0;
+    virtual void allocate (int maxBlockSize) = 0;
+    virtual void updateTerrain() = 0;
+    virtual juce::Array<TrajectoryInterface> getVoices() = 0;
+    struct VoiceListener
+    {
+        virtual ~VoiceListener() {}
+        virtual void voicesReset (juce::Array<TrajectoryInterface*> newVoice) = 0;       
+    };
+    void setVoiceListener (VoiceListener* l) { voiceListener = l; }
+    bool getMTSConnectionStatus() { return MTS_HasMaster (mtsClient); }
+    juce::String getTuningSystemName() { return MTS_GetScaleName (mtsClient); }
+private:
+    MTSClient* mtsClient = nullptr;
+    VoiceListener* voiceListener = nullptr;
+};
+class WaveTerrainSynthesizerStandard : public WaveTerrainSynthesizerBase, 
+                                       public juce::Synthesiser
+{
+
+};
+class WaveTerrainSynthesizerMPE : public WaveTerrainSynthesizerBase,
+                                  public juce::MPESynthesiser
+{
+
+};
 class WaveTerrainSynthesizer : public juce::Synthesiser
 {
 public:
