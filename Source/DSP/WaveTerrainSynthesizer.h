@@ -6,15 +6,15 @@
 #include "Terrain.h"
 #include "StandardVoice.h"
 namespace tp {
-class WaveTerrainSynthesizerBase
+class WaveTerrainSynthesizer
 {
 public:
-    WaveTerrainSynthesizerBase (Parameters& p)
+    WaveTerrainSynthesizer (Parameters& p)
       : terrain (p)
     {
         mtsClient = MTS_RegisterClient();
     }
-    virtual ~WaveTerrainSynthesizerBase()
+    virtual ~WaveTerrainSynthesizer()
     {
         MTS_DeregisterClient (mtsClient);
     }
@@ -37,92 +37,12 @@ protected:
     VoiceListener* voiceListener = nullptr;
     MTSClient* mtsClient = nullptr;
 };
-
-class WaveTerrainSynthesizer : public juce::Synthesiser
-{
-public:
-    WaveTerrainSynthesizer (Parameters& p, juce::ValueTree settings)
-      : terrain (p)
-    {
-        mtsClient = MTS_RegisterClient();
-
-        addSound (new DummySound());
-        setPolyphony (24, p, settings, *mtsClient);
-    }
-    ~WaveTerrainSynthesizer()
-    {
-        MTS_DeregisterClient (mtsClient);
-    }
-    void prepareToPlay (double sr, int blockSize)
-    {
-        for (int i = 0; i < getNumVoices(); i++)
-        {
-            auto v = getVoice (i);
-            auto trajectory = dynamic_cast<StandardVoice*> (v);
-            if (trajectory != nullptr)
-                trajectory->prepareToPlay (sr, blockSize);
-        }
-        setCurrentPlaybackSampleRate (sr);
-        
-        terrain.prepareToPlay (sr, blockSize);
-    }
-    void allocate (int maxNumSamples) { terrain.allocate(maxNumSamples); }
-    // must be called once per buffer
-    void updateTerrain() { terrain.updateParameterBuffers(); }
-    struct VoiceListener
-    {
-        virtual ~VoiceListener() {}
-        virtual void voicesReset (juce::Array<juce::SynthesiserVoice*> newVoice) = 0;
-    };
-    void setVoiceListener (VoiceListener* vl) { voiceListener = vl; }
-    juce::Array<juce::SynthesiserVoice*> getVoices()
-    {
-        juce::Array<juce::SynthesiserVoice*> v;
-        for(int i = 0; i < getNumVoices(); i++)
-            v.add (getVoice (i));
-
-        return v;
-    }
-    void setState (juce::ValueTree settings)
-    {
-        jassert (settings.getType() == id::PRESET_SETTINGS);
-        for (int i = 0; i < getNumVoices(); i++)
-        {
-            auto v = getVoice (i);
-            auto trajectory = dynamic_cast<StandardVoice*> (v);
-            if (trajectory != nullptr)
-                trajectory->setState (settings);
-        }
-    }
-    bool getMTSConnectionStatus() { return MTS_HasMaster (mtsClient); }
-    juce::String getTuningSystemName() { return MTS_GetScaleName (mtsClient); }
-private:
-    Terrain terrain;
-    VoiceListener* voiceListener = nullptr;
-    MTSClient* mtsClient = nullptr;
-    void setPolyphony (int newPolyphony, 
-                       Parameters& p, 
-                       juce::ValueTree settings, 
-                       MTSClient& mtsc)
-    {
-        jassert (newPolyphony > 0);
-        clearVoices();
-        juce::Array<juce::SynthesiserVoice*> v;
-        for (int i = 0; i < newPolyphony; i++)
-            v.add (addVoice (new StandardVoice (terrain, p, settings, mtsc)));
-
-        if (voiceListener != nullptr)
-            voiceListener->voicesReset (v);
-    }
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (WaveTerrainSynthesizer)
-};
-
-class WaveTerrainSynthesizerStandard : public WaveTerrainSynthesizerBase, 
+class WaveTerrainSynthesizerStandard : public WaveTerrainSynthesizer, 
                                        public juce::Synthesiser
 {
 public:
     WaveTerrainSynthesizerStandard (Parameters& p, juce::ValueTree settingsBranch)
-      : WaveTerrainSynthesizerBase (p)
+      : WaveTerrainSynthesizer (p)
     {
         addSound (new DummySound());
         setPolyphony (24, p, settingsBranch, *mtsClient);
@@ -186,7 +106,7 @@ private:
             voiceListener->voicesReset (v);        
     }
 };
-class WaveTerrainSynthesizerMPE : public WaveTerrainSynthesizerBase,
+class WaveTerrainSynthesizerMPE : public WaveTerrainSynthesizer,
                                   public juce::MPESynthesiser
 {
 
