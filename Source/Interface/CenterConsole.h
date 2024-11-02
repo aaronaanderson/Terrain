@@ -22,7 +22,7 @@ private:
 class CenterConsole : public juce::TabbedComponent
 {
 public:
-    CenterConsole (tp::WaveTerrainSynthesizer& wts, 
+    CenterConsole (tp::WaveTerrainSynthesizerStandard& wts, 
                    const tp::Parameters& p, 
                    juce::ValueTree settingsBranch)
       :  juce::TabbedComponent (juce::TabbedButtonBar::Orientation::TabsAtTop), 

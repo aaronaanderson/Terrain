@@ -12,7 +12,8 @@ MainProcessor::MainProcessor()
 {
     valueTreeState.state.addChild (SettingsTree::create(), -1, nullptr);
     presetManager = std::make_unique<PresetManager> (this, valueTreeState.state);
-    synthesizer = std::make_unique<tp::WaveTerrainSynthesizer> (parameters, valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
+    // synthesizer = std::make_unique<tp::WaveTerrainSynthesizer> (parameters, valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
+    standardSynthesizer = std::make_unique<tp::WaveTerrainSynthesizerStandard> (parameters, valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
     outputChain.reset();
 }
 
@@ -81,14 +82,16 @@ void MainProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         buffer.clear (i, 0, buffer.getNumSamples());
     
     prepareOversampling (buffer.getNumSamples());
-    synthesizer->updateTerrain();
+    // synthesizer->updateTerrain();
+    standardSynthesizer->updateTerrain();
     auto overSamplingBlock = overSampler->processSamplesUp (renderBuffer);
     juce::Array<float*> channelPointers = {overSamplingBlock.getChannelPointer(0)};
     juce::AudioBuffer<float> overSamplingBufferReference (channelPointers.getRawDataPointer(), 
                                                           static_cast<int> (overSamplingBlock.getNumChannels()), 
                                                           static_cast<int> (overSamplingBlock.getNumSamples()));
 
-    synthesizer->renderNextBlock (overSamplingBufferReference, midiMessages, 0, overSamplingBufferReference.getNumSamples());
+    // synthesizer->renderNextBlock (overSamplingBufferReference, midiMessages, 0, overSamplingBufferReference.getNumSamples());
+    standardSynthesizer->renderNextBlock (overSamplingBufferReference, midiMessages, 0, overSamplingBufferReference.getNumSamples());
     auto outputBlock = juce::dsp::AudioBlock<float> (renderBuffer);
     overSampler->processSamplesDown (outputBlock);
 
@@ -150,7 +153,8 @@ void MainProcessor::setStateInformation (const void* data, int sizeInBytes)
             newState.addChild (verifiedSettingsBranch, -1, nullptr);
             valueTreeState.replaceState (newState);
             presetManager->setState (valueTreeState.state);
-            synthesizer->setState (valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
+            // synthesizer->setState (valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
+            standardSynthesizer->setState (valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
         }
     }
 }
@@ -280,7 +284,8 @@ void MainProcessor::allocateMaxSamplesPerBlock (int maxSamples)
 {
     auto settingsTree = valueTreeState.state.getChildWithName (id::PRESET_SETTINGS);
     auto overSamplingFactor = static_cast<int> (settingsTree.getProperty (id::oversampling));
-    synthesizer->allocate (maxSamples * static_cast<int> (std::pow (2, overSamplingFactor)));
+    // synthesizer->allocate (maxSamples * static_cast<int> (std::pow (2, overSamplingFactor)));
+    standardSynthesizer->allocate (maxSamples * static_cast<int> (std::pow (2, overSamplingFactor)));
     overSampler = std::make_unique<juce::dsp::Oversampling<float>> (1, 
                                                                     overSamplingFactor, 
                                                                     juce::dsp::Oversampling<float>::FilterType::filterHalfBandPolyphaseIIR);
@@ -296,13 +301,13 @@ void MainProcessor::prepareOversampling (int bufferSize)
     //===The situation only arises if oversampling factor has changed
     if (overSamplingFactor != storedFactor)
     {
-        synthesizer->allocate (maxSamplesPerBlock * static_cast<int> (std::pow (2, overSamplingFactor)));
+        standardSynthesizer->allocate (maxSamplesPerBlock * static_cast<int> (std::pow (2, overSamplingFactor)));
         overSampler = std::make_unique<juce::dsp::Oversampling<float>> (1, 
                                                                         overSamplingFactor, 
                                                                         juce::dsp::Oversampling<float>::FilterType::filterHalfBandPolyphaseIIR);
         overSampler->initProcessing (static_cast<size_t> (maxSamplesPerBlock));
         
-        synthesizer->prepareToPlay (sampleRate * std::pow (2, overSamplingFactor), 
+        standardSynthesizer->prepareToPlay (sampleRate * std::pow (2, overSamplingFactor), 
                                     bufferSize * static_cast<int> (std::pow (2, overSamplingFactor)));
         renderBuffer.setSize (1, bufferSize, false, false, true); // Don't re-allocate; maxBufferSize is set in prepareToPlay
         renderBuffer.clear();
@@ -313,8 +318,8 @@ void MainProcessor::prepareOversampling (int bufferSize)
     
     if (bufferSize != storedBufferSize)
     {
-        synthesizer->prepareToPlay (sampleRate * std::pow (2, overSamplingFactor), 
-                                    bufferSize * static_cast<int> (std::pow (2, overSamplingFactor)));
+        standardSynthesizer->prepareToPlay (sampleRate * std::pow (2, overSamplingFactor), 
+                                           bufferSize * static_cast<int> (std::pow (2, overSamplingFactor)));
         renderBuffer.setSize (1, bufferSize, false, false, true); // Don't re-allocate; maxBufferSize is set in prepareToPlay
         renderBuffer.clear();
         storedBufferSize = bufferSize;

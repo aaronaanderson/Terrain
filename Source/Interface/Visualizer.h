@@ -59,7 +59,7 @@ class Visualizer : public juce::Component,
                    private juce::Timer
 {
 public:
-    Visualizer (tp::WaveTerrainSynthesizer& wts, tp::Parameters parameters)
+    Visualizer (tp::WaveTerrainSynthesizerStandard& wts, tp::Parameters parameters)
       : camera (mutex), 
         parameterWatcher (parameters), 
         waveTerrainSynthesizer (wts)
@@ -115,7 +115,7 @@ private:
     std::unique_ptr<Terrain> terrain;
     ParameterWatcher parameterWatcher;
     std::unique_ptr<Trajectories> trajectories;
-    tp::WaveTerrainSynthesizer& waveTerrainSynthesizer;
+    tp::WaveTerrainSynthesizerStandard& waveTerrainSynthesizer;
 
     void timerCallback() override 
     {

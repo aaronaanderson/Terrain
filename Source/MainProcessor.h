@@ -46,17 +46,18 @@ public:
     PresetManager& getPresetManager() { return *presetManager.get(); }
 
     const tp::Parameters& getCastedParameters() const { return parameters; }
-    tp::WaveTerrainSynthesizer& getWaveTerrainSynthesizer() { return *synthesizer.get(); }
+    tp::WaveTerrainSynthesizerStandard& getWaveTerrainSynthesizer() { return *standardSynthesizer.get(); }
 
-    bool getMTSConnectionStatus() { return synthesizer->getMTSConnectionStatus(); }
-    juce::String getTuningSystemName() { return synthesizer->getTuningSystemName(); }
+    bool getMTSConnectionStatus() { return standardSynthesizer->getMTSConnectionStatus(); }
+    juce::String getTuningSystemName() { return standardSynthesizer->getTuningSystemName(); }
 private:
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     juce::AudioProcessorValueTreeState valueTreeState;
     juce::UndoManager undoManager;
     tp::Parameters parameters;
     std::unique_ptr<PresetManager> presetManager;
-    std::unique_ptr<tp::WaveTerrainSynthesizer> synthesizer;
+    // std::unique_ptr<tp::WaveTerrainSynthesizer> synthesizer;
+    std::unique_ptr<tp::WaveTerrainSynthesizerStandard> standardSynthesizer;
     std::unique_ptr<juce::dsp::Oversampling<float>> overSampler;
     int storedFactor = -1; // initialize with invalid factor
     int storedBufferSize = 0;

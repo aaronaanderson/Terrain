@@ -191,9 +191,9 @@ private:
         return loaded;
     }
 };
-struct Trajectories : private tp::WaveTerrainSynthesizer::VoiceListener
+struct Trajectories : private tp::WaveTerrainSynthesizerStandard::VoiceListener
 {
-    Trajectories (juce::OpenGLContext& c, tp::WaveTerrainSynthesizer& wts)
+    Trajectories (juce::OpenGLContext& c, tp::WaveTerrainSynthesizerStandard& wts)
       : context(c)
     {
         wts.setVoiceListener(this);
@@ -206,7 +206,7 @@ struct Trajectories : private tp::WaveTerrainSynthesizer::VoiceListener
             t->render (camera, color);
     }
 private:
-    void voicesReset (juce::Array<juce::SynthesiserVoice*> voices) override 
+    void voicesReset (juce::Array<tp::VoiceInterface*> voices) override 
     {
         trajectories.clear();
         for(auto v : voices)
