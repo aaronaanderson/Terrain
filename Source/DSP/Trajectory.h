@@ -22,8 +22,9 @@ static Point normalize (const Point p, const float n = 1.0f)
 class Trajectory : public juce::SynthesiserVoice
 {
 public:
-    Trajectory (Parameters& p, juce::ValueTree settingsBranch, MTSClient& mtsc)
-      : voiceParameters (p), 
+    Trajectory (Terrain& t, Parameters& p, juce::ValueTree settingsBranch, MTSClient& mtsc)
+      : terrain (t),
+        voiceParameters (p), 
         smoothFrequencyEnabled (settingsBranch, id::noteOnOrContinuous, nullptr),
         pitchBendRange (settingsBranch, id::pitchBendRange, nullptr),
         mtsClient (mtsc)
@@ -141,14 +142,13 @@ public:
             }
         };
     }
-    bool canPlaySound (juce::SynthesiserSound* s) override { return dynamic_cast<Terrain*>(s) != nullptr; }
+    bool canPlaySound (juce::SynthesiserSound* s) override { return dynamic_cast<DummySound*>(s) != nullptr; }
     void startNote (int midiNoteNumber,
                     float velocity,
-                    juce::SynthesiserSound* sound,
+                    juce::SynthesiserSound* /*sound*/,
                     int currentPitchWheelPosition) override 
     {   
         setPitchWheelIncrementScalar (currentPitchWheelPosition);
-        // setFrequency (static_cast<float> (juce::MidiMessage::getMidiNoteInHertz (midiNoteNumber)));
         midiNote = midiNoteNumber;
         setFrequencyImmediate (static_cast<float> (MTS_NoteToFrequency (&mtsClient, 
                                                                         static_cast<char> (midiNote),
@@ -157,7 +157,6 @@ public:
             stopNote (0.0f, false);
 
         amplitude = velocity;
-        terrain = dynamic_cast<Terrain*> (sound);
         envelope.noteOn();
         voiceParameters.noteOn();
         feedbackBuffer.fill (Point(0.0f, 0.0f));
@@ -209,12 +208,9 @@ public:
             point = meander (point, voiceParameters.meanderanceScale.getNext());
             point = compressEdge (point);
 
-            if (terrain != nullptr)
-            {
-                float outputSample = terrain->sampleAt (point, i);
-                history.feedNext (point, outputSample);
-                o[i] += outputSample * static_cast<float> (envelope.calculateNext()) * amplitude;
-            }
+            float outputSample = terrain.sampleAt (point, i);
+            history.feedNext (point, outputSample);
+            o[i] += outputSample * static_cast<float> (envelope.calculateNext()) * amplitude;
 
             phase = std::fmod (phase + (phaseIncrement.getNextValue() * pitchWheelIncrementScalar.getNextValue()),
                                juce::MathConstants<double>::twoPi);
@@ -253,8 +249,8 @@ public:
         smoothFrequencyEnabled.referTo (settingsBranch, id::noteOnOrContinuous, nullptr);
     }
 private:
+    Terrain& terrain;
     ADSR envelope;
-    Terrain* terrain;
     juce::Array<std::function<Point(float, ModSet)>> functions;
     struct VoiceParameters
     {

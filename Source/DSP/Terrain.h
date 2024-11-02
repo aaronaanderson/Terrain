@@ -6,7 +6,12 @@
 #include "../Parameters.h"
 
 namespace  tp {
-class Terrain : public juce::SynthesiserSound
+struct DummySound : public juce::SynthesiserSound
+{
+    bool appliesToNote (int /*midiNoteNumber*/) override { return true; };
+    bool appliesToChannel (int /*midiChannel*/) override { return true; };
+};
+class Terrain
 {
 public:
     Terrain (Parameters& p)
@@ -17,8 +22,6 @@ public:
         modD (p.terrainModD), 
         saturation (p.terrainSaturation)
     {}
-    bool appliesToNote (int midiNoteNumber) override { juce::ignoreUnused (midiNoteNumber); return true; }
-    bool appliesToChannel (int midiChannel) override { juce::ignoreUnused (midiChannel); return true; }
     void prepareToPlay(double sampleRate, int blockSize)
     {
         modA.prepareToPlay (sampleRate, blockSize);
