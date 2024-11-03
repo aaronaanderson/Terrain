@@ -30,6 +30,7 @@ public:
     static const juce::Colour getAccentColour() { return accent; }
     static const juce::Colour getBaseColour() { return base; }
     static const juce::Colour getBackgroundColour() { return background; }
+    static const juce::Colour getBackgroundDark() { return background.darker (2.5f); }
     static const juce::Typeface::Ptr getCustomFont()
     {
         static auto typeface = juce::Typeface::createSystemTypefaceFor(BinaryData::Paulle1V_ttf, 

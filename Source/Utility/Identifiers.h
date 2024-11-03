@@ -20,4 +20,11 @@ namespace id
     static const juce::Identifier EPHEMERAL_STATE = "EPHEMERAL_STATE";
     static const juce::Identifier tuningSystemName = "tuningSystemName";
     static const juce::Identifier tuningSystemConnected = "tuningSystemConnected";
+
+    static const juce::Identifier MPE_ROUTING = "MPE_ROUTING";
+
+    static const juce::Identifier MPE_SETTINGS = "MPE_SETTINGS";
+    static const juce::Identifier MPE_CHANNEL  = "MPE_CHANNEL";
+    static const juce::Identifier pressure = "pressure";
+    static const juce::Identifier timbre = "timbre";
 }

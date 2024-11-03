@@ -135,7 +135,8 @@ private:
     void renderOpenGL() override 
     {
         const juce::ScopedLock lock (mutex);
-        juce::OpenGLHelpers::clear(getLookAndFeel().findColour (juce::DocumentWindow::backgroundColourId).darker (2.5f));
+        auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
+        juce::OpenGLHelpers::clear(laf->getBackgroundDark());
         juce::gl::glClear (juce::gl::GL_COLOR_BUFFER_BIT | juce::gl::GL_DEPTH_BUFFER_BIT);
         auto desktopScale = static_cast<float>(glContext.getRenderingScale());
         juce::gl::glDepthFunc (juce::gl::GL_LESS);
