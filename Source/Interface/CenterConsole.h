@@ -1,24 +1,12 @@
 #pragma once
 
 #include "Visualizer.h"
+#include "SettingsComponent.h"
 #include "../Parameters.h"
 #include "LookAndFeel.h"
 #include "../Utility/Identifiers.h"
 namespace ti
 {
-
-class SettingsComponent : public juce::Component
-{
-public:
-    SettingsComponent (juce::ValueTree settingsBranch)
-      :  settings (settingsBranch)
-    {
-        jassert (settings.getType() == id::PRESET_SETTINGS);
-    }
-private:
-    juce::ValueTree settings;
-};
-
 class CenterConsole : public juce::TabbedComponent
 {
 public:

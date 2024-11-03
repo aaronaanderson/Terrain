@@ -2,8 +2,7 @@
 
 #include <juce_audio_basics/juce_audio_basics.h>
 namespace tp
-{
-    
+{ 
 class ChoiceParameter : public juce::AudioParameterChoice
 {
 public:
@@ -45,7 +44,6 @@ public:
         valueChanged (defaultValue);
     }
 };
-
 class RangedFloatParameter : public juce::AudioParameterFloat
 {
 public:
@@ -63,8 +61,6 @@ public:
         valueChanged (defaultValue);
     }
 };
-
-
 struct Parameters
 {
     Parameters (juce::AudioProcessorValueTreeState& vts)
@@ -85,7 +81,6 @@ public:
     RangedFloatParameter*     trajectoryTranslationY = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter ("TranslationY"));
     NormalizedFloatParameter* meanderanceScale = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter   ("MeanderanceScale"));
     NormalizedFloatParameter*     meanderanceSpeed = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter       ("MeanderanceSpeed"));
-
 
     RangedFloatParameter*     feedbackTime = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter        ("FeedbackTime"));
     RangedFloatParameter*     feedbackScalar = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter      ("Feedback"));
@@ -114,6 +109,5 @@ public:
     RangedFloatParameter*     compressorRatio = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter     ("CompressorRatio"));
 
     RangedFloatParameter*     outputLevel = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter("OutputLevel"));
-
 };
 }
