@@ -58,11 +58,12 @@ private:
 struct RoutingComponent : public juce::Component
 {
     RoutingComponent (juce::ValueTree MPERouting, 
-                      const juce::Identifier& MPEChannel)
+                      const juce::Identifier& MPEChannel, 
+                      const juce::AudioProcessorValueTreeState& apvts)
       : mpeRouting (MPERouting), 
-        draggableAssignerOne (MPERouting, MPEChannel, id::OUTPUT_ONE), 
-        draggableAssignerTwo (MPERouting, MPEChannel, id::OUTPUT_TWO), 
-        draggableAssignerThree (MPERouting, MPEChannel, id::OUTPUT_THREE)
+        draggableAssignerOne (MPERouting, MPEChannel, id::OUTPUT_ONE, apvts), 
+        draggableAssignerTwo (MPERouting, MPEChannel, id::OUTPUT_TWO, apvts), 
+        draggableAssignerThree (MPERouting, MPEChannel, id::OUTPUT_THREE, apvts)
     {
         jassert (mpeRouting.getType() == id::MPE_ROUTING);
         destinationLabel.setJustificationType (juce::Justification::centred);
@@ -84,11 +85,17 @@ struct RoutingComponent : public juce::Component
     {
         DraggableAssigner (juce::ValueTree MPERouting, 
                            const juce::Identifier& MPEChannel, 
-                           const juce::Identifier& outChannel)
+                           const juce::Identifier& outChannel, 
+                           const juce::AudioProcessorValueTreeState& apvts)
           : mpeRouting (MPERouting), 
             mpeChannel (MPEChannel), 
             outputChannel (outChannel)
-        {}
+        {
+            auto paramID = mpeRouting.getChildWithName (mpeChannel)
+                                     .getChildWithName (outputChannel)
+                                     .getProperty (id::name).toString();
+            if (paramID != "") name = apvts.getParameter (paramID)->getName (20);
+        }
         void paint (juce::Graphics& g) override
         {
            auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
@@ -125,12 +132,13 @@ struct MPEChannelComponent : public juce::Component
 {
     MPEChannelComponent (juce::ValueTree MPERouting, 
                          juce::ValueTree MPESettings,
+                         const juce::AudioProcessorValueTreeState& apvts,
                          juce::String whichChannel, 
                          const juce::Identifier& mpeChannel)
       : mpeRouting (MPERouting), 
         mpeSettings (MPESettings), 
         mpeCurveComponent (MPESettings, mpeChannel),  
-        routingComponent (mpeRouting, mpeChannel)
+        routingComponent (mpeRouting, mpeChannel, apvts)
     {
         // jassert (mpeSettings.getType() == id::MPE_SETTINGS);
         jassert (mpeRouting.getType() == id::MPE_ROUTING);
@@ -168,15 +176,18 @@ private:
 class SettingsComponent : public juce::Component
 {
 public:
-    SettingsComponent (juce::ValueTree settingsBranch)
+    SettingsComponent (juce::ValueTree settingsBranch, 
+                       const juce::AudioProcessorValueTreeState& apvts)
       :  settings (settingsBranch), 
          mpeHeader ("MPE"), 
          pressureChannelComponent (settingsBranch.getChildWithName (id::MPE_ROUTING), 
                                    juce::ValueTree(), // todo: make MPE_SETTINGS tree
+                                   apvts,
                                    "Pressure", 
                                    id::PRESSURE),
          timbreChannelComponent (settingsBranch.getChildWithName (id::MPE_ROUTING), 
                                  juce::ValueTree(), // todo: make MPE_SETTINGS tree
+                                 apvts,
                                  "Timbre", 
                                  id::TIMBRE)
     {

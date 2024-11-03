@@ -13,10 +13,11 @@ public:
     CenterConsole (tp::WaveTerrainSynthesizerStandard& wts, 
                    tp::WaveTerrainSynthesizerMPE& wtsmpe,
                    const tp::Parameters& p, 
-                   juce::ValueTree settingsBranch)
+                   juce::ValueTree settingsBranch, 
+                   const juce::AudioProcessorValueTreeState& apvts)
       :  juce::TabbedComponent (juce::TabbedButtonBar::Orientation::TabsAtTop), 
          visualizer (wts, wtsmpe, p), 
-         settingsComponent (settingsBranch)
+         settingsComponent (settingsBranch, apvts)
     { 
         auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
         auto c = laf->getBackgroundColour();

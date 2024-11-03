@@ -50,7 +50,7 @@ public:
     const tp::Parameters& getCastedParameters() const { return parameters; }
     tp::WaveTerrainSynthesizerStandard& getStandardWaveTerrainSynthesizer() { return *standardSynthesizer.get(); }
     tp::WaveTerrainSynthesizerMPE& getMPEWaveTerrainSynthesizer() { return *mpeSynthesizer.get(); }
-
+    const juce::AudioProcessorValueTreeState& getAudioProcessorValueTreeState() {return valueTreeState; }
     bool getMTSConnectionStatus() { return MTS_HasMaster (mtsClient); }
     juce::String getTuningSystemName() { return MTS_GetScaleName (mtsClient); }
 private:

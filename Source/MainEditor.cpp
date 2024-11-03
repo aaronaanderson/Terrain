@@ -14,7 +14,8 @@ MainEditor::MainEditor (MainProcessor& p)
     centerConsole = std::make_unique<ti::CenterConsole> (processorRef.getStandardWaveTerrainSynthesizer(),
                                                          processorRef.getMPEWaveTerrainSynthesizer(), 
                                                          processorRef.getCastedParameters(), 
-                                                         processorRef.getState().getChildWithName (id::PRESET_SETTINGS));
+                                                         processorRef.getState().getChildWithName (id::PRESET_SETTINGS), 
+                                                         processorRef.getAudioProcessorValueTreeState());
     header = std::make_unique<ti::Header> (processorRef.getPresetManager(), 
                                            processorRef.getState().getChildWithName (id::PRESET_SETTINGS), 
                                            ephemeralState.getState());
@@ -88,7 +89,7 @@ void MainEditor::resetInterface()
     terrainPanel = std::make_unique<ti::TerrainPanel> (processorRef.getValueTreeState()); 
     controlPanel = std::make_unique<ti::ControlPanel> (processorRef.getValueTreeState());
     header = std::make_unique<ti::Header> (processorRef.getPresetManager(), 
-                                           processorRef.getState().getChildWithName (id::PRESET_SETTINGS),
+                                           processorRef.getState().getChildWithName (id::PRESET_SETTINGS), 
                                            ephemeralState.getState());
 
     addAndMakeVisible (trajectoryPanel.get());
