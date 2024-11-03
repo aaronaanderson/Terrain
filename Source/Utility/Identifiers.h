@@ -25,6 +25,10 @@ namespace id
 
     static const juce::Identifier MPE_SETTINGS = "MPE_SETTINGS";
     static const juce::Identifier MPE_CHANNEL  = "MPE_CHANNEL";
-    static const juce::Identifier pressure = "pressure";
-    static const juce::Identifier timbre = "timbre";
+    static const juce::Identifier PRESSURE = "PRESSURE";
+    static const juce::Identifier TIMBRE = "TIMBRE";
+    static const juce::Identifier OUTPUT_ONE = "OUTPUT_ONE";
+    static const juce::Identifier OUTPUT_TWO = "OUTPUT_TWO";
+    static const juce::Identifier OUTPUT_THREE = "OUTPUT_THREE";
+    static const juce::Identifier name = "name";
 }

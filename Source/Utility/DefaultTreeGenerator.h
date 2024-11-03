@@ -3,6 +3,26 @@
 #include <juce_data_structures/juce_data_structures.h>
 #include "Identifiers.h"
 
+struct MPERoutingTree
+{
+    static juce::ValueTree create()
+    {
+        juce::ValueTree tree (id::MPE_ROUTING);
+        juce::ValueTree pressureTree (id::PRESSURE);
+        pressureTree.addChild (juce::ValueTree (id::OUTPUT_ONE), -1, nullptr);
+        pressureTree.addChild (juce::ValueTree (id::OUTPUT_TWO), -1, nullptr);
+        pressureTree.addChild (juce::ValueTree (id::OUTPUT_THREE), -1, nullptr);
+        juce::ValueTree timbreTree (id::TIMBRE);
+        timbreTree.addChild (juce::ValueTree (id::OUTPUT_ONE), -1, nullptr);
+        timbreTree.addChild (juce::ValueTree (id::OUTPUT_TWO), -1, nullptr);
+        timbreTree.addChild (juce::ValueTree (id::OUTPUT_THREE), -1, nullptr);
+        
+        tree.addChild (pressureTree, -1, nullptr);
+        tree.addChild (timbreTree, -1, nullptr);
+
+        return tree;
+    }
+};
 struct SettingsTree
 {
     struct DefaultSettings
@@ -22,6 +42,8 @@ struct SettingsTree
         tree.setProperty (id::mpeEnabled, DefaultSettings::mpeEnabled, nullptr);
         // true = continuous
         tree.setProperty (id::noteOnOrContinuous, DefaultSettings::noteOnOrContinuous, nullptr);
+        
+        tree.addChild (MPERoutingTree::create(), -1, nullptr);
         return tree;
     }
 };

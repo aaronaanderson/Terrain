@@ -351,6 +351,37 @@ juce::ValueTree MainProcessor::verifiedSettings (juce::ValueTree settings)
         settings.setProperty (id::presetRandomizationScale, SettingsTree::DefaultSettings::presetRandomizationScale, nullptr);
     if (!settings.hasProperty (id::mpeEnabled))
         settings.setProperty (id::mpeEnabled, SettingsTree::DefaultSettings::mpeEnabled, nullptr);
+    settings.removeChild (settings.getChildWithName (id::MPE_ROUTING), nullptr);
+    // MPE ROUTING ==========================================
+    auto mpeTree = settings.getChildWithName (id::MPE_ROUTING);
+    if (mpeTree == juce::ValueTree())
+        settings.addChild (MPERoutingTree::create(), -1, nullptr);
+    
+    auto pressureTree = mpeTree.getChildWithName (id::PRESSURE);
+    if (pressureTree == juce::ValueTree())
+        mpeTree.addChild (juce::ValueTree (id::PRESSURE), -1, nullptr);
+    auto outputOneTree = pressureTree.getChildWithName (id::OUTPUT_ONE);
+    if (outputOneTree == juce::ValueTree())
+        pressureTree.addChild (juce::ValueTree (id::OUTPUT_ONE), -1, nullptr);
+    auto outputTwoTree = pressureTree.getChildWithName (id::OUTPUT_TWO);
+    if (outputTwoTree == juce::ValueTree())
+        pressureTree.addChild (juce::ValueTree (id::OUTPUT_TWO), -1, nullptr);
+    auto outputThreeTree = pressureTree.getChildWithName (id::OUTPUT_TWO);
+    if (outputThreeTree == juce::ValueTree())
+        pressureTree.addChild (juce::ValueTree (id::OUTPUT_THREE), -1, nullptr);
+
+    auto timbreTree = mpeTree.getChildWithName (id::TIMBRE);
+    if (timbreTree == juce::ValueTree())
+        mpeTree.addChild (juce::ValueTree (id::TIMBRE), -1, nullptr);
+    outputOneTree = timbreTree.getChildWithName (id::OUTPUT_ONE);
+    if (outputOneTree == juce::ValueTree())
+        timbreTree.addChild (juce::ValueTree (id::OUTPUT_ONE), -1, nullptr);
+    outputTwoTree = timbreTree.getChildWithName (id::OUTPUT_TWO);
+    if (outputTwoTree == juce::ValueTree())
+        timbreTree.addChild (juce::ValueTree (id::OUTPUT_TWO), -1, nullptr);
+    outputThreeTree = timbreTree.getChildWithName (id::OUTPUT_TWO);
+    if (outputThreeTree == juce::ValueTree())
+        timbreTree.addChild (juce::ValueTree (id::OUTPUT_THREE), -1, nullptr);
 
     return settings;
 }

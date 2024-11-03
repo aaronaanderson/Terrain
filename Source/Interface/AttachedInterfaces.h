@@ -3,6 +3,9 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <juce_audio_basics/juce_audio_basics.h>
 
+#include "LookAndFeel.h"
+#include "SettingsComponent.h"
+
 typedef juce::AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
 typedef juce::AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
 typedef juce::AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
@@ -63,12 +66,14 @@ private:
     std::unique_ptr<ComboBoxAttachment> comboBoxAttachment;
 };
 
-struct ParameterSlider : public juce::Component
+struct ParameterSlider : public juce::Component,
+                         public juce::DragAndDropTarget 
 {
     ParameterSlider (juce::String labelText, 
-                     const juce::String paramID, 
+                     const juce::String pID, 
                      juce::AudioProcessorValueTreeState& vts)
-
+      : paramID (pID), 
+        valueTreeState (vts)
     {
         label.setText (labelText, juce::dontSendNotification);
         slider.setTextBoxStyle (juce::Slider::TextEntryBoxPosition::NoTextBox, true, 20, 20);
@@ -76,6 +81,15 @@ struct ParameterSlider : public juce::Component
         addAndMakeVisible (label);
         addAndMakeVisible (slider);
         sliderAttachment.reset (new SliderAttachment (vts, paramID, slider));
+    }
+    void paint (juce::Graphics& g) override
+    {
+        if (itemDragHovering)
+        {
+            auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
+            g.setColour (laf->getBackgroundDark());
+            g.drawRect (getLocalBounds().toFloat(), 4.0f);
+        }
     }
     void resized() override 
     {
@@ -104,10 +118,45 @@ struct ParameterSlider : public juce::Component
         }
         slider.setBounds (b);
     }
+    // DragAndDropTarget ================================================================
+    bool isInterestedInDragSource (const juce::DragAndDropTarget::SourceDetails& sd) override
+    {
+        juce::ignoreUnused (sd);
+        if (valueTreeState.getParameter (paramID)->getName (14) == "Output Level")
+            return false;
+        return true;
+    }
+    void itemDragEnter (const juce::DragAndDropTarget::SourceDetails& sd) override 
+    {
+        juce::ignoreUnused (sd);
+        itemDragHovering = true; repaint();
+    }
+    void itemDragExit (const juce::DragAndDropTarget::SourceDetails& sd) override
+    {
+        juce::ignoreUnused (sd);
+        itemDragHovering = false; repaint();
+    }
+    void itemDropped (const juce::DragAndDropTarget::SourceDetails& sd) override
+    {
+        juce::ignoreUnused (sd);
+        itemDragHovering = false; repaint();
+        
+        auto* draggableSource = dynamic_cast<RoutingComponent::DraggableAssigner*> (sd.sourceComponent.get());
+        juce::ValueTree channelRouting = draggableSource->getMPEChannelRouting();
+        std::cout << channelRouting.toXmlString() << std::endl;
+        auto name = valueTreeState.getParameter (paramID)->getName (40);
+        channelRouting.setProperty (id::name, name, nullptr);
+        draggableSource->setLabel (name);
+        std::cout << channelRouting.getParent().toXmlString() << std::endl;
+    }
 private:
     juce::Slider slider;
     juce::Label label;
+    const juce::String paramID;
+    juce::AudioProcessorValueTreeState& valueTreeState;
     std::unique_ptr<SliderAttachment> sliderAttachment;
+
+    bool itemDragHovering = false;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ParameterSlider)
 };
