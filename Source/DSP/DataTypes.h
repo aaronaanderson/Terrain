@@ -78,26 +78,11 @@ public:
     {
         rangedParameter->addListener (this);
     }
-    ~SmoothedParameter() override
-    {
-        rangedParameter->removeListener (this);
-    }
-    void noteOn() 
-    {
-        smoothedValue.setCurrentAndTargetValue (rangedParameter->convertFrom0to1 (rangedParameter->getValue())); 
-    }
-    float getNext() 
-    {
-        return smoothedValue.getNextValue();
-    }
-    float getCurrent()
-    {
-        return smoothedValue.getCurrentValue();
-    }
-    void prepare (double sampleRate) 
-    { 
-        smoothedValue.reset (sampleRate, 0.02f);
-    }
+    ~SmoothedParameter() override { rangedParameter->removeListener (this); }
+    void noteOn() { smoothedValue.setCurrentAndTargetValue (rangedParameter->convertFrom0to1 (rangedParameter->getValue())); }
+    float getNext() { return smoothedValue.getNextValue(); }
+    float getCurrent() { return smoothedValue.getCurrentValue(); }
+    void prepare (double sampleRate) { smoothedValue.reset (sampleRate, 0.02f); }
 
 private:
     juce::RangedAudioParameter* rangedParameter;

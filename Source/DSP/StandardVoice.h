@@ -48,13 +48,15 @@ public:
     }
     void renderNextBlock (juce::AudioBuffer<double>& ob, int ss, int nums) override 
     {  
-        trajectory.renderNextBlock (ob, ss, nums);
-        if (trajectory.shouldClear()) clearCurrentNote();
+        juce::ignoreUnused (ob, ss, nums);
+        // trajectory.renderNextBlock (ob, ss, nums);
+        // if (trajectory.shouldClear()) clearCurrentNote();
     }
     void renderNextBlock (juce::AudioBuffer<float>& outputBuffer, 
                           int startSample, int numSamples) override 
     {
         trajectory.renderNextBlock (outputBuffer, startSample, numSamples);
+        if (trajectory.shouldClear()) clearCurrentNote();
     }
     void setCurrentPlaybackSampleRate (double newRate) override 
     {
@@ -62,6 +64,6 @@ public:
     }
     bool isVoiceActive() const { return juce::SynthesiserVoice::isVoiceActive(); }
 private:
-    Trajectory trajectory;
+    StandardTrajectory trajectory;
 };
 }

@@ -17,8 +17,11 @@ public:
              Parameters& p, 
              juce::ValueTree settingsBranch, 
              MTSClient& mtsc)
-      :  trajectory (t, p, settingsBranch, mtsc)
-    {}
+      : trajectory (t, p, settingsBranch, mtsc), 
+        routingBranch (settingsBranch.getChildWithName (id::MPE_ROUTING))
+    {
+        jassert (routingBranch.getType() == id::MPE_ROUTING);
+    }
     // Voice Interface ===================================================
     const float* getRawData() const override { return trajectory.getRawData(); }
     void prepareToPlay (double newRate, int blockSize) override { trajectory.prepareToPlay (newRate, blockSize); }
@@ -124,7 +127,8 @@ public:
     void setCurrentSampleRate (double newRate) override { trajectory.setCurrentPlaybackSampleRate (newRate); }
 
 private:
-    Trajectory trajectory;
+    MPETrajectory trajectory;
+    juce::ValueTree routingBranch;
     juce::SmoothedValue<float> pressure;
     juce::SmoothedValue<float> timbre;
 };
