@@ -18,19 +18,11 @@ public:
                    juce::ValueTree settingsBranch, 
                    MTSClient& mtsc)
       : trajectory (t, p, settingsBranch, mtsc)
-    {
-
-    }
+    {}
     // Voice Interface ===================================================
-    const float* getRawData() override { return trajectory.getRawData(); }
-    void prepareToPlay (double newRate, int blockSize) override 
-    {
-        trajectory.prepareToPlay (newRate, blockSize);
-    }
-    void setState (juce::ValueTree settingsBranch) override
-    {
-        trajectory.setState (settingsBranch);
-    }
+    const float* getRawData() const override { return trajectory.getRawData(); }
+    void prepareToPlay (double newRate, int blockSize) override { trajectory.prepareToPlay (newRate, blockSize); }
+    void setState (juce::ValueTree settingsBranch) override { trajectory.setState (settingsBranch); }
     // Synthesiser Voice ==================================================
     bool canPlaySound (juce::SynthesiserSound* s) override { return dynamic_cast<DummySound*>(s) != nullptr; }
     void startNote (int midiNoteNumber,
@@ -68,6 +60,7 @@ public:
     {
         trajectory.setCurrentPlaybackSampleRate (newRate);
     }
+    bool isVoiceActive() const { return juce::SynthesiserVoice::isVoiceActive(); }
 private:
     Trajectory trajectory;
 };

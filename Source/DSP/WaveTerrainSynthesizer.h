@@ -23,7 +23,8 @@ public:
     struct VoiceListener
     {
         virtual ~VoiceListener() {}
-        virtual void voicesReset (juce::Array<VoiceInterface*> newVoice) = 0;       
+        virtual void addVoices (juce::Array<VoiceInterface*> newVoice) = 0;
+        virtual void resetVoices() = 0;   
     };
     void setVoiceListener (VoiceListener* l) { voiceListener = l; }
 protected:
@@ -99,7 +100,7 @@ private:
         }
 
         if (voiceListener != nullptr)
-            voiceListener->voicesReset (v);        
+            voiceListener->addVoices (v);        
     }
 };
 class WaveTerrainSynthesizerMPE : public WaveTerrainSynthesizer,
@@ -162,14 +163,14 @@ private:
         juce::Array<VoiceInterface*> v;
         for (int i = 0; i < numVoices; i++)
         {
-            auto* voice = new MPEVoice (terrain, p, settingsBranch, mtsc);
+            MPEVoice* voice = new MPEVoice (terrain, p, settingsBranch, mtsc);
             addVoice (voice);
-            auto* interface = dynamic_cast<VoiceInterface*> (voice);
+            VoiceInterface* interface = dynamic_cast<VoiceInterface*> (voice);
             v.add (interface);
         }
 
         if (voiceListener != nullptr)
-            voiceListener->voicesReset (v);        
+            voiceListener->addVoices (v);        
     }
 };
 }

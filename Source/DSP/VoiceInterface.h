@@ -8,6 +8,7 @@ struct VoiceInterface
 {
     virtual void prepareToPlay (double newRate, int blockSize) = 0;
     virtual void setState (juce::ValueTree settingsBranch) = 0;
-    virtual const float* getRawData() = 0;
+    virtual const float* getRawData() const = 0;
+    virtual bool isVoiceActive() const = 0;
 }; 
 }

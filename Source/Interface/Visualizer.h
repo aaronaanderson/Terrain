@@ -59,10 +59,13 @@ class Visualizer : public juce::Component,
                    private juce::Timer
 {
 public:
-    Visualizer (tp::WaveTerrainSynthesizerStandard& wts, tp::Parameters parameters)
+    Visualizer (tp::WaveTerrainSynthesizerStandard& wts, 
+                tp::WaveTerrainSynthesizerMPE& wtsmpe, 
+                tp::Parameters parameters)
       : camera (mutex), 
         parameterWatcher (parameters), 
-        waveTerrainSynthesizer (wts)
+        waveTerrainSynthesizerStandard (wts), 
+        waveTerrainSynthesizerMPE (wtsmpe)
     {
 #ifdef JUCE_MAC
         glContext.setOpenGLVersionRequired (juce::OpenGLContext::OpenGLVersion::openGL4_1);
@@ -115,7 +118,8 @@ private:
     std::unique_ptr<Terrain> terrain;
     ParameterWatcher parameterWatcher;
     std::unique_ptr<Trajectories> trajectories;
-    tp::WaveTerrainSynthesizerStandard& waveTerrainSynthesizer;
+    tp::WaveTerrainSynthesizerStandard& waveTerrainSynthesizerStandard;
+    tp::WaveTerrainSynthesizerMPE& waveTerrainSynthesizerMPE;
 
     void timerCallback() override 
     {
@@ -124,7 +128,9 @@ private:
     void newOpenGLContextCreated() override 
     {
         terrain = std::make_unique<Terrain> (glContext);
-        trajectories = std::make_unique<Trajectories> (glContext, waveTerrainSynthesizer);
+        trajectories = std::make_unique<Trajectories> (glContext, 
+                                                       waveTerrainSynthesizerStandard,
+                                                       waveTerrainSynthesizerMPE);
     }
     void renderOpenGL() override 
     {

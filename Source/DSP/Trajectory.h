@@ -207,8 +207,8 @@ public:
 
             auto point = functions[*voiceParameters.currentTrajectory](static_cast<float> (phase), getModSet());
             
-            point = rotate (point, voiceParameters.rotation.getNext());
             float smoothAmplitude = amplitude.getNextValue();
+            point = rotate (point, voiceParameters.rotation.getNext());
             point = scale (point, voiceParameters.size.getNext() * smoothAmplitude);
             if (*voiceParameters.envelopeSize)
                 point = scale (point, static_cast<float> (envelope.getCurrentValue()));
@@ -260,7 +260,7 @@ public:
         phaseIncrement.reset (blockSize);
         amplitude.reset (blockSize);
     }
-    const float* getRawData() { return history.getRawData(); }
+    const float* getRawData() const { return history.getRawData(); }
     void setState (juce::ValueTree settingsBranch)
     {
         pitchBendRange.referTo (settingsBranch, id::pitchBendRange, nullptr);
@@ -393,7 +393,7 @@ private:
             index = index % bufferSize;
         }
         int size() { return bufferSize; }
-        const float* getRawData() { return buffer.getData(); }
+        const float* getRawData() const { return buffer.getData(); }
         void clear () 
         { 
             buffer.clear (bufferSize); 

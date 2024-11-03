@@ -20,9 +20,10 @@ public:
       :  trajectory (t, p, settingsBranch, mtsc)
     {}
     // Voice Interface ===================================================
-    const float* getRawData() override { return trajectory.getRawData(); }
+    const float* getRawData() const override { return trajectory.getRawData(); }
     void prepareToPlay (double newRate, int blockSize) override { trajectory.prepareToPlay (newRate, blockSize); }
     void setState (juce::ValueTree settingsBranch) override { trajectory.setState (settingsBranch); } 
+    bool isVoiceActive() const override { return isActive(); }
     // MPESynthesiser Voice ===============================================
     /** Called by the MPESynthesiser to let the voice know that a new note has started on it.
         This will be called during the rendering callback, so must be fast and thread-safe.
@@ -120,6 +121,7 @@ public:
         trajectory.renderNextBlock (outputBuffer, startSample, numSamples);
         if (trajectory.shouldClear()) clearCurrentNote();
     }
+    void setCurrentSampleRate (double newRate) override { trajectory.setCurrentPlaybackSampleRate (newRate); }
 
 private:
     Trajectory trajectory;
