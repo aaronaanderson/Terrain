@@ -10,14 +10,23 @@ MainProcessor::MainProcessor()
        valueTreeState (*this, &undoManager, id::TERRAIN_SYNTH, createParameterLayout()),
        parameters (valueTreeState)
 {
+    mtsClient = MTS_RegisterClient();
+    
     valueTreeState.state.addChild (SettingsTree::create(), -1, nullptr);
     presetManager = std::make_unique<PresetManager> (this, valueTreeState.state);
-    // synthesizer = std::make_unique<tp::WaveTerrainSynthesizer> (parameters, valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
-    standardSynthesizer = std::make_unique<tp::WaveTerrainSynthesizerStandard> (parameters, valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
+    standardSynthesizer = std::make_unique<tp::WaveTerrainSynthesizerStandard> (parameters, *mtsClient, valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
+    mpeSynthesizer = std::make_unique<tp::WaveTerrainSynthesizerMPE> (parameters, *mtsClient, valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
     outputChain.reset();
+    
+    mpeOn.store (valueTreeState.state.getChildWithName (id::PRESET_SETTINGS).getProperty (id::mpeEnabled));
+    valueTreeState.state.addListener (this);
 }
 
-MainProcessor::~MainProcessor() {}
+MainProcessor::~MainProcessor() 
+{
+    MTS_DeregisterClient (mtsClient);
+    valueTreeState.state.removeListener (this);
+}
 //==============================================================================
 const juce::String MainProcessor::getName() const  { return JucePlugin_Name; }
 bool MainProcessor::acceptsMidi() const            { return true; }
@@ -81,17 +90,23 @@ void MainProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
     
-    prepareOversampling (buffer.getNumSamples());
-    // synthesizer->updateTerrain();
-    standardSynthesizer->updateTerrain();
     auto overSamplingBlock = overSampler->processSamplesUp (renderBuffer);
     juce::Array<float*> channelPointers = {overSamplingBlock.getChannelPointer(0)};
     juce::AudioBuffer<float> overSamplingBufferReference (channelPointers.getRawDataPointer(), 
                                                           static_cast<int> (overSamplingBlock.getNumChannels()), 
                                                           static_cast<int> (overSamplingBlock.getNumSamples()));
+    prepareOversampling (buffer.getNumSamples());
+    if (mpeOn.load())
+    {
+        mpeSynthesizer->updateTerrain();
+        mpeSynthesizer->renderNextBlock (overSamplingBufferReference, midiMessages, 0, overSamplingBufferReference.getNumSamples());
+    }
+    else
+    {
+        standardSynthesizer->updateTerrain();
+        standardSynthesizer->renderNextBlock (overSamplingBufferReference, midiMessages, 0, overSamplingBufferReference.getNumSamples());
+    }
 
-    // synthesizer->renderNextBlock (overSamplingBufferReference, midiMessages, 0, overSamplingBufferReference.getNumSamples());
-    standardSynthesizer->renderNextBlock (overSamplingBufferReference, midiMessages, 0, overSamplingBufferReference.getNumSamples());
     auto outputBlock = juce::dsp::AudioBlock<float> (renderBuffer);
     overSampler->processSamplesDown (outputBlock);
 
@@ -141,20 +156,14 @@ void MainProcessor::setStateInformation (const void* data, int sizeInBytes)
             auto verifiedSettingsBranch = verifiedSettings (newState.getChildWithName (id::PRESET_SETTINGS));
             
             for (int i =  newState.getNumChildren() - 1; i >= 0; i--)
-            {
                 if (newState.getChild (i).getType() == id::PRESET_SETTINGS)
-                {
-                    // std::cout << i << std::endl;
-                    // std::cout << newState.getChild(i).toXmlString() << std::endl;
                     newState.removeChild (i, nullptr);
-                }
-            }
 
             newState.addChild (verifiedSettingsBranch, -1, nullptr);
             valueTreeState.replaceState (newState);
             presetManager->setState (valueTreeState.state);
-            // synthesizer->setState (valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
             standardSynthesizer->setState (valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
+            mpeSynthesizer->setState (valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
         }
     }
 }
@@ -286,6 +295,7 @@ void MainProcessor::allocateMaxSamplesPerBlock (int maxSamples)
     auto overSamplingFactor = static_cast<int> (settingsTree.getProperty (id::oversampling));
     // synthesizer->allocate (maxSamples * static_cast<int> (std::pow (2, overSamplingFactor)));
     standardSynthesizer->allocate (maxSamples * static_cast<int> (std::pow (2, overSamplingFactor)));
+    mpeSynthesizer->allocate (maxSamples * static_cast<int> (std::pow (2, overSamplingFactor)));
     overSampler = std::make_unique<juce::dsp::Oversampling<float>> (1, 
                                                                     overSamplingFactor, 
                                                                     juce::dsp::Oversampling<float>::FilterType::filterHalfBandPolyphaseIIR);
@@ -302,6 +312,7 @@ void MainProcessor::prepareOversampling (int bufferSize)
     if (overSamplingFactor != storedFactor)
     {
         standardSynthesizer->allocate (maxSamplesPerBlock * static_cast<int> (std::pow (2, overSamplingFactor)));
+        mpeSynthesizer->allocate (maxSamplesPerBlock * static_cast<int> (std::pow (2, overSamplingFactor)));
         overSampler = std::make_unique<juce::dsp::Oversampling<float>> (1, 
                                                                         overSamplingFactor, 
                                                                         juce::dsp::Oversampling<float>::FilterType::filterHalfBandPolyphaseIIR);
@@ -309,6 +320,8 @@ void MainProcessor::prepareOversampling (int bufferSize)
         
         standardSynthesizer->prepareToPlay (sampleRate * std::pow (2, overSamplingFactor), 
                                     bufferSize * static_cast<int> (std::pow (2, overSamplingFactor)));
+        mpeSynthesizer->prepareToPlay (sampleRate * std::pow (2, overSamplingFactor), 
+                                       bufferSize * static_cast<int> (std::pow (2, overSamplingFactor)));
         renderBuffer.setSize (1, bufferSize, false, false, true); // Don't re-allocate; maxBufferSize is set in prepareToPlay
         renderBuffer.clear();
         
@@ -320,6 +333,8 @@ void MainProcessor::prepareOversampling (int bufferSize)
     {
         standardSynthesizer->prepareToPlay (sampleRate * std::pow (2, overSamplingFactor), 
                                            bufferSize * static_cast<int> (std::pow (2, overSamplingFactor)));
+        mpeSynthesizer->prepareToPlay (sampleRate * std::pow (2, overSamplingFactor), 
+                                       bufferSize * static_cast<int> (std::pow (2, overSamplingFactor)));
         renderBuffer.setSize (1, bufferSize, false, false, true); // Don't re-allocate; maxBufferSize is set in prepareToPlay
         renderBuffer.clear();
         storedBufferSize = bufferSize;
@@ -338,4 +353,16 @@ juce::ValueTree MainProcessor::verifiedSettings (juce::ValueTree settings)
         settings.setProperty (id::mpeEnabled, SettingsTree::DefaultSettings::mpeEnabled, nullptr);
 
     return settings;
+}
+void MainProcessor::valueTreePropertyChanged (juce::ValueTree& tree, 
+                                              const juce::Identifier& property)
+{
+    if (tree.getType() == id::PRESET_SETTINGS)
+        if (property == id::mpeEnabled)
+            mpeOn.store (tree.getProperty (property));
+}
+void MainProcessor::valueTreeRedirected (juce::ValueTree& tree)
+{
+    if (tree.getType() == id::TERRAIN_SYNTH)
+        mpeOn.store (tree.getChildWithName (id::PRESET_SETTINGS).getProperty (id::mpeEnabled));
 }

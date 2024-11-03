@@ -1,6 +1,8 @@
 #pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
+#include <MTS-ESP/Client/libMTSClient.h>
+
 #include "Parameters.h"
 #include "Utility/Identifiers.h"
 #include "Utility/PresetManager.h"
@@ -46,18 +48,20 @@ public:
     PresetManager& getPresetManager() { return *presetManager.get(); }
 
     const tp::Parameters& getCastedParameters() const { return parameters; }
-    tp::WaveTerrainSynthesizerStandard& getWaveTerrainSynthesizer() { return *standardSynthesizer.get(); }
+    tp::WaveTerrainSynthesizerStandard& getStandardWaveTerrainSynthesizer() { return *standardSynthesizer.get(); }
+    tp::WaveTerrainSynthesizerMPE& getMPEWaveTerrainSynthesizer() { return *mpeSynthesizer.get(); }
 
-    bool getMTSConnectionStatus() { return standardSynthesizer->getMTSConnectionStatus(); }
-    juce::String getTuningSystemName() { return standardSynthesizer->getTuningSystemName(); }
+    bool getMTSConnectionStatus() { return MTS_HasMaster (mtsClient); }
+    juce::String getTuningSystemName() { return MTS_GetScaleName (mtsClient); }
 private:
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     juce::AudioProcessorValueTreeState valueTreeState;
     juce::UndoManager undoManager;
     tp::Parameters parameters;
     std::unique_ptr<PresetManager> presetManager;
-    // std::unique_ptr<tp::WaveTerrainSynthesizer> synthesizer;
     std::unique_ptr<tp::WaveTerrainSynthesizerStandard> standardSynthesizer;
+    std::unique_ptr<tp::WaveTerrainSynthesizerMPE> mpeSynthesizer;
+    std::atomic<bool> mpeOn;
     std::unique_ptr<juce::dsp::Oversampling<float>> overSampler;
     int storedFactor = -1; // initialize with invalid factor
     int storedBufferSize = 0;
@@ -68,10 +72,13 @@ private:
                               juce::dsp::LadderFilter<float>, 
                               juce::dsp::Compressor<float>, 
                               juce::dsp::Gain<float>> outputChain;
-
+    MTSClient* mtsClient = nullptr;
     void allocateMaxSamplesPerBlock (int maxSamples);
     void prepareOversampling (int bufferSize);
     juce::ValueTree verifiedSettings (juce::ValueTree);
-
+    void valueTreePropertyChanged (juce::ValueTree& tree, 
+                                   const juce::Identifier& property) override;
+    void valueTreeRedirected (juce::ValueTree& treeWhichHasBeenChanged) override;
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainProcessor)
 };

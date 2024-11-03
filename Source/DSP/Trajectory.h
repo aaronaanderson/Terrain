@@ -361,7 +361,7 @@ private:
     VoiceParameters voiceParameters;
     PerlinVector perlinVector;
     float frequency = 440.0f;
-    juce::SmoothedValue<float, juce::ValueSmoothingTypes::Multiplicative> amplitude;
+    juce::SmoothedValue<float> amplitude;
     double phase = 0.0;
     int midiNote;
     juce::CachedValue<bool> smoothFrequencyEnabled;

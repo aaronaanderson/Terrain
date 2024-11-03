@@ -10,16 +10,11 @@ namespace tp {
 class WaveTerrainSynthesizer
 {
 public:
-    WaveTerrainSynthesizer (Parameters& p)
-      : terrain (p)
-    {
-        mtsClient = MTS_RegisterClient();
-    }
-    virtual ~WaveTerrainSynthesizer()
-    {
-        MTS_DeregisterClient (mtsClient);
-    }
-
+    WaveTerrainSynthesizer (Parameters& p, MTSClient& mtsc)
+      : terrain (p), 
+        mtsClient (mtsc)
+    {}
+    virtual ~WaveTerrainSynthesizer(){}
     virtual void prepareToPlay (double sampleRate, int blockSize) = 0;
     virtual void allocate (int maxBlockSize) = 0;
     virtual void updateTerrain() = 0;
@@ -31,22 +26,22 @@ public:
         virtual void voicesReset (juce::Array<VoiceInterface*> newVoice) = 0;       
     };
     void setVoiceListener (VoiceListener* l) { voiceListener = l; }
-    bool getMTSConnectionStatus() { return MTS_HasMaster (mtsClient); }
-    juce::String getTuningSystemName() { return MTS_GetScaleName (mtsClient); }
 protected:
     Terrain terrain;
     VoiceListener* voiceListener = nullptr;
-    MTSClient* mtsClient = nullptr;
+    MTSClient& mtsClient;
 };
 class WaveTerrainSynthesizerStandard : public WaveTerrainSynthesizer, 
                                        public juce::Synthesiser
 {
 public:
-    WaveTerrainSynthesizerStandard (Parameters& p, juce::ValueTree settingsBranch)
-      : WaveTerrainSynthesizer (p)
+    WaveTerrainSynthesizerStandard (Parameters& p, 
+                                   MTSClient& mtsc,
+                                   juce::ValueTree settingsBranch)
+      : WaveTerrainSynthesizer (p, mtsc)
     {
         addSound (new DummySound());
-        setPolyphony (24, p, settingsBranch, *mtsClient);
+        setPolyphony (24, p, settingsBranch, mtsClient);
     }
     ~WaveTerrainSynthesizerStandard() override {}
     void prepareToPlay (double sr, int blockSize) override
@@ -110,7 +105,71 @@ private:
 class WaveTerrainSynthesizerMPE : public WaveTerrainSynthesizer,
                                   public juce::MPESynthesiser
 {
+public:
+    WaveTerrainSynthesizerMPE (Parameters& p, 
+                               MTSClient& mtsc, 
+                               juce::ValueTree settings)
+      :  WaveTerrainSynthesizer (p, mtsc)
+    {
+        setPolyphony (15, p, settings, mtsClient);
+    }
+    ~WaveTerrainSynthesizerMPE() override {}
+    void prepareToPlay (double sr, int blockSize) override
+    {
+        for (int i = 0; i < getNumVoices(); i++)
+        {
+            auto v = getVoice (i);
+            auto trajectory = dynamic_cast<MPEVoice*> (v);
+            if (trajectory != nullptr)
+                trajectory->prepareToPlay (sr, blockSize);
+        }
+        setCurrentPlaybackSampleRate (sr);
+        
+        terrain.prepareToPlay (sr, blockSize);
+    }
+    void allocate (int maxNumSamples) override { terrain.allocate (maxNumSamples); }
+    void updateTerrain() override {terrain.updateParameterBuffers(); }
+    juce::Array<VoiceInterface*> getVoices() override
+    {
+        juce::Array<VoiceInterface*> v;
+        for(int i = 0; i < getNumVoices(); i++)
+        {
+            auto* vi = dynamic_cast<VoiceInterface*> (getVoice (i));
+            v.add (vi);
+        }
 
+        return v;        
+    }
+    void setState (juce::ValueTree settings) override
+    {
+        jassert (settings.getType() == id::PRESET_SETTINGS);
+        for (int i = 0; i < getNumVoices(); i++)
+        {
+            auto v = getVoice (i);
+            auto trajectory = dynamic_cast<MPEVoice*> (v);
+            if (trajectory != nullptr)
+                trajectory->setState (settings);
+        }        
+    }
+private:
+    void setPolyphony (int numVoices, 
+                       Parameters& p, 
+                       juce::ValueTree settingsBranch, 
+                       MTSClient& mtsc)
+    {
+        jassert (numVoices > 0);
+        clearVoices();
+        juce::Array<VoiceInterface*> v;
+        for (int i = 0; i < numVoices; i++)
+        {
+            auto* voice = new MPEVoice (terrain, p, settingsBranch, mtsc);
+            addVoice (voice);
+            auto* interface = dynamic_cast<VoiceInterface*> (voice);
+            v.add (interface);
+        }
+
+        if (voiceListener != nullptr)
+            voiceListener->voicesReset (v);        
+    }
 };
-
 }

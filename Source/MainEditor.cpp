@@ -11,7 +11,7 @@ MainEditor::MainEditor (MainProcessor& p)
     trajectoryPanel = std::make_unique<ti::TrajectoryPanel> (processorRef.getValueTreeState()); 
     terrainPanel = std::make_unique<ti::TerrainPanel> (processorRef.getValueTreeState()); 
     controlPanel = std::make_unique<ti::ControlPanel> (processorRef.getValueTreeState());
-    centerConsole = std::make_unique<ti::CenterConsole> (processorRef.getWaveTerrainSynthesizer(), 
+    centerConsole = std::make_unique<ti::CenterConsole> (processorRef.getStandardWaveTerrainSynthesizer(), 
                                                          processorRef.getCastedParameters(), 
                                                          processorRef.getState().getChildWithName (id::PRESET_SETTINGS));
     header = std::make_unique<ti::Header> (processorRef.getPresetManager(), 
