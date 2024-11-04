@@ -10,9 +10,8 @@ namespace tp {
 class WaveTerrainSynthesizer
 {
 public:
-    WaveTerrainSynthesizer (Parameters& p, MTSClient& mtsc)
-      : terrain (p), 
-        mtsClient (mtsc)
+    WaveTerrainSynthesizer (MTSClient& mtsc)
+      : mtsClient (mtsc)
     {}
     virtual ~WaveTerrainSynthesizer(){}
     virtual void prepareToPlay (double sampleRate, int blockSize) = 0;
@@ -28,7 +27,7 @@ public:
     };
     void setVoiceListener (VoiceListener* l) { voiceListener = l; }
 protected:
-    Terrain terrain;
+    
     VoiceListener* voiceListener = nullptr;
     MTSClient& mtsClient;
 };
@@ -37,9 +36,10 @@ class WaveTerrainSynthesizerStandard : public WaveTerrainSynthesizer,
 {
 public:
     WaveTerrainSynthesizerStandard (Parameters& p, 
-                                   MTSClient& mtsc,
-                                   juce::ValueTree settingsBranch)
-      : WaveTerrainSynthesizer (p, mtsc)
+                                    MTSClient& mtsc,
+                                    juce::ValueTree settingsBranch)
+      : WaveTerrainSynthesizer (mtsc), 
+        terrain (p)
     {
         addSound (new DummySound());
         setPolyphony (24, p, settingsBranch, mtsClient);
@@ -83,6 +83,7 @@ public:
         }        
     }
 private:
+    StandardTerrain terrain;
     void setPolyphony (int numVoices, 
                        Parameters& p, 
                        juce::ValueTree settingsBranch, 
@@ -111,7 +112,7 @@ public:
                                MTSClient& mtsc, 
                                juce::ValueTree settings, 
                                juce::AudioProcessorValueTreeState& vts)
-      :  WaveTerrainSynthesizer (p, mtsc)
+      :  WaveTerrainSynthesizer (mtsc)
     {
         setPolyphony (15, p, settings, mtsClient, vts);
     }
@@ -126,11 +127,27 @@ public:
                 trajectory->prepareToPlay (sr, blockSize);
         }
         setCurrentPlaybackSampleRate (sr);
-        
-        terrain.prepareToPlay (sr, blockSize);
     }
-    void allocate (int maxNumSamples) override { terrain.allocate (maxNumSamples); }
-    void updateTerrain() override {terrain.updateParameterBuffers(); }
+    void allocate (int maxNumSamples) override 
+    { 
+        for (int i = 0; i < getNumVoices(); i++)
+        {
+            auto v = getVoice (i);
+            auto trajectory = dynamic_cast<MPEVoice*> (v);
+            if (trajectory != nullptr)
+                trajectory->allocate (maxNumSamples);
+        } 
+    }
+    void updateTerrain() override 
+    {   
+        for (int i = 0; i < getNumVoices(); i++)
+        {
+            auto v = getVoice (i);
+            auto trajectory = dynamic_cast<MPEVoice*> (v);
+            if (trajectory != nullptr)
+                trajectory->updateParameterBuffers();
+        } 
+    }
     juce::Array<VoiceInterface*> getVoices() override
     {
         juce::Array<VoiceInterface*> v;
@@ -165,7 +182,7 @@ private:
         juce::Array<VoiceInterface*> v;
         for (int i = 0; i < numVoices; i++)
         {
-            MPEVoice* voice = new MPEVoice (terrain, p, settingsBranch, mtsc, vts);
+            MPEVoice* voice = new MPEVoice (p, settingsBranch, mtsc, vts);
             addVoice (voice);
             VoiceInterface* interface = dynamic_cast<VoiceInterface*> (voice);
             v.add (interface);

@@ -21,37 +21,12 @@ class Terrain
 {
 public:
     Terrain (Parameters& p)
-      : parameters (p), 
-        modA (p.terrainModA), 
-        modB (p.terrainModB), 
-        modC (p.terrainModC), 
-        modD (p.terrainModD), 
-        saturation (p.terrainSaturation)
+      : parameters (p)
     {}
-    void prepareToPlay(double sampleRate, int blockSize)
-    {
-        modA.prepareToPlay (sampleRate, blockSize);
-        modB.prepareToPlay (sampleRate, blockSize);
-        modC.prepareToPlay (sampleRate, blockSize);
-        modD.prepareToPlay (sampleRate, blockSize);
-        saturation.prepareToPlay (sampleRate, blockSize);
-    }
-    void allocate (int maxNumSamples)
-    {
-        modA.allocate (maxNumSamples);
-        modB.allocate (maxNumSamples);
-        modC.allocate (maxNumSamples);
-        modD.allocate (maxNumSamples);
-        saturation.allocate (maxNumSamples);
-    }
-    void updateParameterBuffers()
-    {
-        modA.updateBuffer();
-        modB.updateBuffer();
-        modC.updateBuffer();
-        modD.updateBuffer();
-        saturation.updateBuffer();
-    }
+    virtual void prepareToPlay(double sampleRate, int blockSize) = 0;
+    virtual void allocate (int maxNumSamples) = 0;
+    virtual void updateParameterBuffers() = 0;
+
     float sampleAt (Point p, int bufferIndex)
     {
         auto m = getModSet (bufferIndex);
@@ -113,24 +88,151 @@ public:
             jassertfalse;
         }
 
-        return saturate (output, saturation.getAt (bufferIndex));
+        return saturate (output, bufferIndex);
+    }
+protected:
+    Parameters& parameters;
+    virtual const ModSet getModSet (int index) = 0;
+    // distance from center
+    inline float dfc (Point p) { return std::sqrt (p.x * p.x + p.y * p.y); }
+    virtual float saturate (float signal, int index) = 0;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Terrain)
+};
+class StandardTerrain : public Terrain
+{
+public:
+    StandardTerrain (Parameters& p)
+      : Terrain (p),
+        modA (p.terrainModA), 
+        modB (p.terrainModB), 
+        modC (p.terrainModC), 
+        modD (p.terrainModD), 
+        saturation (p.terrainSaturation)
+    {}
+    void prepareToPlay(double sampleRate, int blockSize) override
+    {
+        modA.prepareToPlay (sampleRate, blockSize);
+        modB.prepareToPlay (sampleRate, blockSize);
+        modC.prepareToPlay (sampleRate, blockSize);
+        modD.prepareToPlay (sampleRate, blockSize);
+        saturation.prepareToPlay (sampleRate, blockSize);
+    }
+    void allocate (int maxNumSamples) override
+    {
+        modA.allocate (maxNumSamples);
+        modB.allocate (maxNumSamples);
+        modC.allocate (maxNumSamples);
+        modD.allocate (maxNumSamples);
+        saturation.allocate (maxNumSamples);
+    }
+    void updateParameterBuffers() override
+    {
+        modA.updateBuffer();
+        modB.updateBuffer();
+        modC.updateBuffer();
+        modD.updateBuffer();
+        saturation.updateBuffer();
     }
 private:
-    Parameters& parameters;
     BufferedSmoothParameter modA, modB, modC, modD, saturation;
 
-    const ModSet getModSet (int index)
+    const ModSet getModSet (int index) override
     {
         return ModSet (modA.getAt (index), modB.getAt (index), 
                        modC.getAt (index), modD.getAt (index));
     }
+    float saturate (float signal, int bufferIndex) override
+    {
+        auto scale = saturation.getAt (bufferIndex);
+        return juce::dsp::FastMathApproximations::tanh<float> (signal * scale * 1.31303528551f);
+    }   
     // distance from center
     inline float dfc (Point p) { return std::sqrt (p.x * p.x + p.y * p.y); }
-    float saturate (float signal, float scale)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (StandardTerrain)
+};
+
+class MPETerrain : public Terrain
+{
+public:
+    MPETerrain (Parameters& p,
+                juce::AudioProcessorValueTreeState& apvts, 
+                juce::ValueTree mpeRoutingBranch)
+      : Terrain (p),
+        modA (p.terrainModA, apvts, mpeRoutingBranch), 
+        modB (p.terrainModB, apvts, mpeRoutingBranch), 
+        modC (p.terrainModC, apvts, mpeRoutingBranch), 
+        modD (p.terrainModD, apvts, mpeRoutingBranch), 
+        saturation (p.terrainSaturation, apvts, mpeRoutingBranch)
+    {}
+    void prepareToPlay(double sampleRate, int blockSize) override
     {
+        modA.prepareToPlay (sampleRate, blockSize);
+        modB.prepareToPlay (sampleRate, blockSize);
+        modC.prepareToPlay (sampleRate, blockSize);
+        modD.prepareToPlay (sampleRate, blockSize);
+        saturation.prepareToPlay (sampleRate, blockSize);
+    }
+    void allocate (int maxNumSamples) override
+    {
+        modA.allocate (maxNumSamples);
+        modB.allocate (maxNumSamples);
+        modC.allocate (maxNumSamples);
+        modD.allocate (maxNumSamples);
+        saturation.allocate (maxNumSamples);
+    }
+    void updateParameterBuffers() override
+    {
+        modA.updateBuffer();
+        modB.updateBuffer();
+        modC.updateBuffer();
+        modD.updateBuffer();
+        saturation.updateBuffer();
+    }
+    void noteOn (float mpePressure, float mpeTimbre)
+    {
+        modA.noteOn (mpePressure, mpeTimbre);
+        modB.noteOn (mpePressure, mpeTimbre);
+        modC.noteOn (mpePressure, mpeTimbre);
+        modD.noteOn (mpePressure, mpeTimbre);
+        saturation.noteOn (mpePressure, mpeTimbre);
+    }
+    void setTimbre (float newTimbre)
+    {
+        modA.setTimbre (newTimbre);
+        modB.setTimbre (newTimbre);
+        modC.setTimbre (newTimbre);
+        modD.setTimbre (newTimbre);
+        saturation.setTimbre (newTimbre);
+    }
+    void setPressure (float newPressure)
+    {
+        modA.setPressure (newPressure);
+        modB.setPressure (newPressure);
+        modC.setPressure (newPressure);
+        modD.setPressure (newPressure);
+        saturation.setPressure (newPressure);
+    }
+    void setState (juce::ValueTree mpeRoutingBranch) 
+    { 
+        modA.setState (mpeRoutingBranch);
+        modB.setState (mpeRoutingBranch);
+        modC.setState (mpeRoutingBranch);
+        modD.setState (mpeRoutingBranch);
+        saturation.setState (mpeRoutingBranch);
+    }
+private:
+    BufferedMPESmoothParameter modA, modB, modC, modD, saturation;
+    const ModSet getModSet (int index) override
+    {
+        return ModSet (modA.getAt (index), modB.getAt (index), 
+                       modC.getAt (index), modD.getAt (index));
+    }
+    float saturate (float signal, int bufferIndex) override
+    {
+        auto scale = saturation.getAt (bufferIndex);
         return juce::dsp::FastMathApproximations::tanh<float> (signal * scale * 1.31303528551f);
     }
-
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Terrain)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MPETerrain)
 };
 } // end namespace tp

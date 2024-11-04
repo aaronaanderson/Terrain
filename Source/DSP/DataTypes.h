@@ -230,5 +230,39 @@ private:
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MPESmoothedParameter)
 };
+class BufferedMPESmoothParameter
+{
+public:
+    BufferedMPESmoothParameter (juce::RangedAudioParameter* p, 
+                                juce::AudioProcessorValueTreeState& apvts, 
+                                juce::ValueTree mpeRoutingBranch)
+      : smoothedParameter (p, apvts, mpeRoutingBranch)
+    {}
+    void prepareToPlay (double sr, int blockSize)
+    {
+        smoothedParameter.prepare (sr);
+        buffer.setSize (1, blockSize, false, false, true);
+    }
+    // call once per audio block
+    void updateBuffer()
+    {
+        for (int i = 0; i < buffer.getNumSamples(); i++)
+        {
+            auto* b = buffer.getWritePointer (0);
+            b[i] = smoothedParameter.getNext();
+        }
+    }
+    float getAt (int bufferIndex) { return buffer.getReadPointer (0)[bufferIndex]; }
+    void allocate (int numSamples) { buffer.setSize (1, numSamples); }
+    void noteOn (float mpePressure, float mpeTimbre) { smoothedParameter.noteOn (mpePressure, mpeTimbre); }
+    void setTimbre (float newTimbre) { smoothedParameter.setTimbre (newTimbre); }
+    void setPressure (float newPressure) { smoothedParameter.setPressure (newPressure); }
+    void setState (juce::ValueTree routingBranch) { smoothedParameter.setState (routingBranch); }
+private:
+    MPESmoothedParameter smoothedParameter;
+    juce::AudioBuffer<float> buffer;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BufferedMPESmoothParameter)
+};
 
 } //end namespace tp
