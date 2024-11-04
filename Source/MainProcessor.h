@@ -6,7 +6,9 @@
 #include "Parameters.h"
 #include "Utility/Identifiers.h"
 #include "Utility/PresetManager.h"
-#include "DSP/WaveTerrainSynthesizer.h"
+
+#include "DSP/WaveTerrainSynthesizerMPE.h"
+#include "DSP/WaveTerrainSynthesizerStandard.h"
 //==============================================================================
 class MainProcessor  : public juce::AudioProcessor, 
                        private juce::ValueTree::Listener
