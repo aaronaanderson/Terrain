@@ -28,7 +28,7 @@ namespace id
     static const juce::Identifier timbreCurve = "timbreCurve";
     static const juce::Identifier pressureSmoothing = "pressureSmoothing";
     static const juce::Identifier timbreSmoothing = "timbreSmoothing";
-    
+
     static const juce::Identifier MPE_CHANNEL  = "MPE_CHANNEL";
     static const juce::Identifier PRESSURE = "PRESSURE";
     static const juce::Identifier TIMBRE = "TIMBRE";
@@ -38,4 +38,5 @@ namespace id
     static const juce::Identifier name = "name";
     static const juce::Identifier lowerBound = "lowerBound";
     static const juce::Identifier upperBound = "upperBound";
+    static const juce::Identifier invertRange = "invertRange";
 }

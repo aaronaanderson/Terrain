@@ -358,7 +358,8 @@ juce::ValueTree MainProcessor::verifiedSettings (juce::ValueTree settings)
     if (!settings.hasProperty (id::mpeEnabled))
         settings.setProperty (id::mpeEnabled, SettingsTree::DefaultSettings::mpeEnabled, nullptr);
     
-    settings.removeChild (settings.getChildWithName (id::MPE_ROUTING), nullptr);
+    std::cout << settings.toXmlString() << std::endl;
+    // settings.removeChild (settings.getChildWithName (id::MPE_ROUTING), nullptr);
     // MPE ROUTING ==========================================
     auto mpeTree = settings.getChildWithName (id::MPE_ROUTING);
     if (mpeTree == juce::ValueTree())

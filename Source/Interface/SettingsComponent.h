@@ -165,6 +165,12 @@ struct RoutingComponent : public juce::Component
         destinationLabel.setJustificationType (juce::Justification::centred);
         addAndMakeVisible (destinationLabel);
         
+        rangeLabel.setJustificationType (juce::Justification::centred);
+        addAndMakeVisible (rangeLabel);
+
+        invertLabel.setJustificationType (juce::Justification::centred);
+        addAndMakeVisible (invertLabel);
+
         addAndMakeVisible (draggableAssignerOne);
         rangeOne.onValueChange = [&]()
             {
@@ -180,7 +186,16 @@ struct RoutingComponent : public juce::Component
                                                .getProperty (id::upperBound), 
                                      juce::dontSendNotification);
         addAndMakeVisible (rangeOne);
-        
+        invertOneToggle.setToggleState (mpeChannel.getChildWithName (id::OUTPUT_ONE)
+                                                  .getProperty (id::invertRange), juce::dontSendNotification);
+        invertOneToggle.onStateChange = [&]()
+            {
+                mpeChannel.getChildWithName (id::OUTPUT_ONE)
+                          .setProperty (id::invertRange, invertOneToggle.getToggleState(), nullptr);
+
+            };
+        addAndMakeVisible (invertOneToggle);
+
         addAndMakeVisible (draggableAssignerTwo);
         rangeTwo.onValueChange = [&]()
             {
@@ -196,9 +211,17 @@ struct RoutingComponent : public juce::Component
                                      mpeChannel.getChildWithName (id::OUTPUT_TWO)
                                                .getProperty (id::upperBound), 
                                      juce::dontSendNotification);
-        addAndMakeVisible (rangeOne);
         addAndMakeVisible (rangeTwo);
-        
+        invertTwoToggle.setToggleState (mpeChannel.getChildWithName (id::OUTPUT_TWO)
+                                                  .getProperty (id::invertRange), juce::dontSendNotification);
+        invertTwoToggle.onStateChange = [&]()
+            {
+                mpeChannel.getChildWithName (id::OUTPUT_TWO)
+                          .setProperty (id::invertRange, invertTwoToggle.getToggleState(), nullptr);
+
+            };
+        addAndMakeVisible (invertTwoToggle);
+
         addAndMakeVisible (draggableAssignerThree);
         rangeTwo.onValueChange = [&]()
             {
@@ -213,20 +236,37 @@ struct RoutingComponent : public juce::Component
                                        mpeChannel.getChildWithName (id::OUTPUT_THREE)
                                                  .getProperty (id::upperBound), 
                                      juce::dontSendNotification);
-        addAndMakeVisible (rangeOne);
         addAndMakeVisible (rangeThree);
+        invertThreeToggle.setToggleState (mpeChannel.getChildWithName (id::OUTPUT_THREE)
+                                                    .getProperty (id::invertRange), juce::dontSendNotification);
+        invertThreeToggle.onStateChange = [&]()
+            {
+                mpeChannel.getChildWithName (id::OUTPUT_THREE)
+                          .setProperty (id::invertRange, invertThreeToggle.getToggleState(), nullptr);
+
+            };
+        addAndMakeVisible (invertThreeToggle);
     }
     void resized() override
     {
         juce::Rectangle<int> cdBounds {200, 20};
         juce::Rectangle<int> rangeBounds {200, 20};
+        juce::Rectangle<int> toggleBounds {30, 22};
         destinationLabel.setBounds (cdBounds);
+        rangeLabel.setBounds (cdBounds.withPosition (220, 0));
+        invertLabel.setBounds (toggleBounds.withPosition (220, 0));
+
         draggableAssignerOne.setBounds (cdBounds.withPosition (0, 20));
-        rangeOne.setBounds (rangeBounds.withPosition (220, 20));
+        invertOneToggle.setBounds (toggleBounds.withPosition (220, 20));
+        rangeOne.setBounds (rangeBounds.withPosition (255, 20));
+        
         draggableAssignerTwo.setBounds (cdBounds.withPosition (0, 48));
-        rangeTwo.setBounds (rangeBounds.withPosition (220, 48));
+        invertTwoToggle.setBounds (toggleBounds.withPosition (220, 48));
+        rangeTwo.setBounds (rangeBounds.withPosition (255, 48));
+
         draggableAssignerThree.setBounds (cdBounds.withPosition (0, 76));
-        rangeThree.setBounds (rangeBounds.withPosition (220, 76));
+        invertThreeToggle.setBounds (toggleBounds.withPosition (220, 76));
+        rangeThree.setBounds (rangeBounds.withPosition (255, 76));
     }
     void setState (juce::ValueTree routingBranch) 
     {
@@ -302,10 +342,15 @@ private:
     juce::ValueTree mpeChannel;
     juce::Label destinationLabel {"destination", "Destination"};
     DraggableAssigner draggableAssignerOne;
+    juce::ToggleButton invertOneToggle;
     juce::Slider rangeOne;
+    juce::Label rangeLabel = {"RangeLabel", "Range"};
+    juce::Label invertLabel = {"InvertLabel", "Inv."};
     DraggableAssigner draggableAssignerTwo;
+    juce::ToggleButton invertTwoToggle;
     juce::Slider rangeTwo;
     DraggableAssigner draggableAssignerThree;
+    juce::ToggleButton invertThreeToggle;
     juce::Slider rangeThree;
 };
 struct MPESaveComponent : public juce::Component
@@ -334,7 +379,6 @@ private:
         auto file = getMPEPresetFolder().getChildFile ("MPESettings.xml");
         if (!file.existsAsFile()) file.setCreationTime (juce::Time::getCurrentTime());
         xml->writeTo (file);
-        std::cout << file.getFullPathName() << std::endl;
     }
     juce::File getMPEPresetFolder()
     {

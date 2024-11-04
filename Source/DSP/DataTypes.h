@@ -155,7 +155,9 @@ public:
                     jassert (outputChannel.isValid());
                     float min = outputChannel.getProperty (id::lowerBound);
                     float max = outputChannel.getProperty (id::upperBound);
-                    auto value = juce::jmap (mpePressure, min, max);
+                    bool inv = outputChannel.getProperty (id::invertRange);
+                    auto value = inv ? juce::jmap (mpePressure, max, min) : 
+                                       juce::jmap (mpePressure, min, max);
                     smoothedPressure.setCurrentAndTargetValue (rangedParameter->convertFrom0to1 (value));
                 }; 
             break;
@@ -164,7 +166,9 @@ public:
                     jassert (outputChannel.isValid());
                     float min = outputChannel.getProperty (id::lowerBound);
                     float max = outputChannel.getProperty (id::upperBound);
-                    auto value = juce::jmap (mpeTimbre, min, max);
+                    bool inv = outputChannel.getProperty (id::invertRange);
+                    auto value = inv ? juce::jmap (mpeTimbre, max, min) : 
+                                       juce::jmap (mpeTimbre, min, max);
                     smoothedTimbre.setCurrentAndTargetValue (rangedParameter->convertFrom0to1 (value));
                 }
             break;
@@ -280,7 +284,9 @@ private:
         jassert (outputChannel.isValid());
         float min = outputChannel.getProperty (id::lowerBound);
         float max = outputChannel.getProperty (id::upperBound);
-        auto value = juce::jmap (p, min, max);
+        bool inv = outputChannel.getProperty (id::invertRange);
+        auto value = inv ? juce::jmap (p, max, min) : 
+                           juce::jmap (p, min, max);
         smoothedPressure.setTargetValue (rangedParameter->convertFrom0to1 (value));
     }
     void setTimbreInternal (float t)
@@ -288,7 +294,9 @@ private:
         jassert (outputChannel.isValid());
         float min = outputChannel.getProperty (id::lowerBound);
         float max = outputChannel.getProperty (id::upperBound);
-        auto value = juce::jmap (t, min, max);
+        bool inv = outputChannel.getProperty (id::invertRange);
+        auto value = inv ? juce::jmap (t, max, min) : 
+                           juce::jmap (t, min, max);
         smoothedTimbre.setTargetValue (rangedParameter->convertFrom0to1 (value));
     }
     void parameterValueChanged (int parameterIndex, float newValue) override
