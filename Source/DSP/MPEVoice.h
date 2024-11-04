@@ -56,9 +56,10 @@ public:
     void notePressureChanged() override 
     {
         auto note = getCurrentlyPlayingNote();
-        terrain.setPressure (note.pressure.asUnsignedFloat());
-        trajectory.setPressure (note.pressure.asUnsignedFloat());
-        trajectory.setAmplitude (note.pressure.asUnsignedFloat());
+        pressure = note.pressure.asUnsignedFloat();
+        terrain.setPressure (pressure);
+        trajectory.setPressure (pressure);
+        trajectory.setAmplitude (pressure);
     }
 
     void notePitchbendChanged() override
@@ -69,8 +70,9 @@ public:
     void noteTimbreChanged() override
     {
         auto note = getCurrentlyPlayingNote();
-        terrain.setTimbre (note.timbre.asUnsignedFloat());
-        trajectory.setTimbre (note.timbre.asUnsignedFloat());
+        timbre = note.timbre.asUnsignedFloat();
+        terrain.setTimbre (timbre);
+        trajectory.setTimbre (timbre);
     }
     void noteKeyStateChanged() override {}
     void renderNextBlock (juce::AudioBuffer<float>& outputBuffer,
@@ -83,11 +85,13 @@ public:
     void setCurrentSampleRate (double newRate) override { trajectory.setCurrentPlaybackSampleRate (newRate); }
     void allocate (int maxBlockSize) { terrain.allocate (maxBlockSize); }
     void updateParameterBuffers() { terrain.updateParameterBuffers(); }
+    float getPressure() { return pressure; }
+    float getTimbre() { return timbre; }
 private:
     MPETerrain    terrain;
     MPETrajectory trajectory;
     juce::ValueTree routingBranch;
-    juce::SmoothedValue<float> pressure;
-    juce::SmoothedValue<float> timbre;
+    float pressure = 0.0f;
+    float timbre = 0.0f;
 };
 }

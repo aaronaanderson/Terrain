@@ -151,10 +151,10 @@ public:
                 smoothedValue.setCurrentAndTargetValue (rangedParameter->convertFrom0to1 (rangedParameter->getValue())); 
             break;
             case Assignment::Pressure:
-                smoothedValue.setCurrentAndTargetValue (rangedParameter->convertFrom0to1 (mpePressure)); 
+                setPressureInternal (mpePressure); 
             break;
             case Assignment::Timbre:
-                smoothedValue.setCurrentAndTargetValue (rangedParameter->convertFrom0to1 (mpeTimbre));
+                setTimbreInternal (mpeTimbre);
             break;
             default:
                 jassertfalse;
@@ -162,13 +162,13 @@ public:
     }
     void setPressure (float pressure) 
     { 
-        if (assignment == Assignment::Pressure)
-            smoothedValue.setTargetValue (rangedParameter->convertFrom0to1 (pressure)); 
+        if (assignment != Assignment::Pressure) return;
+        setPressureInternal (pressure); 
     };
     void setTimbre (float timbre)
     {
-        if (assignment == Assignment::Timbre)
-            smoothedValue.setTargetValue (rangedParameter->convertFrom0to1 (timbre)); 
+        if (assignment != Assignment::Timbre) return;
+        setTimbreInternal (timbre); 
     }
     float getNext() { return smoothedValue.getNextValue(); }
     float getCurrent() { return smoothedValue.getCurrentValue(); }
@@ -186,40 +186,52 @@ private:
         None
     };
     Assignment assignment;
+    juce::ValueTree outputChannel;
+    juce::Array<juce::Identifier> ids {id::OUTPUT_ONE, id::OUTPUT_TWO, id::OUTPUT_THREE};
     void checkAssignment()
     {
-        juce::Array<juce::String> paramIDs;
         auto timbreBranch = mpeRouting.getChildWithName (id::TIMBRE);
-        paramIDs.add (timbreBranch.getChildWithName (id::OUTPUT_ONE).getProperty (id::name));
-        paramIDs.add (timbreBranch.getChildWithName (id::OUTPUT_TWO).getProperty (id::name));
-        paramIDs.add (timbreBranch.getChildWithName (id::OUTPUT_THREE).getProperty (id::name));
-        for (auto pid : paramIDs)
+        for (auto id : ids)
         {
-            if (rangedParameter == valueTreeState.getParameter (pid))
+            if (rangedParameter == valueTreeState.getParameter (timbreBranch.getChildWithName (id)
+                                                                            .getProperty (id::name).toString()))
             {
+                outputChannel = timbreBranch.getChildWithName (id);
                 assignment = Assignment::Timbre;
                 return;
             }
         }
-
-        paramIDs.clear();
         auto pressureBranch = mpeRouting.getChildWithName (id::PRESSURE);
-        std::cout << pressureBranch.toXmlString() << std::endl;
-        paramIDs.add (pressureBranch.getChildWithName (id::OUTPUT_ONE).getProperty (id::name));
-        paramIDs.add (pressureBranch.getChildWithName (id::OUTPUT_TWO).getProperty (id::name));
-        paramIDs.add (pressureBranch.getChildWithName (id::OUTPUT_THREE).getProperty (id::name));
-        for (auto pid : paramIDs)
+        for (auto id : ids)
         {
-            if (rangedParameter == valueTreeState.getParameter (pid))
+            if (rangedParameter == valueTreeState.getParameter (pressureBranch.getChildWithName (id)
+                                                                              .getProperty (id::name).toString()))
             {
+                outputChannel = pressureBranch.getChildWithName (id);
                 assignment = Assignment::Pressure;
+                std::cout << outputChannel.toXmlString() << std::endl;
                 return;
             }
         }
 
         assignment = Assignment::None;    
     }
-
+    void setPressureInternal (float pressure)
+    {
+        jassert (outputChannel.isValid());
+        float min = outputChannel.getProperty (id::lowerBound);
+        float max = outputChannel.getProperty (id::upperBound);
+        auto value = juce::jmap (pressure, min, max);
+        smoothedValue.setCurrentAndTargetValue (rangedParameter->convertFrom0to1 (value));
+    }
+    void setTimbreInternal (float timbre)
+    {
+        jassert (outputChannel.isValid());
+        float min = outputChannel.getProperty (id::lowerBound);
+        float max = outputChannel.getProperty (id::upperBound);
+        auto value = juce::jmap (timbre, min, max);
+        smoothedValue.setCurrentAndTargetValue (rangedParameter->convertFrom0to1 (value));
+    }
     void parameterValueChanged (int parameterIndex, float newValue) override
     {
         juce::ignoreUnused (parameterIndex);

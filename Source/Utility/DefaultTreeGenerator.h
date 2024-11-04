@@ -5,17 +5,25 @@
 
 struct MPERoutingTree
 {
+    static juce::ValueTree createRoute (juce::Identifier output)
+    {
+        auto tree = juce::ValueTree (output);
+        tree.setProperty (id::lowerBound, 0.0f, nullptr);
+        tree.setProperty (id::upperBound, 1.0f, nullptr);
+
+        return tree;
+    }
     static juce::ValueTree create()
     {
         juce::ValueTree tree (id::MPE_ROUTING);
         juce::ValueTree pressureTree (id::PRESSURE);
-        pressureTree.addChild (juce::ValueTree (id::OUTPUT_ONE), -1, nullptr);
-        pressureTree.addChild (juce::ValueTree (id::OUTPUT_TWO), -1, nullptr);
-        pressureTree.addChild (juce::ValueTree (id::OUTPUT_THREE), -1, nullptr);
+        pressureTree.addChild (createRoute (id::OUTPUT_ONE), -1, nullptr);
+        pressureTree.addChild (createRoute (id::OUTPUT_TWO), -1, nullptr);
+        pressureTree.addChild (createRoute (id::OUTPUT_THREE), -1, nullptr);
         juce::ValueTree timbreTree (id::TIMBRE);
-        timbreTree.addChild (juce::ValueTree (id::OUTPUT_ONE), -1, nullptr);
-        timbreTree.addChild (juce::ValueTree (id::OUTPUT_TWO), -1, nullptr);
-        timbreTree.addChild (juce::ValueTree (id::OUTPUT_THREE), -1, nullptr);
+        timbreTree.addChild (createRoute (id::OUTPUT_ONE), -1, nullptr);
+        timbreTree.addChild (createRoute (id::OUTPUT_TWO), -1, nullptr);
+        timbreTree.addChild (createRoute (id::OUTPUT_THREE), -1, nullptr);
         
         tree.addChild (pressureTree, -1, nullptr);
         tree.addChild (timbreTree, -1, nullptr);

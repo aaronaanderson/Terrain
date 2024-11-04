@@ -70,6 +70,34 @@ public:
                 trajectory->setState (settings);
         }        
     }
+    float getMaximumPressure()
+    {
+        float max = 0.0f;
+        for (int i = 0; i < getNumVoices(); i++)
+        {
+            auto v = getVoice (i);
+            auto* t = dynamic_cast<MPEVoice*> (v);
+            // if (!t->isActive()) break;
+            if (t->getPressure() > max)
+                max = t->getPressure();
+        } 
+        return max;
+    }
+    float getAverageTimbre()
+    {
+        float sum = 0.0f;
+        int numActiveVoices = 0;
+        for (int i = 0; i < getNumVoices(); i++)
+        {
+            auto v = getVoice (i);
+            auto* t = dynamic_cast<MPEVoice*> (v);
+            if (t->getTimbre() <= 0.0f) break;
+            numActiveVoices++;
+            sum += t->getTimbre();
+        } 
+        if (numActiveVoices == 0) return 0.0f;
+        return sum / static_cast<float> (numActiveVoices);
+    }
 private:
     void setPolyphony (int numVoices, 
                        Parameters& p, 

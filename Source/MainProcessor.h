@@ -78,6 +78,7 @@ private:
     void allocateMaxSamplesPerBlock (int maxSamples);
     void prepareOversampling (int bufferSize);
     juce::ValueTree verifiedSettings (juce::ValueTree);
+    void updateMPEParameters();
     void valueTreePropertyChanged (juce::ValueTree& tree, 
                                    const juce::Identifier& property) override;
     void valueTreeRedirected (juce::ValueTree& treeWhichHasBeenChanged) override;

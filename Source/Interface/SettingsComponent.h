@@ -61,24 +61,78 @@ struct RoutingComponent : public juce::Component
                       const juce::Identifier& MPEChannel, 
                       const juce::AudioProcessorValueTreeState& apvts)
       : mpeRouting (MPERouting), 
+        mpeChannel (mpeRouting.getChildWithName (MPEChannel)),
         draggableAssignerOne (MPERouting, MPEChannel, id::OUTPUT_ONE, apvts), 
         draggableAssignerTwo (MPERouting, MPEChannel, id::OUTPUT_TWO, apvts), 
         draggableAssignerThree (MPERouting, MPEChannel, id::OUTPUT_THREE, apvts)
     {
         jassert (mpeRouting.getType() == id::MPE_ROUTING);
+        jassert (mpeChannel.getType() == MPEChannel);
         destinationLabel.setJustificationType (juce::Justification::centred);
         addAndMakeVisible (destinationLabel);
+        
         addAndMakeVisible (draggableAssignerOne);
+        rangeOne.onValueChange = [&]()
+            {
+                mpeChannel.getChildWithName (id::OUTPUT_ONE).setProperty (id::upperBound, rangeOne.getMaxValue(), nullptr);
+                mpeChannel.getChildWithName (id::OUTPUT_ONE).setProperty (id::lowerBound, rangeOne.getMinValue(), nullptr);
+            };
+        rangeOne.setSliderStyle (juce::Slider::SliderStyle::TwoValueHorizontal);
+        rangeOne.setTextBoxStyle (juce::Slider::TextEntryBoxPosition::NoTextBox, true, 20, 20);
+        rangeOne.setRange ({0.0f, 1.0f}, 0.0);
+        rangeOne.setMinAndMaxValues (mpeChannel.getChildWithName (id::OUTPUT_ONE)
+                                               .getProperty (id::lowerBound),
+                                     mpeChannel.getChildWithName (id::OUTPUT_ONE)
+                                               .getProperty (id::upperBound), 
+                                     juce::dontSendNotification);
+        addAndMakeVisible (rangeOne);
+        
         addAndMakeVisible (draggableAssignerTwo);
+        rangeTwo.onValueChange = [&]()
+            {
+                mpeChannel.getChildWithName (id::OUTPUT_TWO).setProperty (id::upperBound, rangeOne.getMaxValue(), nullptr);
+                mpeChannel.getChildWithName (id::OUTPUT_TWO).setProperty (id::lowerBound, rangeOne.getMinValue(), nullptr);
+            };
+        rangeTwo.setRange ({0.0f, 1.0f}, 0.0);
+        rangeTwo.setSliderStyle (juce::Slider::SliderStyle::TwoValueHorizontal);
+        rangeTwo.setTextBoxStyle (juce::Slider::TextEntryBoxPosition::NoTextBox, true, 20, 20);
+        rangeTwo.setRange ({0.0f, 1.0f}, 0.0);
+        rangeTwo.setMinAndMaxValues (mpeChannel.getChildWithName (id::OUTPUT_TWO)
+                                               .getProperty (id::lowerBound),
+                                     mpeChannel.getChildWithName (id::OUTPUT_TWO)
+                                               .getProperty (id::upperBound), 
+                                     juce::dontSendNotification);
+        addAndMakeVisible (rangeOne);
+        addAndMakeVisible (rangeTwo);
+        
         addAndMakeVisible (draggableAssignerThree);
+        rangeTwo.onValueChange = [&]()
+            {
+                mpeChannel.getChildWithName (id::OUTPUT_THREE).setProperty (id::upperBound, rangeOne.getMaxValue(), nullptr);
+                mpeChannel.getChildWithName (id::OUTPUT_THREE).setProperty (id::lowerBound, rangeOne.getMinValue(), nullptr);
+            };
+        rangeThree.setSliderStyle (juce::Slider::SliderStyle::TwoValueHorizontal);
+        rangeThree.setTextBoxStyle (juce::Slider::TextEntryBoxPosition::NoTextBox, true, 20, 20);
+        rangeThree.setRange ({0.0f, 1.0f}, 0.0);
+        rangeThree.setMinAndMaxValues (mpeChannel.getChildWithName (id::OUTPUT_THREE)
+                                                 .getProperty (id::lowerBound),
+                                       mpeChannel.getChildWithName (id::OUTPUT_THREE)
+                                                 .getProperty (id::upperBound), 
+                                     juce::dontSendNotification);
+        addAndMakeVisible (rangeOne);
+        addAndMakeVisible (rangeThree);
     }
     void resized() override
     {
         juce::Rectangle<int> cdBounds {200, 20};
+        juce::Rectangle<int> rangeBounds {200, 20};
         destinationLabel.setBounds (cdBounds);
         draggableAssignerOne.setBounds (cdBounds.withPosition (0, 20));
+        rangeOne.setBounds (rangeBounds.withPosition (220, 20));
         draggableAssignerTwo.setBounds (cdBounds.withPosition (0, 48));
+        rangeTwo.setBounds (rangeBounds.withPosition (220, 48));
         draggableAssignerThree.setBounds (cdBounds.withPosition (0, 76));
+        rangeThree.setBounds (rangeBounds.withPosition (220, 76));
     }
     void setState (juce::ValueTree routingBranch) 
     {
@@ -151,10 +205,14 @@ struct RoutingComponent : public juce::Component
     };
 private:
     juce::ValueTree mpeRouting;
+    juce::ValueTree mpeChannel;
     juce::Label destinationLabel {"destination", "Destination"};
     DraggableAssigner draggableAssignerOne;
+    juce::Slider rangeOne;
     DraggableAssigner draggableAssignerTwo;
+    juce::Slider rangeTwo;
     DraggableAssigner draggableAssignerThree;
+    juce::Slider rangeThree;
 };
 struct MPEChannelComponent : public juce::Component 
 {

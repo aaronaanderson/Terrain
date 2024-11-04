@@ -89,10 +89,10 @@ void MainProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
-
+    
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
-    
+
     auto overSamplingBlock = overSampler->processSamplesUp (renderBuffer);
     juce::Array<float*> channelPointers = {overSamplingBlock.getChannelPointer(0)};
     juce::AudioBuffer<float> overSamplingBufferReference (channelPointers.getRawDataPointer(), 
@@ -101,6 +101,7 @@ void MainProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     prepareOversampling (buffer.getNumSamples());
     if (mpeOn.load())
     {
+        updateMPEParameters();
         mpeSynthesizer->updateTerrain();
         mpeSynthesizer->renderNextBlock (overSamplingBufferReference, midiMessages, 0, overSamplingBufferReference.getNumSamples());
     }
@@ -356,37 +357,39 @@ juce::ValueTree MainProcessor::verifiedSettings (juce::ValueTree settings)
     if (!settings.hasProperty (id::mpeEnabled))
         settings.setProperty (id::mpeEnabled, SettingsTree::DefaultSettings::mpeEnabled, nullptr);
     
-    //settings.removeChild (settings.getChildWithName (id::MPE_ROUTING), nullptr);
+    settings.removeChild (settings.getChildWithName (id::MPE_ROUTING), nullptr);
     // MPE ROUTING ==========================================
     auto mpeTree = settings.getChildWithName (id::MPE_ROUTING);
     if (mpeTree == juce::ValueTree())
         settings.addChild (MPERoutingTree::create(), -1, nullptr);
     
-    auto pressureTree = mpeTree.getChildWithName (id::PRESSURE);
-    if (pressureTree == juce::ValueTree())
-        mpeTree.addChild (juce::ValueTree (id::PRESSURE), -1, nullptr);
-    auto outputOneTree = pressureTree.getChildWithName (id::OUTPUT_ONE);
-    if (outputOneTree == juce::ValueTree())
-        pressureTree.addChild (juce::ValueTree (id::OUTPUT_ONE), -1, nullptr);
-    auto outputTwoTree = pressureTree.getChildWithName (id::OUTPUT_TWO);
-    if (outputTwoTree == juce::ValueTree())
-        pressureTree.addChild (juce::ValueTree (id::OUTPUT_TWO), -1, nullptr);
-    auto outputThreeTree = pressureTree.getChildWithName (id::OUTPUT_TWO);
-    if (outputThreeTree == juce::ValueTree())
-        pressureTree.addChild (juce::ValueTree (id::OUTPUT_THREE), -1, nullptr);
+    // auto pressureTree = mpeTree.getChildWithName (id::PRESSURE);
+    // if (pressureTree == juce::ValueTree())
+    //     mpeTree.addChild (juce::ValueTree (id::PRESSURE), -1, nullptr);
+    
+    // auto outputOneTree = pressureTree.getChildWithName (id::OUTPUT_ONE);
+    // if (outputOneTree == juce::ValueTree())
+    //     pressureTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_ONE), -1, nullptr);
+    // auto outputTwoTree = pressureTree.getChildWithName (id::OUTPUT_TWO);
+    // if (outputTwoTree == juce::ValueTree())
+    //     pressureTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_TWO), -1, nullptr);
+    // auto outputThreeTree = pressureTree.getChildWithName (id::OUTPUT_THREE);
+    // if (outputThreeTree == juce::ValueTree())
+    //     pressureTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_THREE), -1, nullptr);
 
-    auto timbreTree = mpeTree.getChildWithName (id::TIMBRE);
-    if (timbreTree == juce::ValueTree())
-        mpeTree.addChild (juce::ValueTree (id::TIMBRE), -1, nullptr);
-    outputOneTree = timbreTree.getChildWithName (id::OUTPUT_ONE);
-    if (outputOneTree == juce::ValueTree())
-        timbreTree.addChild (juce::ValueTree (id::OUTPUT_ONE), -1, nullptr);
-    outputTwoTree = timbreTree.getChildWithName (id::OUTPUT_TWO);
-    if (outputTwoTree == juce::ValueTree())
-        timbreTree.addChild (juce::ValueTree (id::OUTPUT_TWO), -1, nullptr);
-    outputThreeTree = timbreTree.getChildWithName (id::OUTPUT_TWO);
-    if (outputThreeTree == juce::ValueTree())
-        timbreTree.addChild (juce::ValueTree (id::OUTPUT_THREE), -1, nullptr);
+    // auto timbreTree = mpeTree.getChildWithName (id::TIMBRE);
+    // if (timbreTree == juce::ValueTree())
+    //     mpeTree.addChild (juce::ValueTree (id::TIMBRE), -1, nullptr);
+    
+    // outputOneTree = timbreTree.getChildWithName (id::OUTPUT_ONE);
+    // if (outputOneTree == juce::ValueTree())
+    //     timbreTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_ONE), -1, nullptr);
+    // outputTwoTree = timbreTree.getChildWithName (id::OUTPUT_TWO);
+    // if (outputTwoTree == juce::ValueTree())
+    //     timbreTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_TWO), -1, nullptr);
+    // outputThreeTree = timbreTree.getChildWithName (id::OUTPUT_THREE);
+    // if (outputThreeTree == juce::ValueTree())
+    //     timbreTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_THREE), -1, nullptr);
 
     return settings;
 }
@@ -401,4 +404,30 @@ void MainProcessor::valueTreeRedirected (juce::ValueTree& tree)
 {
     if (tree.getType() == id::TERRAIN_SYNTH)
         mpeOn.store (tree.getChildWithName (id::PRESET_SETTINGS).getProperty (id::mpeEnabled));
+}
+void MainProcessor::updateMPEParameters()
+{
+       juce::Array<juce::String> parameterIDs;
+        auto timbreBranch = valueTreeState.state.getChildWithName (id::PRESET_SETTINGS)
+                                                .getChildWithName (id::MPE_ROUTING)
+                                                .getChildWithName (id::TIMBRE);
+        parameterIDs.add (timbreBranch.getChildWithName (id::OUTPUT_ONE).getProperty (id::name));
+        parameterIDs.add (timbreBranch.getChildWithName (id::OUTPUT_TWO).getProperty (id::name));
+        parameterIDs.add (timbreBranch.getChildWithName (id::OUTPUT_THREE).getProperty (id::name));
+        auto averageTimbre = mpeSynthesizer->getAverageTimbre();
+        for (auto pid : parameterIDs)
+            if (valueTreeState.getParameter (pid) != nullptr)
+                valueTreeState.getParameter (pid)->setValueNotifyingHost (averageTimbre);
+
+        parameterIDs.clear();
+        auto pressureBranch = valueTreeState.state.getChildWithName (id::PRESET_SETTINGS)
+                                                  .getChildWithName (id::MPE_ROUTING)
+                                                  .getChildWithName (id::PRESSURE);
+        parameterIDs.add (pressureBranch.getChildWithName (id::OUTPUT_ONE).getProperty (id::name));
+        parameterIDs.add (pressureBranch.getChildWithName (id::OUTPUT_TWO).getProperty (id::name));
+        parameterIDs.add (pressureBranch.getChildWithName (id::OUTPUT_THREE).getProperty (id::name));
+        auto maxPressure = mpeSynthesizer->getMaximumPressure();
+        for (auto pid : parameterIDs)
+            if (valueTreeState.getParameter (pid) != nullptr)
+                valueTreeState.getParameter (pid)->setValueNotifyingHost (maxPressure);
 }
