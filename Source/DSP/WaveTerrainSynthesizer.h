@@ -109,10 +109,11 @@ class WaveTerrainSynthesizerMPE : public WaveTerrainSynthesizer,
 public:
     WaveTerrainSynthesizerMPE (Parameters& p, 
                                MTSClient& mtsc, 
-                               juce::ValueTree settings)
+                               juce::ValueTree settings, 
+                               juce::AudioProcessorValueTreeState& vts)
       :  WaveTerrainSynthesizer (p, mtsc)
     {
-        setPolyphony (15, p, settings, mtsClient);
+        setPolyphony (15, p, settings, mtsClient, vts);
     }
     ~WaveTerrainSynthesizerMPE() override {}
     void prepareToPlay (double sr, int blockSize) override
@@ -156,14 +157,15 @@ private:
     void setPolyphony (int numVoices, 
                        Parameters& p, 
                        juce::ValueTree settingsBranch, 
-                       MTSClient& mtsc)
+                       MTSClient& mtsc, 
+                       juce::AudioProcessorValueTreeState& vts)
     {
         jassert (numVoices > 0);
         clearVoices();
         juce::Array<VoiceInterface*> v;
         for (int i = 0; i < numVoices; i++)
         {
-            MPEVoice* voice = new MPEVoice (terrain, p, settingsBranch, mtsc);
+            MPEVoice* voice = new MPEVoice (terrain, p, settingsBranch, mtsc, vts);
             addVoice (voice);
             VoiceInterface* interface = dynamic_cast<VoiceInterface*> (voice);
             v.add (interface);

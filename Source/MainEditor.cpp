@@ -91,6 +91,7 @@ void MainEditor::resetInterface()
     header = std::make_unique<ti::Header> (processorRef.getPresetManager(), 
                                            processorRef.getState().getChildWithName (id::PRESET_SETTINGS), 
                                            ephemeralState.getState());
+    centerConsole->setState (processorRef.getState().getChildWithName (id::PRESET_SETTINGS));
 
     addAndMakeVisible (trajectoryPanel.get());
     addAndMakeVisible (terrainPanel.get());

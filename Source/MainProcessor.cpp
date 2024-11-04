@@ -15,7 +15,10 @@ MainProcessor::MainProcessor()
     valueTreeState.state.addChild (SettingsTree::create(), -1, nullptr);
     presetManager = std::make_unique<PresetManager> (this, valueTreeState.state);
     standardSynthesizer = std::make_unique<tp::WaveTerrainSynthesizerStandard> (parameters, *mtsClient, valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
-    mpeSynthesizer = std::make_unique<tp::WaveTerrainSynthesizerMPE> (parameters, *mtsClient, valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
+    mpeSynthesizer = std::make_unique<tp::WaveTerrainSynthesizerMPE> (parameters, 
+                                                                      *mtsClient, 
+                                                                      valueTreeState.state.getChildWithName (id::PRESET_SETTINGS),
+                                                                      valueTreeState);
     outputChain.reset();
     
     mpeOn.store (valueTreeState.state.getChildWithName (id::PRESET_SETTINGS).getProperty (id::mpeEnabled));
@@ -164,6 +167,7 @@ void MainProcessor::setStateInformation (const void* data, int sizeInBytes)
             presetManager->setState (valueTreeState.state);
             standardSynthesizer->setState (valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
             mpeSynthesizer->setState (valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
+            std::cout << valueTreeState.state.getChildWithName (id::PRESET_SETTINGS).toXmlString();
         }
     }
 }

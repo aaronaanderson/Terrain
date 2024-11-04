@@ -143,7 +143,6 @@ struct ParameterSlider : public juce::Component,
         
         auto* draggableSource = dynamic_cast<RoutingComponent::DraggableAssigner*> (sd.sourceComponent.get());
         juce::ValueTree channelRouting = draggableSource->getMPEChannelRouting();
-        std::cout << channelRouting.toXmlString() << std::endl;
         auto name = valueTreeState.getParameter (paramID)->getName (40);
         draggableSource->setLabel (name);
         channelRouting.setProperty (id::name, paramID, nullptr);

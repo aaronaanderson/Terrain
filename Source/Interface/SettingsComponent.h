@@ -80,6 +80,12 @@ struct RoutingComponent : public juce::Component
         draggableAssignerTwo.setBounds (cdBounds.withPosition (0, 48));
         draggableAssignerThree.setBounds (cdBounds.withPosition (0, 76));
     }
+    void setState (juce::ValueTree routingBranch) 
+    {
+        draggableAssignerOne.setState (routingBranch);
+        draggableAssignerTwo.setState (routingBranch);
+        draggableAssignerThree.setState (routingBranch);
+    }
     struct DraggableAssigner : public juce::DragAndDropContainer, 
                                public juce::Component
     {
@@ -89,7 +95,8 @@ struct RoutingComponent : public juce::Component
                            const juce::AudioProcessorValueTreeState& apvts)
           : mpeRouting (MPERouting), 
             mpeChannel (MPEChannel), 
-            outputChannel (outChannel)
+            outputChannel (outChannel), 
+            valueTreeState (apvts)
         {
             auto paramID = mpeRouting.getChildWithName (mpeChannel)
                                      .getChildWithName (outputChannel)
@@ -114,11 +121,14 @@ struct RoutingComponent : public juce::Component
         }
         juce::ValueTree getMPEChannelRouting() { return mpeRouting.getChildWithName (mpeChannel)
                                                                   .getChildWithName (outputChannel); }
+        const juce::AudioProcessorValueTreeState& getAPVTS() { return valueTreeState; }
         void setLabel (juce::String label) { name = label; repaint(); }
+        void setState (juce::ValueTree routingBranch) { mpeRouting = routingBranch; }
     private:
         juce::ValueTree mpeRouting;
         const juce::Identifier& mpeChannel;
         const juce::Identifier& outputChannel;
+        const juce::AudioProcessorValueTreeState& valueTreeState;
         juce::String name {"Drag to assign"};
     };
 private:
@@ -164,6 +174,7 @@ struct MPEChannelComponent : public juce::Component
         mpeCurveComponent.setBounds (b.removeFromLeft (120).reduced (4));
         routingComponent.setBounds (b);
     }
+    void setState (juce::ValueTree routingBranch) { routingComponent.setState (routingBranch); }
 private:
     juce::ValueTree mpeRouting;
     juce::ValueTree mpeSettings;
@@ -203,6 +214,11 @@ public:
         mpeHeader.setBounds (b.removeFromTop (20));
         pressureChannelComponent.setBounds (b.removeFromTop (120));
         timbreChannelComponent.setBounds (b.removeFromTop (120));
+    }
+    void setState (juce::ValueTree settingsBranch)
+    {
+        pressureChannelComponent.setState (settingsBranch.getChildWithName (id::MPE_ROUTING));
+        timbreChannelComponent.setState (settingsBranch.getChildWithName (id::MPE_ROUTING));
     }
 private:
     juce::ValueTree settings;

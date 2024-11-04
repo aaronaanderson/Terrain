@@ -16,8 +16,9 @@ public:
     MPEVoice(Terrain& t, 
              Parameters& p, 
              juce::ValueTree settingsBranch, 
-             MTSClient& mtsc)
-      : trajectory (t, p, settingsBranch, mtsc), 
+             MTSClient& mtsc, 
+             juce::AudioProcessorValueTreeState& vts)
+      : trajectory (t, p, settingsBranch, mtsc, vts), 
         routingBranch (settingsBranch.getChildWithName (id::MPE_ROUTING))
     {
         jassert (routingBranch.getType() == id::MPE_ROUTING);
@@ -36,9 +37,9 @@ public:
         auto note = getCurrentlyPlayingNote();
         trajectory.startNote (note.initialNote, 
                               note.noteOnVelocity.asUnsignedFloat(), 
-                              static_cast<float> (note.getFrequencyInHertz()));
-        pressure.setCurrentAndTargetValue (note.pressure.asUnsignedFloat());
-        timbre.setCurrentAndTargetValue (note.timbre.asUnsignedFloat());
+                              static_cast<float> (note.getFrequencyInHertz()), 
+                              note.pressure.asUnsignedFloat(), 
+                              note.timbre.asUnsignedFloat());
     }
 
     /** Called by the MPESynthesiser to let the voice know that its currently playing note has stopped.
@@ -66,7 +67,7 @@ public:
     void notePressureChanged() override 
     {
         auto note = getCurrentlyPlayingNote();
-        pressure.setTargetValue (note.pressure.asUnsignedFloat());
+        trajectory.setPressure (note.pressure.asUnsignedFloat());
         trajectory.setAmplitude (note.pressure.asUnsignedFloat());
     }
 
@@ -90,7 +91,7 @@ public:
     void noteTimbreChanged() override
     {
         auto note = getCurrentlyPlayingNote();
-        timbre.setTargetValue (note.timbre.asUnsignedFloat());
+        trajectory.setTimbre (note.timbre.asUnsignedFloat());
     }
 
     /** Called by the MPESynthesiser to let the voice know that its currently playing note
