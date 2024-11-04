@@ -55,6 +55,7 @@ public:
     const juce::AudioProcessorValueTreeState& getAudioProcessorValueTreeState() {return valueTreeState; }
     bool getMTSConnectionStatus() { return MTS_HasMaster (mtsClient); }
     juce::String getTuningSystemName() { return MTS_GetScaleName (mtsClient); }
+    juce::ValueTree& getMPEPresets() { return mpePresets; }
 private:
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     juce::AudioProcessorValueTreeState valueTreeState;
@@ -78,6 +79,8 @@ private:
     void allocateMaxSamplesPerBlock (int maxSamples);
     void prepareOversampling (int bufferSize);
     juce::ValueTree verifiedSettings (juce::ValueTree);
+    juce::ValueTree mpePresets;
+    void loadMPESettings();
     void updateMPEParameters();
     void valueTreePropertyChanged (juce::ValueTree& tree, 
                                    const juce::Identifier& property) override;

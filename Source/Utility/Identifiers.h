@@ -24,6 +24,9 @@ namespace id
     static const juce::Identifier MPE_ROUTING = "MPE_ROUTING";
 
     static const juce::Identifier MPE_SETTINGS = "MPE_SETTINGS";
+    static const juce::Identifier pressureCurve = "pressureCurve";
+    static const juce::Identifier timbreCurve = "timbreCurve";
+    
     static const juce::Identifier MPE_CHANNEL  = "MPE_CHANNEL";
     static const juce::Identifier PRESSURE = "PRESSURE";
     static const juce::Identifier TIMBRE = "TIMBRE";

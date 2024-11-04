@@ -15,13 +15,18 @@ class MPEVoice : public VoiceInterface,
 public:
     MPEVoice(Parameters& p, 
              juce::ValueTree settingsBranch, 
+             juce::ValueTree& MPESettings,
              MTSClient& mtsc, 
              juce::AudioProcessorValueTreeState& vts)
       : terrain (p, vts, settingsBranch.getChildWithName (id::MPE_ROUTING)),
         trajectory (terrain, p, settingsBranch, mtsc, vts), 
-        routingBranch (settingsBranch.getChildWithName (id::MPE_ROUTING))
+        routingBranch (settingsBranch.getChildWithName (id::MPE_ROUTING)), 
+        mpeSettingsBranch (MPESettings), 
+        pressureCurve (mpeSettingsBranch, id::pressureCurve, nullptr),
+        timbreCurve (mpeSettingsBranch, id::timbreCurve, nullptr)
     {
         jassert (routingBranch.getType() == id::MPE_ROUTING);
+        jassert (mpeSettingsBranch.getType() == id::MPE_SETTINGS);
     }
     // Voice Interface ===================================================
     const float* getRawData() const override { return trajectory.getRawData(); }
@@ -57,11 +62,13 @@ public:
     {
         auto note = getCurrentlyPlayingNote();
         pressure = note.pressure.asUnsignedFloat();
-        terrain.setPressure (pressure);
-        trajectory.setPressure (pressure);
-        trajectory.setAmplitude (pressure);
+        
+        jassert (pressureCurve != 0.0f);
+        float curvedPressure = static_cast<float> (std::pow(pressure, 1.0 / pressureCurve.get()));
+        terrain.setPressure (curvedPressure);
+        trajectory.setPressure (curvedPressure);
+        trajectory.setAmplitude (curvedPressure);
     }
-
     void notePitchbendChanged() override
     {
         auto note = getCurrentlyPlayingNote();
@@ -71,8 +78,9 @@ public:
     {
         auto note = getCurrentlyPlayingNote();
         timbre = note.timbre.asUnsignedFloat();
-        terrain.setTimbre (timbre);
-        trajectory.setTimbre (timbre);
+        float curvedTimbre = static_cast<float> (std::pow (timbre, 1.0 / timbreCurve.get()));
+        terrain.setTimbre (curvedTimbre);
+        trajectory.setTimbre (curvedTimbre);
     }
     void noteKeyStateChanged() override {}
     void renderNextBlock (juce::AudioBuffer<float>& outputBuffer,
@@ -91,7 +99,10 @@ private:
     MPETerrain    terrain;
     MPETrajectory trajectory;
     juce::ValueTree routingBranch;
+    juce::ValueTree& mpeSettingsBranch;
     float pressure = 0.0f;
     float timbre = 0.0f;
+    juce::CachedValue<float> pressureCurve;
+    juce::CachedValue<float> timbreCurve;
 };
 }

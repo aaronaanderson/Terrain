@@ -31,6 +31,17 @@ struct MPERoutingTree
         return tree;
     }
 };
+struct MPESettingsTree
+{
+    static juce::ValueTree create()
+    {
+        juce::ValueTree tree (id::MPE_SETTINGS);
+        tree.setProperty (id::pressureCurve, 1.0f, nullptr);
+        tree.setProperty (id::timbreCurve, 1.0f, nullptr);
+
+        return tree;
+    }
+};
 struct SettingsTree
 {
     struct DefaultSettings

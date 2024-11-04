@@ -14,10 +14,11 @@ public:
                    tp::WaveTerrainSynthesizerMPE& wtsmpe,
                    const tp::Parameters& p, 
                    juce::ValueTree settingsBranch, 
-                   const juce::AudioProcessorValueTreeState& apvts)
+                   const juce::AudioProcessorValueTreeState& apvts, 
+                   juce::ValueTree mpePresets)
       :  juce::TabbedComponent (juce::TabbedButtonBar::Orientation::TabsAtTop), 
          visualizer (wts, wtsmpe, p), 
-         settingsComponent (settingsBranch, apvts)
+         settingsComponent (settingsBranch, apvts, mpePresets)
     { 
         auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
         auto c = laf->getBackgroundColour();

@@ -12,12 +12,14 @@ MainProcessor::MainProcessor()
 {
     mtsClient = MTS_RegisterClient();
     
+    loadMPESettings();
     valueTreeState.state.addChild (SettingsTree::create(), -1, nullptr);
     presetManager = std::make_unique<PresetManager> (this, valueTreeState.state);
     standardSynthesizer = std::make_unique<tp::WaveTerrainSynthesizerStandard> (parameters, *mtsClient, valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
     mpeSynthesizer = std::make_unique<tp::WaveTerrainSynthesizerMPE> (parameters, 
                                                                       *mtsClient, 
                                                                       valueTreeState.state.getChildWithName (id::PRESET_SETTINGS),
+                                                                      mpePresets,
                                                                       valueTreeState);
     outputChain.reset();
     
@@ -168,7 +170,6 @@ void MainProcessor::setStateInformation (const void* data, int sizeInBytes)
             presetManager->setState (valueTreeState.state);
             standardSynthesizer->setState (valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
             mpeSynthesizer->setState (valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
-            std::cout << valueTreeState.state.getChildWithName (id::PRESET_SETTINGS).toXmlString();
         }
     }
 }
@@ -404,6 +405,27 @@ void MainProcessor::valueTreeRedirected (juce::ValueTree& tree)
 {
     if (tree.getType() == id::TERRAIN_SYNTH)
         mpeOn.store (tree.getChildWithName (id::PRESET_SETTINGS).getProperty (id::mpeEnabled));
+}
+void MainProcessor::loadMPESettings()
+{
+    auto file = juce::File::getSpecialLocation (juce::File::SpecialLocationType::userApplicationDataDirectory);
+    
+#ifdef JUCE_MAC
+	file = presetFolder.getChildFile("Audio").getChildFile("Presets");
+#endif
+	file = file.getChildFile("Aaron Anderson").getChildFile("Terrain"); // "Imogen" is the name of my plugin
+	file = file.getChildFile ("MPEPresets");
+    auto result = file.createDirectory();
+    file = file.getChildFile ("MPESettings.xml");
+    if (file.existsAsFile())
+    {
+        auto xml = juce::XmlDocument::parse (file);
+        mpePresets = juce::ValueTree::fromXml (*xml.get());
+    }
+    else 
+    {
+        mpePresets = MPESettingsTree::create();    
+    }
 }
 void MainProcessor::updateMPEParameters()
 {

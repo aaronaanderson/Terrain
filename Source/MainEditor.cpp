@@ -15,7 +15,8 @@ MainEditor::MainEditor (MainProcessor& p)
                                                          processorRef.getMPEWaveTerrainSynthesizer(), 
                                                          processorRef.getCastedParameters(), 
                                                          processorRef.getState().getChildWithName (id::PRESET_SETTINGS), 
-                                                         processorRef.getAudioProcessorValueTreeState());
+                                                         processorRef.getAudioProcessorValueTreeState(), 
+                                                         processorRef.getMPEPresets());
     header = std::make_unique<ti::Header> (processorRef.getPresetManager(), 
                                            processorRef.getState().getChildWithName (id::PRESET_SETTINGS), 
                                            ephemeralState.getState());
