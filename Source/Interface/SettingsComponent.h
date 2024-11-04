@@ -119,9 +119,27 @@ struct RoutingComponent : public juce::Component
             juce::ignoreUnused (event);
             startDragging ("MPE Source", this, juce::ScaledImage(), true);
         }
+        void mouseUp (const juce::MouseEvent& event) override 
+        {
+            if(event.mods.isRightButtonDown())
+            {
+                juce::PopupMenu m;
+                m.addItem(1, "Unassign");
+                m.showMenuAsync (juce::PopupMenu::Options(), [&](int result)
+                {
+                    if(result == 1)
+                    {
+                        mpeRouting.getChildWithName (mpeChannel)
+                                  .getChildWithName (outputChannel)
+                                  .setProperty (id::name, "", nullptr);
+                        name = "Drag to assign";
+                        repaint();
+                    }  
+                });
+            }
+        }
         juce::ValueTree getMPEChannelRouting() { return mpeRouting.getChildWithName (mpeChannel)
                                                                   .getChildWithName (outputChannel); }
-        const juce::AudioProcessorValueTreeState& getAPVTS() { return valueTreeState; }
         void setLabel (juce::String label) { name = label; repaint(); }
         void setState (juce::ValueTree routingBranch) { mpeRouting = routingBranch; }
     private:
