@@ -16,7 +16,7 @@ MainEditor::MainEditor (MainProcessor& p)
                                                          processorRef.getCastedParameters(), 
                                                          processorRef.getState().getChildWithName (id::PRESET_SETTINGS), 
                                                          processorRef.getAudioProcessorValueTreeState(), 
-                                                         processorRef.getMPEPresets());
+                                                         processorRef.getMPESettings());
     header = std::make_unique<ti::Header> (processorRef.getPresetManager(), 
                                            processorRef.getState().getChildWithName (id::PRESET_SETTINGS), 
                                            ephemeralState.getState());

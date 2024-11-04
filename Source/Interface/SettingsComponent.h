@@ -90,6 +90,65 @@ private:
     const juce::Identifier& mpeChannel;
     juce::Slider curveFactorSlider;
 };
+struct PressureSmoothingComponent : public juce::Component
+{
+    PressureSmoothingComponent (juce::ValueTree& MPESettings)
+      : mpeSettings (MPESettings)
+    {
+        jassert (mpeSettings.getType() == id::MPE_SETTINGS);
+        addAndMakeVisible (label);
+        smoothingSlider.setTextBoxStyle (juce::Slider::TextBoxLeft, false, 60, 20);
+        smoothingSlider.setNumDecimalPlacesToDisplay (1);
+        smoothingSlider.setRange ({2.5, 1280.0}, 0.0);
+        smoothingSlider.setSkewFactorFromMidPoint (80.0);
+        smoothingSlider.setValue (mpeSettings.getProperty (id::pressureSmoothing), juce::dontSendNotification);
+        smoothingSlider.onValueChange = [&]()
+            {
+                mpeSettings.setProperty (id::pressureSmoothing, smoothingSlider.getValue(), nullptr);
+            };
+        addAndMakeVisible (smoothingSlider);
+    }
+    void resized() override
+    {
+        auto b = getLocalBounds();
+        label.setBounds (b.removeFromLeft (150));
+        smoothingSlider.setBounds (b.removeFromLeft (250));
+    }
+private:
+    juce::ValueTree mpeSettings;
+    juce::Label label {"pSMooth", "Pressure Smoothing (ms)"};
+    juce::Slider smoothingSlider;
+};
+struct TimbreSmoothingComponent : public juce::Component
+{
+    TimbreSmoothingComponent (juce::ValueTree& MPESettings)
+      : mpeSettings (MPESettings)
+    {
+        jassert (mpeSettings.getType() == id::MPE_SETTINGS);
+        addAndMakeVisible (label);
+        std::cout << mpeSettings.toXmlString();
+        smoothingSlider.setTextBoxStyle (juce::Slider::TextBoxLeft, false, 60, 20);
+        smoothingSlider.setNumDecimalPlacesToDisplay (1);
+        smoothingSlider.setRange ({2.5, 1280.0}, 0.0);
+        smoothingSlider.setSkewFactorFromMidPoint (80.0);
+        smoothingSlider.setValue (mpeSettings.getProperty (id::timbreSmoothing), juce::dontSendNotification);
+        smoothingSlider.onValueChange = [&]()
+            {
+                mpeSettings.setProperty (id::timbreSmoothing, smoothingSlider.getValue(), nullptr);
+            };
+        addAndMakeVisible (smoothingSlider);
+    }
+    void resized() override
+    {
+        auto b = getLocalBounds();
+        label.setBounds (b.removeFromLeft (150));
+        smoothingSlider.setBounds (b.removeFromLeft (250));
+    }
+private:
+    juce::ValueTree mpeSettings;
+    juce::Label label {"pSMooth", "Timbre Smoothing (ms)"};
+    juce::Slider smoothingSlider;
+};
 struct RoutingComponent : public juce::Component
 {
     RoutingComponent (juce::ValueTree MPERouting, 
@@ -252,7 +311,7 @@ private:
 struct MPESaveComponent : public juce::Component
 {
 public:
-    MPESaveComponent (juce::ValueTree MPESettings)
+    MPESaveComponent (juce::ValueTree& MPESettings)
       : mpeSettings (MPESettings)
     {
         jassert (mpeSettings.getType() == id::MPE_SETTINGS);
@@ -341,26 +400,30 @@ class SettingsComponent : public juce::Component
 public:
     SettingsComponent (juce::ValueTree settingsBranch, 
                        const juce::AudioProcessorValueTreeState& apvts, 
-                       juce::ValueTree mpePresets)
+                       juce::ValueTree& mpeSettings)
       :  settings (settingsBranch), 
          mpeHeader ("MPE"), 
-         saveComponent (mpePresets),
+         saveComponent (mpeSettings),
          pressureChannelComponent (settingsBranch.getChildWithName (id::MPE_ROUTING), 
-                                   mpePresets, // todo: make MPE_SETTINGS tree
+                                   mpeSettings, // todo: make MPE_SETTINGS tree
                                    apvts,
                                    "Pressure", 
                                    id::PRESSURE),
+         pressureSmoothingComponent (mpeSettings),
          timbreChannelComponent (settingsBranch.getChildWithName (id::MPE_ROUTING), 
-                                 mpePresets, // todo: make MPE_SETTINGS tree
+                                 mpeSettings, // todo: make MPE_SETTINGS tree
                                  apvts,
                                  "Timbre", 
-                                 id::TIMBRE)
+                                 id::TIMBRE),
+        timbreSmoothingComponent (mpeSettings)
     {
         jassert (settings.getType() == id::PRESET_SETTINGS);
         addAndMakeVisible (mpeHeader);
         addAndMakeVisible (saveComponent);
         addAndMakeVisible (pressureChannelComponent);
+        addAndMakeVisible (pressureSmoothingComponent);
         addAndMakeVisible (timbreChannelComponent);
+        addAndMakeVisible (timbreSmoothingComponent);
     }
     void resized() override
     {
@@ -369,7 +432,9 @@ public:
         mpeHeader.setBounds (b.removeFromTop (20));
         saveComponent.setBounds (b.removeFromTop (20));
         pressureChannelComponent.setBounds (b.removeFromTop (120));
+        pressureSmoothingComponent.setBounds (b.removeFromTop (20));
         timbreChannelComponent.setBounds (b.removeFromTop (120));
+        timbreSmoothingComponent.setBounds (b.removeFromTop (20));
     }
     void setState (juce::ValueTree settingsBranch)
     {
@@ -381,6 +446,8 @@ private:
     HeaderLabel mpeHeader;
     MPESaveComponent saveComponent;
     MPEChannelComponent pressureChannelComponent;
+    PressureSmoothingComponent pressureSmoothingComponent;
     MPEChannelComponent timbreChannelComponent;
+    TimbreSmoothingComponent timbreSmoothingComponent;
 };
 }

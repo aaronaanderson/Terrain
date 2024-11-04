@@ -10,7 +10,8 @@
 namespace tp
 {
 class MPEVoice : public VoiceInterface, 
-                 public juce::MPESynthesiserVoice
+                 public juce::MPESynthesiserVoice, 
+                 private juce::ValueTree::Listener
 {
 public:
     MPEVoice(Parameters& p, 
@@ -27,7 +28,15 @@ public:
     {
         jassert (routingBranch.getType() == id::MPE_ROUTING);
         jassert (mpeSettingsBranch.getType() == id::MPE_SETTINGS);
+        mpeSettingsBranch.addListener (this);
+
+        terrain.setPressureSmoothing (mpeSettingsBranch.getProperty (id::pressureSmoothing));
+        trajectory.setPressureSmoothing (mpeSettingsBranch.getProperty (id::pressureSmoothing));
+
+        terrain.setTimbreSmoothing (mpeSettingsBranch.getProperty (id::timbreSmoothing));
+        trajectory.setTimbreSmoothing (mpeSettingsBranch.getProperty (id::timbreSmoothing));
     }
+    ~MPEVoice() { mpeSettingsBranch.removeListener (this); }
     // Voice Interface ===================================================
     const float* getRawData() const override { return trajectory.getRawData(); }
     void prepareToPlay (double newRate, int blockSize) override 
@@ -104,5 +113,22 @@ private:
     float timbre = 0.0f;
     juce::CachedValue<float> pressureCurve;
     juce::CachedValue<float> timbreCurve;
+
+    void valueTreePropertyChanged (juce::ValueTree& tree,
+                                   const juce::Identifier& property) override
+    {
+        juce::ignoreUnused (tree);
+        if (property == id::pressureSmoothing)
+        {
+            terrain.setPressureSmoothing (tree.getProperty (property));
+            trajectory.setPressureSmoothing (tree.getProperty (property));
+        }
+        else if (property == id::timbreSmoothing)
+        {
+            terrain.setTimbreSmoothing (tree.getProperty (property));
+            trajectory.setTimbreSmoothing (tree.getProperty (property));
+        }
+    }
+    
 };
 }

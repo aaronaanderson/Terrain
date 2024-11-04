@@ -591,6 +591,9 @@ public:
     } 
     void setPressure (float newPressure) { voiceParameters.setPressure (newPressure); }
     void setTimbre (float newTimbre) { voiceParameters.setTimbre (newTimbre); }
+    void setPressureSmoothing (float ms) { voiceParameters.setPressureSmoothing (ms); }
+    void setTimbreSmoothing (float ms) { voiceParameters.setTimbreSmoothing (ms); }
+
     void setState (juce::ValueTree settingsBranch) override
     {
         Trajectory::setState (settingsBranch);
@@ -730,6 +733,48 @@ private:
             decay.setState (mpeRoutingBranch);
             sustain.setState (mpeRoutingBranch);
             release.setState (mpeRoutingBranch);           
+        }
+        void setPressureSmoothing (float ms)
+        {
+            mod_a.setPressureSmoothing (ms);
+            mod_b.setPressureSmoothing (ms);
+            mod_c.setPressureSmoothing (ms);
+            mod_d.setPressureSmoothing (ms);
+            size.setPressureSmoothing (ms);
+            rotation.setPressureSmoothing (ms);
+            translationX.setPressureSmoothing (ms); 
+            translationY.setPressureSmoothing (ms);
+            meanderanceScale.setPressureSmoothing (ms);
+            meanderanceSpeed.setPressureSmoothing (ms);
+            feedbackScalar.setPressureSmoothing (ms);
+            feedbackTime.setPressureSmoothing (ms);
+            feedbackCompression.setPressureSmoothing (ms);
+            feedbackMix.setPressureSmoothing (ms);
+            attack.setPressureSmoothing (ms);
+            decay.setPressureSmoothing (ms);
+            sustain.setPressureSmoothing (ms);
+            release.setPressureSmoothing (ms);            
+        }
+        void setTimbreSmoothing (float ms)
+        {
+            mod_a.setTimbreSmoothing (ms);
+            mod_b.setTimbreSmoothing (ms);
+            mod_c.setTimbreSmoothing (ms);
+            mod_d.setTimbreSmoothing (ms);
+            size.setTimbreSmoothing (ms);
+            rotation.setTimbreSmoothing (ms);
+            translationX.setTimbreSmoothing (ms); 
+            translationY.setTimbreSmoothing (ms);
+            meanderanceScale.setTimbreSmoothing (ms);
+            meanderanceSpeed.setTimbreSmoothing (ms);
+            feedbackScalar.setTimbreSmoothing (ms);
+            feedbackTime.setTimbreSmoothing (ms);
+            feedbackCompression.setTimbreSmoothing (ms);
+            feedbackMix.setTimbreSmoothing (ms);
+            attack.setTimbreSmoothing (ms);
+            decay.setTimbreSmoothing (ms);
+            sustain.setTimbreSmoothing (ms);
+            release.setTimbreSmoothing (ms);            
         }
         tp::ChoiceParameter* currentTrajectory;
         MPESmoothedParameter mod_a, mod_b, mod_c, mod_d;

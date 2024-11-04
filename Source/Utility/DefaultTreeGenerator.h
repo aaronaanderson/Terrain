@@ -38,7 +38,9 @@ struct MPESettingsTree
         juce::ValueTree tree (id::MPE_SETTINGS);
         tree.setProperty (id::pressureCurve, 1.0f, nullptr);
         tree.setProperty (id::timbreCurve, 1.0f, nullptr);
-
+        tree.setProperty (id::pressureSmoothing, 20.0f, nullptr);
+        tree.setProperty (id::timbreSmoothing, 20.0f, nullptr);
+        
         return tree;
     }
 };

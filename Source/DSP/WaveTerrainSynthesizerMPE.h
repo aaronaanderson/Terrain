@@ -11,7 +11,7 @@ public:
     WaveTerrainSynthesizerMPE (Parameters& p, 
                                MTSClient& mtsc, 
                                juce::ValueTree settings, 
-                               juce::ValueTree MPESettings,
+                               juce::ValueTree& MPESettings,
                                juce::AudioProcessorValueTreeState& vts)
       :  WaveTerrainSynthesizer (mtsc)
     {
@@ -103,7 +103,7 @@ private:
     void setPolyphony (int numVoices, 
                        Parameters& p, 
                        juce::ValueTree settingsBranch, 
-                       juce::ValueTree MPESettings,
+                       juce::ValueTree& MPESettings,
                        MTSClient& mtsc, 
                        juce::AudioProcessorValueTreeState& vts)
     {

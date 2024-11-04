@@ -151,34 +151,93 @@ public:
                 smoothedValue.setCurrentAndTargetValue (rangedParameter->convertFrom0to1 (rangedParameter->getValue())); 
             break;
             case Assignment::Pressure:
-                setPressureInternal (mpePressure); 
+                {
+                    jassert (outputChannel.isValid());
+                    float min = outputChannel.getProperty (id::lowerBound);
+                    float max = outputChannel.getProperty (id::upperBound);
+                    auto value = juce::jmap (mpePressure, min, max);
+                    smoothedPressure.setCurrentAndTargetValue (rangedParameter->convertFrom0to1 (value));
+                }; 
             break;
             case Assignment::Timbre:
-                setTimbreInternal (mpeTimbre);
+                {
+                    jassert (outputChannel.isValid());
+                    float min = outputChannel.getProperty (id::lowerBound);
+                    float max = outputChannel.getProperty (id::upperBound);
+                    auto value = juce::jmap (mpeTimbre, min, max);
+                    smoothedTimbre.setCurrentAndTargetValue (rangedParameter->convertFrom0to1 (value));
+                }
             break;
             default:
                 jassertfalse;
         }
     }
-    void setPressure (float pressure) 
+    void setPressure (float p) 
     { 
+        pressure = p;
         if (assignment != Assignment::Pressure) return;
-        setPressureInternal (pressure); 
+        setPressureInternal (p); 
     };
-    void setTimbre (float timbre)
+    void setTimbre (float t)
     {
+        timbre = t;
         if (assignment != Assignment::Timbre) return;
-        setTimbreInternal (timbre); 
+        setTimbreInternal (t); 
     }
-    float getNext() { return smoothedValue.getNextValue(); }
-    float getCurrent() { return smoothedValue.getCurrentValue(); }
-    void prepare (double sampleRate) { smoothedValue.reset (sampleRate, 0.02f); }
+    float getNext() 
+    { 
+        switch (assignment)
+        {
+            case Assignment::None: return smoothedValue.getNextValue(); 
+            case Assignment::Pressure: return smoothedPressure.getNextValue();
+            case Assignment::Timbre: return smoothedTimbre.getNextValue();
+            // default: jassertfalse;
+        }
+        return 0.0f;
+    }
+    float getCurrent() 
+    { 
+        switch (assignment)
+        {
+            case Assignment::None: return smoothedValue.getCurrentValue(); 
+            case Assignment::Pressure: return smoothedPressure.getCurrentValue();
+            case Assignment::Timbre: return smoothedTimbre.getCurrentValue();
+            default: jassertfalse;
+        }
+        return 0.0f;
+    }
+    void prepare (double sr) 
+    { 
+        sampleRate = sr;
+        smoothedValue.reset (sampleRate, 0.02f);
+        setPressureSmoothing (pressureSmoothingTimeMS);
+        setTimbreSmoothing (timbreSmoothingTimeMS); 
+    }
     void setState (juce::ValueTree mpeRoutingBranch) { mpeRouting = mpeRoutingBranch; }
+    void setPressureSmoothing (float ms) 
+    { 
+        pressureSmoothingTimeMS = ms;
+        smoothedPressure.reset (sampleRate, ms * 0.001); 
+        smoothedPressure.setCurrentAndTargetValue (pressure);
+    }
+    void setTimbreSmoothing (float ms) 
+    { 
+        timbreSmoothingTimeMS = ms;
+        smoothedTimbre.reset (sampleRate, ms * 0.001); 
+        smoothedTimbre.setCurrentAndTargetValue (timbre);
+    }
 private:
     juce::RangedAudioParameter* rangedParameter;
     juce::AudioProcessorValueTreeState& valueTreeState;
     juce::ValueTree mpeRouting;
+    double sampleRate = 48000.0;
     juce::SmoothedValue<float> smoothedValue;
+    juce::SmoothedValue<float> smoothedPressure;
+    float pressureSmoothingTimeMS = 20.0f;
+    float pressure = 0.0f;
+    float timbre = 0.0f;
+    juce::SmoothedValue<float> smoothedTimbre;
+    float timbreSmoothingTimeMS = 20.0f;
     enum class Assignment
     {
         Pressure, 
@@ -188,6 +247,7 @@ private:
     Assignment assignment;
     juce::ValueTree outputChannel;
     juce::Array<juce::Identifier> ids {id::OUTPUT_ONE, id::OUTPUT_TWO, id::OUTPUT_THREE};
+
     void checkAssignment()
     {
         auto timbreBranch = mpeRouting.getChildWithName (id::TIMBRE);
@@ -209,28 +269,27 @@ private:
             {
                 outputChannel = pressureBranch.getChildWithName (id);
                 assignment = Assignment::Pressure;
-                std::cout << outputChannel.toXmlString() << std::endl;
                 return;
             }
         }
 
         assignment = Assignment::None;    
     }
-    void setPressureInternal (float pressure)
+    void setPressureInternal (float p)
     {
         jassert (outputChannel.isValid());
         float min = outputChannel.getProperty (id::lowerBound);
         float max = outputChannel.getProperty (id::upperBound);
-        auto value = juce::jmap (pressure, min, max);
-        smoothedValue.setCurrentAndTargetValue (rangedParameter->convertFrom0to1 (value));
+        auto value = juce::jmap (p, min, max);
+        smoothedPressure.setTargetValue (rangedParameter->convertFrom0to1 (value));
     }
-    void setTimbreInternal (float timbre)
+    void setTimbreInternal (float t)
     {
         jassert (outputChannel.isValid());
         float min = outputChannel.getProperty (id::lowerBound);
         float max = outputChannel.getProperty (id::upperBound);
-        auto value = juce::jmap (timbre, min, max);
-        smoothedValue.setCurrentAndTargetValue (rangedParameter->convertFrom0to1 (value));
+        auto value = juce::jmap (t, min, max);
+        smoothedTimbre.setTargetValue (rangedParameter->convertFrom0to1 (value));
     }
     void parameterValueChanged (int parameterIndex, float newValue) override
     {
@@ -270,6 +329,8 @@ public:
     void setTimbre (float newTimbre) { smoothedParameter.setTimbre (newTimbre); }
     void setPressure (float newPressure) { smoothedParameter.setPressure (newPressure); }
     void setState (juce::ValueTree routingBranch) { smoothedParameter.setState (routingBranch); }
+    void setPressureSmoothing (float pressureSmoothing) { smoothedParameter.setPressureSmoothing (pressureSmoothing); }
+    void setTimbreSmoothing (float timbreSmoothing) { smoothedParameter.setTimbreSmoothing (timbreSmoothing); }
 private:
     MPESmoothedParameter smoothedParameter;
     juce::AudioBuffer<float> buffer;

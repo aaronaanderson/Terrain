@@ -221,6 +221,22 @@ public:
         modD.setState (mpeRoutingBranch);
         saturation.setState (mpeRoutingBranch);
     }
+    void setPressureSmoothing (float pressureSmoothing)
+    {
+        modA.setPressureSmoothing (pressureSmoothing);
+        modB.setPressureSmoothing (pressureSmoothing);
+        modC.setPressureSmoothing (pressureSmoothing);
+        modD.setPressureSmoothing (pressureSmoothing);
+        saturation.setPressureSmoothing (pressureSmoothing);
+    }
+    void setTimbreSmoothing (float timbreSmoothing)
+    {
+        modA.setTimbreSmoothing (timbreSmoothing);
+        modB.setTimbreSmoothing (timbreSmoothing);
+        modC.setTimbreSmoothing (timbreSmoothing);
+        modD.setTimbreSmoothing (timbreSmoothing);
+        saturation.setTimbreSmoothing (timbreSmoothing);
+    }
 private:
     BufferedMPESmoothParameter modA, modB, modC, modD, saturation;
     const ModSet getModSet (int index) override

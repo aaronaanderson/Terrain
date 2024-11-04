@@ -15,10 +15,10 @@ public:
                    const tp::Parameters& p, 
                    juce::ValueTree settingsBranch, 
                    const juce::AudioProcessorValueTreeState& apvts, 
-                   juce::ValueTree mpePresets)
+                   juce::ValueTree& mpeSettings)
       :  juce::TabbedComponent (juce::TabbedButtonBar::Orientation::TabsAtTop), 
          visualizer (wts, wtsmpe, p), 
-         settingsComponent (settingsBranch, apvts, mpePresets)
+         settingsComponent (settingsBranch, apvts, mpeSettings)
     { 
         auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
         auto c = laf->getBackgroundColour();

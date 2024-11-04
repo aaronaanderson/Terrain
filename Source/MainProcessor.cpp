@@ -19,7 +19,7 @@ MainProcessor::MainProcessor()
     mpeSynthesizer = std::make_unique<tp::WaveTerrainSynthesizerMPE> (parameters, 
                                                                       *mtsClient, 
                                                                       valueTreeState.state.getChildWithName (id::PRESET_SETTINGS),
-                                                                      mpePresets,
+                                                                      mpeSettings,
                                                                       valueTreeState);
     outputChain.reset();
     
@@ -420,11 +420,11 @@ void MainProcessor::loadMPESettings()
     if (file.existsAsFile())
     {
         auto xml = juce::XmlDocument::parse (file);
-        mpePresets = juce::ValueTree::fromXml (*xml.get());
+        mpeSettings = juce::ValueTree::fromXml (*xml.get());
     }
     else 
     {
-        mpePresets = MPESettingsTree::create();    
+        mpeSettings = MPESettingsTree::create();    
     }
 }
 void MainProcessor::updateMPEParameters()
