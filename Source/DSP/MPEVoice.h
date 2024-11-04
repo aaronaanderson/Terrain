@@ -37,9 +37,6 @@ public:
     } 
     bool isVoiceActive() const override { return isActive(); }
     // MPESynthesiser Voice ===============================================
-    /** Called by the MPESynthesiser to let the voice know that a new note has started on it.
-        This will be called during the rendering callback, so must be fast and thread-safe.
-    */
     void noteStarted() override 
     {
         auto note = getCurrentlyPlayingNote();
@@ -51,29 +48,11 @@ public:
                               note.pressure.asUnsignedFloat(), 
                               note.timbre.asUnsignedFloat());
     }
-
-    /** Called by the MPESynthesiser to let the voice know that its currently playing note has stopped.
-        This will be called during the rendering callback, so must be fast and thread-safe.
-
-        If allowTailOff is false or the voice doesn't want to tail-off, then it must stop all
-        sound immediately, and must call clearCurrentNote() to reset the state of this voice
-        and allow the synth to reassign it another sound.
-
-        If allowTailOff is true and the voice decides to do a tail-off, then it's allowed to
-        begin fading out its sound, and it can stop playing until it's finished. As soon as it
-        finishes playing (during the rendering callback), it must make sure that it calls
-        clearCurrentNote().
-    */
     void noteStopped (bool allowTailOff) override
     {
         if (!allowTailOff) clearCurrentNote();
         trajectory.stopNote();
     }
-
-    /** Called by the MPESynthesiser to let the voice know that its currently playing note
-        has changed its pressure value.
-        This will be called during the rendering callback, so must be fast and thread-safe.
-    */
     void notePressureChanged() override 
     {
         auto note = getCurrentlyPlayingNote();
@@ -82,54 +61,18 @@ public:
         trajectory.setAmplitude (note.pressure.asUnsignedFloat());
     }
 
-    /** Called by the MPESynthesiser to let the voice know that its currently playing note
-        has changed its pitchbend value.
-        This will be called during the rendering callback, so must be fast and thread-safe.
-
-        Note: You can call currentlyPlayingNote.getFrequencyInHertz() to find out the effective frequency
-        of the note, as a sum of the initial note number, the per-note pitchbend and the master pitchbend.
-    */
     void notePitchbendChanged() override
     {
         auto note = getCurrentlyPlayingNote();
         trajectory.setFrequencySmooth (static_cast<float> (note.getFrequencyInHertz()));
     }
-
-    /** Called by the MPESynthesiser to let the voice know that its currently playing note
-        has changed its timbre value.
-        This will be called during the rendering callback, so must be fast and thread-safe.
-    */
     void noteTimbreChanged() override
     {
         auto note = getCurrentlyPlayingNote();
         terrain.setTimbre (note.timbre.asUnsignedFloat());
         trajectory.setTimbre (note.timbre.asUnsignedFloat());
     }
-
-    /** Called by the MPESynthesiser to let the voice know that its currently playing note
-        has changed its key state.
-        This typically happens when a sustain or sostenuto pedal is pressed or released (on
-        an MPE channel relevant for this note), or if the note key is lifted while the sustained
-        or sostenuto pedal is still held down.
-        This will be called during the rendering callback, so must be fast and thread-safe.
-    */
     void noteKeyStateChanged() override {}
-
-    /** Renders the next block of data for this voice.
-
-        The output audio data must be added to the current contents of the buffer provided.
-        Only the region of the buffer between startSample and (startSample + numSamples)
-        should be altered by this method.
-
-        If the voice is currently silent, it should just return without doing anything.
-
-        If the sound that the voice is playing finishes during the course of this rendered
-        block, it must call clearCurrentNote(), to tell the synthesiser that it has finished.
-
-        The size of the blocks that are rendered can change each time it is called, and may
-        involve rendering as little as 1 sample at a time. In between rendering callbacks,
-        the voice's methods will be called to tell it about note and controller events.
-    */
     void renderNextBlock (juce::AudioBuffer<float>& outputBuffer,
                           int startSample,
                           int numSamples) override
