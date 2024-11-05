@@ -146,7 +146,6 @@ struct ParameterSlider : public juce::Component,
         auto name = valueTreeState.getParameter (paramID)->getName (40);
         draggableSource->setLabel (name);
         channelRouting.setProperty (id::name, paramID, nullptr);
-        std::cout << channelRouting.getParent().toXmlString() << std::endl;
     }
 private:
     juce::Slider slider;

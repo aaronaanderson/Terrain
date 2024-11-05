@@ -29,6 +29,7 @@ MainProcessor::MainProcessor()
 
 MainProcessor::~MainProcessor() 
 {
+    saveMPESettings();
     MTS_DeregisterClient (mtsClient);
     valueTreeState.state.removeListener (this);
 }
@@ -170,6 +171,8 @@ void MainProcessor::setStateInformation (const void* data, int sizeInBytes)
             presetManager->setState (valueTreeState.state);
             standardSynthesizer->setState (valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
             mpeSynthesizer->setState (valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
+
+            std::cout << valueTreeState.state.toXmlString() << std::endl;
         }
     }
 }
@@ -427,6 +430,21 @@ void MainProcessor::loadMPESettings()
     {
         mpeSettings = MPESettingsTree::create();    
     }
+}
+void MainProcessor::saveMPESettings()
+{
+	auto presetFolder = juce::File::getSpecialLocation(juce::File::SpecialLocationType::userApplicationDataDirectory);
+#ifdef JUCE_MAC
+	presetFolder = presetFolder.getChildFile("Audio").getChildFile("Presets");
+#endif
+	presetFolder = presetFolder.getChildFile("Aaron Anderson").getChildFile("Terrain"); // "Imogen" is the name of my plugin
+	presetFolder = presetFolder.getChildFile ("MPEPresets");
+    auto result = presetFolder.createDirectory();
+    std::cout << presetFolder.getFullPathName();
+    auto xml = mpeSettings.createXml();
+    auto file = presetFolder.getChildFile ("MPESettings.xml");
+    if (!file.existsAsFile()) file.setCreationTime (juce::Time::getCurrentTime());
+    xml->writeTo (file);
 }
 void MainProcessor::updateMPEParameters()
 {

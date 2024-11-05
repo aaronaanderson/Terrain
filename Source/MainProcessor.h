@@ -81,6 +81,7 @@ private:
     juce::ValueTree verifiedSettings (juce::ValueTree);
     juce::ValueTree mpeSettings;
     void loadMPESettings();
+    void saveMPESettings();
     void updateMPEParameters();
     void valueTreePropertyChanged (juce::ValueTree& tree, 
                                    const juce::Identifier& property) override;

@@ -163,6 +163,7 @@ struct RoutingComponent : public juce::Component
                       const juce::AudioProcessorValueTreeState& apvts)
       : mpeRouting (MPERouting), 
         mpeChannel (mpeRouting.getChildWithName (MPEChannel)),
+        mpeChannelIdentifier (MPEChannel),
         draggableAssignerOne (MPERouting, MPEChannel, id::OUTPUT_ONE, apvts), 
         draggableAssignerTwo (MPERouting, MPEChannel, id::OUTPUT_TWO, apvts), 
         draggableAssignerThree (MPERouting, MPEChannel, id::OUTPUT_THREE, apvts)
@@ -177,7 +178,7 @@ struct RoutingComponent : public juce::Component
 
         invertLabel.setJustificationType (juce::Justification::centred);
         addAndMakeVisible (invertLabel);
-
+        //==============================================================================
         addAndMakeVisible (draggableAssignerOne);
         rangeOne.onValueChange = [&]()
             {
@@ -202,14 +203,13 @@ struct RoutingComponent : public juce::Component
 
             };
         addAndMakeVisible (invertOneToggle);
-
+        //==============================================================================
         addAndMakeVisible (draggableAssignerTwo);
-        rangeTwo.onValueChange = [&]()
+        rangeTwo.onValueChange = [&]() 
             {
-                mpeChannel.getChildWithName (id::OUTPUT_TWO).setProperty (id::upperBound, rangeOne.getMaxValue(), nullptr);
-                mpeChannel.getChildWithName (id::OUTPUT_TWO).setProperty (id::lowerBound, rangeOne.getMinValue(), nullptr);
+                mpeChannel.getChildWithName (id::OUTPUT_TWO).setProperty (id::upperBound, rangeTwo.getMaxValue(), nullptr);
+                mpeChannel.getChildWithName (id::OUTPUT_TWO).setProperty (id::lowerBound, rangeTwo.getMinValue(), nullptr);
             };
-        rangeTwo.setRange ({0.0f, 1.0f}, 0.0);
         rangeTwo.setSliderStyle (juce::Slider::SliderStyle::TwoValueHorizontal);
         rangeTwo.setTextBoxStyle (juce::Slider::TextEntryBoxPosition::NoTextBox, true, 20, 20);
         rangeTwo.setRange ({0.0f, 1.0f}, 0.0);
@@ -225,15 +225,14 @@ struct RoutingComponent : public juce::Component
             {
                 mpeChannel.getChildWithName (id::OUTPUT_TWO)
                           .setProperty (id::invertRange, invertTwoToggle.getToggleState(), nullptr);
-
             };
         addAndMakeVisible (invertTwoToggle);
-
+        //==============================================================================
         addAndMakeVisible (draggableAssignerThree);
-        rangeTwo.onValueChange = [&]()
+        rangeThree.onValueChange = [&]()
             {
-                mpeChannel.getChildWithName (id::OUTPUT_THREE).setProperty (id::upperBound, rangeOne.getMaxValue(), nullptr);
-                mpeChannel.getChildWithName (id::OUTPUT_THREE).setProperty (id::lowerBound, rangeOne.getMinValue(), nullptr);
+                mpeChannel.getChildWithName (id::OUTPUT_THREE).setProperty (id::upperBound, rangeThree.getMaxValue(), nullptr);
+                mpeChannel.getChildWithName (id::OUTPUT_THREE).setProperty (id::lowerBound, rangeThree.getMinValue(), nullptr);
             };
         rangeThree.setSliderStyle (juce::Slider::SliderStyle::TwoValueHorizontal);
         rangeThree.setTextBoxStyle (juce::Slider::TextEntryBoxPosition::NoTextBox, true, 20, 20);
@@ -347,6 +346,7 @@ struct RoutingComponent : public juce::Component
 private:
     juce::ValueTree mpeRouting;
     juce::ValueTree mpeChannel;
+    const juce::Identifier& mpeChannelIdentifier;
     juce::Label destinationLabel {"destination", "Destination"};
     DraggableAssigner draggableAssignerOne;
     juce::ToggleButton invertOneToggle;
