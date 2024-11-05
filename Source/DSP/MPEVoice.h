@@ -23,9 +23,12 @@ public:
         trajectory (terrain, p, settingsBranch, mtsc, vts), 
         routingBranch (settingsBranch.getChildWithName (id::MPE_ROUTING)), 
         mpeSettingsBranch (MPESettings), 
+        mtsClient (mtsc),
         pressureCurve (mpeSettingsBranch, id::pressureCurve, nullptr),
         timbreCurve (mpeSettingsBranch, id::timbreCurve, nullptr),
-        releaseSensitivity (mpeSettingsBranch, id::releaseSensitivity, nullptr)
+        releaseSensitivity (mpeSettingsBranch, id::releaseSensitivity, nullptr),
+        pitchBendEnabled (mpeSettingsBranch, id::pitchBendEnabled, nullptr),
+        divisionOfOctave (mpeSettingsBranch, id::pitchBendDivisionOfOctave, nullptr)
     {
         jassert (routingBranch.getType() == id::MPE_ROUTING);
         jassert (mpeSettingsBranch.getType() == id::MPE_SETTINGS);
@@ -62,6 +65,7 @@ public:
                               static_cast<float> (note.getFrequencyInHertz()), 
                               note.pressure.asUnsignedFloat(), 
                               note.timbre.asUnsignedFloat());
+        initialNote = note.initialNote;// MTS_NoteToFrequency (&mtsClient, static_cast<char> (note.initialNote), -1);
     }
     void noteStopped (bool allowTailOff) override
     {
@@ -91,8 +95,11 @@ public:
     }
     void notePitchbendChanged() override
     {
+        if (!pitchBendEnabled.get()) return;
         auto note = getCurrentlyPlayingNote();
-        trajectory.setFrequencySmooth (static_cast<float> (note.getFrequencyInHertz()));
+        auto tunedBaseFrequency = MTS_NoteToFrequency (&mtsClient, static_cast<char> (initialNote), -1);
+        auto adjustedFrequency = tunedBaseFrequency * semitonesToScalar (note.totalPitchbendInSemitones);
+        trajectory.setFrequencySmooth (static_cast<float> (adjustedFrequency));
     }
     void noteTimbreChanged() override
     {
@@ -111,7 +118,11 @@ public:
         if (trajectory.shouldClear()) clearCurrentNote();
     }
     void setCurrentSampleRate (double newRate) override { trajectory.setCurrentPlaybackSampleRate (newRate); }
-    void allocate (int maxBlockSize) { terrain.allocate (maxBlockSize); }
+    void allocate (int maxBlockSize) 
+    { 
+        trajectory.allocate (maxBlockSize);
+        terrain.allocate (maxBlockSize); 
+    }
     void updateParameterBuffers() { terrain.updateParameterBuffers(); }
     float getPressure() { return pressure; }
     float getTimbre() { return timbre; }
@@ -120,13 +131,16 @@ private:
     MPETrajectory trajectory;
     juce::ValueTree routingBranch;
     juce::ValueTree& mpeSettingsBranch;
+    MTSClient& mtsClient;
     float pressure = 0.0f;
     float timbre = 0.0f;
     juce::CachedValue<float> pressureCurve;
     juce::CachedValue<float> timbreCurve;
     juce::CachedValue<float> releaseSensitivity;
+    juce::CachedValue<bool> pitchBendEnabled;
+    juce::CachedValue<int> divisionOfOctave;
     float previousPressure = 0.0f;
-
+    double initialNote;
     void valueTreePropertyChanged (juce::ValueTree& tree,
                                    const juce::Identifier& property) override
     {
@@ -142,6 +156,10 @@ private:
             trajectory.setTimbreSmoothing (tree.getProperty (property));
         }
     }
-    
+    double semitonesToScalar (double semitones) 
+    { 
+        double octaveDivision = static_cast<double> (divisionOfOctave.get());
+        return std::pow (2, semitones / octaveDivision); 
+    }
 };
 }

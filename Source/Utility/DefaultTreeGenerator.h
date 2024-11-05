@@ -42,7 +42,9 @@ struct MPESettingsTree
         tree.setProperty (id::pressureSmoothing, 20.0f, nullptr);
         tree.setProperty (id::timbreSmoothing, 20.0f, nullptr);
         tree.setProperty (id::releaseSensitivity, 0.2f, nullptr);
-        
+        tree.setProperty (id::pitchBendEnabled, true, nullptr);
+        tree.setProperty (id::pitchBendDivisionOfOctave, 12, nullptr);
+
         return tree;
     }
 };

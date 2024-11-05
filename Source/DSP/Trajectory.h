@@ -344,6 +344,7 @@ public:
     {   
         setPitchWheelIncrementScalar (currentPitchWheelPosition);
         midiNote = midiNoteNumber;
+        
         setFrequencyImmediate (static_cast<float> (MTS_NoteToFrequency (&mtsClient, 
                                                                         static_cast<char> (midiNote),
                                                                         -1)));
@@ -516,6 +517,14 @@ public:
     {
         Trajectory::prepareToPlay (newRate, blockSize);
         voiceParameters.resetSampleRate (newRate);
+        renderBuffer.setSize (1, blockSize, false, false, true);
+
+        processSpec.maximumBlockSize = blockSize;
+        processSpec.numChannels = 1;
+        processSpec.sampleRate = newRate;
+        ladderFilter.prepare (processSpec);
+        ladderFilter.setCutoffFrequencyHz (400.0f);
+        ladderFilter.setResonance (0.7f);
     }
     void startNote (int midiNoteNumber,
                     float velocity, 
@@ -523,14 +532,13 @@ public:
                     float pressure, 
                     float timbre) 
     {   
+        juce::ignoreUnused (frequencyHz);
         midiNote = midiNoteNumber;
-        setFrequencyImmediate (static_cast<float> (MTS_NoteToFrequency (&mtsClient, 
-                                                                        (MTS_FrequencyToNote (&mtsClient, 
-                                                                                              static_cast<double> (frequencyHz), 
-                                                                                              -1)),
-                                                                        -1)));
+        setPitchWheelIncrementScalar (0.0);
+        double freq = MTS_NoteToFrequency (&mtsClient, static_cast<char> (midiNoteNumber), -1);
+        setFrequencyImmediate (static_cast<float> (freq));
         readyToClear = false;
-        if (MTS_ShouldFilterNote (&mtsClient, static_cast<char> (midiNote), -1)) 
+        if (MTS_ShouldFilterNote (&mtsClient, static_cast<char> (midiNoteNumber), -1)) 
             readyToClear = true; 
 
         amplitude.setCurrentAndTargetValue (velocity);
@@ -541,7 +549,7 @@ public:
     void renderNextBlock (juce::AudioBuffer<float>& outputBuffer, 
                           int startSample, int numSamples) override
     {
-        auto* o = outputBuffer.getWritePointer(0);
+        auto* o = renderBuffer.getWritePointer(0);
         if (smoothFrequencyEnabled.get())
             setFrequencySmooth (static_cast<float> (MTS_NoteToFrequency (&mtsClient, 
                                                                          static_cast<char> (midiNote), 
@@ -577,7 +585,7 @@ public:
 
             float outputSample = terrain.sampleAt (point, i);
             history.feedNext (point, outputSample);
-            o[i] += outputSample * static_cast<float> (envelope.calculateNext()) * smoothAmplitude;
+            o[i] = outputSample * static_cast<float> (envelope.calculateNext()) * smoothAmplitude;
 
             phase = std::fmod (phase + (phaseIncrement.getNextValue() * pitchWheelIncrementScalar.getNextValue()),
                                juce::MathConstants<double>::twoPi);
@@ -588,6 +596,23 @@ public:
                 readyToClear = true;
             }
         }
+        
+        scratchBuffer.setSize (1, numSamples, false, false, true);
+        for (int i = 0; i < numSamples; i++)
+            scratchBuffer.getWritePointer (0)[i] = renderBuffer.getReadPointer (0)[startSample + i];
+        
+        if (*voiceParameters.filterBypass)
+        {
+            auto outputBlock = juce::dsp::AudioBlock<float> (scratchBuffer);
+            juce::dsp::ProcessContextReplacing<float> context (outputBlock);
+            
+            ladderFilter.setCutoffFrequencyHz (voiceParameters.filterFrequency.getNext());
+            ladderFilter.setResonance (voiceParameters.filterResonance.getNext());
+            ladderFilter.process (context);
+        }
+        // copy from scratch buffer, adding to incoming content
+        for (int i = 0; i < numSamples; i++)
+            outputBuffer.getWritePointer (0)[i + startSample] += scratchBuffer.getReadPointer (0)[i];
     } 
     void setPressure (float newPressure) { voiceParameters.setPressure (newPressure); }
     void setTimbre (float newTimbre) { voiceParameters.setTimbre (newTimbre); }
@@ -601,9 +626,18 @@ public:
         voiceParameters.setState (mpeRouting);
     }
     void setRelease() {envelope.setPhase (ADSR::Phase::RELEASE); }
+    void allocate (int maximumSamplesPerBlock) 
+    {
+        scratchBuffer.setSize (1, maximumSamplesPerBlock);
+        renderBuffer.setSize (1, maximumSamplesPerBlock); 
+    }
 private:
     juce::AudioProcessorValueTreeState& valueTreeState;
     juce::ValueTree mpeRouting;
+    juce::AudioBuffer<float> renderBuffer;
+    juce::AudioBuffer<float> scratchBuffer;
+    juce::dsp::LadderFilter<float> ladderFilter;
+    juce::dsp::ProcessSpec processSpec;
     struct VoiceParameters
     {
         VoiceParameters (Parameters& p, 
@@ -628,7 +662,10 @@ private:
             attack (p.attack, valueTreeState, mpeRouting), 
             decay (p.decay, valueTreeState, mpeRouting), 
             sustain (p.sustain, valueTreeState, mpeRouting), 
-            release (p.release, valueTreeState, mpeRouting)
+            release (p.release, valueTreeState, mpeRouting), 
+            filterFrequency (p.filterFrequency, valueTreeState, mpeRouting), 
+            filterResonance (p.filterResonance, valueTreeState, mpeRouting),
+            filterBypass (p.filterOnOff)
         {}
         void noteOn (float timbre, float pressure)
         {
@@ -650,6 +687,8 @@ private:
             decay.noteOn(timbre, pressure);
             sustain.noteOn(timbre, pressure);
             release.noteOn(timbre, pressure);
+            filterFrequency.noteOn(timbre, pressure);
+            filterResonance.noteOn(timbre, pressure);
         }
         void resetSampleRate (double newSampleRate)
         {
@@ -671,6 +710,8 @@ private:
             decay.prepare (newSampleRate);
             sustain.prepare (newSampleRate);
             release.prepare (newSampleRate);
+            filterFrequency.prepare (newSampleRate);
+            filterResonance.prepare (newSampleRate);
         }
         void setTimbre (float newTimbre)
         {
@@ -692,6 +733,8 @@ private:
             decay.setTimbre (newTimbre);
             sustain.setTimbre (newTimbre);
             release.setTimbre (newTimbre);
+            filterFrequency.setTimbre (newTimbre);
+            filterResonance.setTimbre (newTimbre);
         }
         void setPressure (float newPressure)
         {
@@ -713,6 +756,8 @@ private:
             decay.setPressure (newPressure);
             sustain.setPressure (newPressure);
             release.setPressure (newPressure);
+            filterFrequency.setPressure (newPressure);
+            filterResonance.setPressure (newPressure);
         }
         void setState (juce::ValueTree mpeRoutingBranch)
         {
@@ -733,7 +778,9 @@ private:
             attack.setState (mpeRoutingBranch);
             decay.setState (mpeRoutingBranch);
             sustain.setState (mpeRoutingBranch);
-            release.setState (mpeRoutingBranch);           
+            release.setState (mpeRoutingBranch);
+            filterFrequency.setState (mpeRoutingBranch);
+            filterResonance.setState (mpeRoutingBranch);           
         }
         void setPressureSmoothing (float ms)
         {
@@ -754,7 +801,9 @@ private:
             attack.setPressureSmoothing (ms);
             decay.setPressureSmoothing (ms);
             sustain.setPressureSmoothing (ms);
-            release.setPressureSmoothing (ms);            
+            release.setPressureSmoothing (ms);
+            filterFrequency.setPressureSmoothing (0.0); // no smoothing, 
+            filterResonance.setPressureSmoothing (0.0); // called per-buffer
         }
         void setTimbreSmoothing (float ms)
         {
@@ -775,7 +824,9 @@ private:
             attack.setTimbreSmoothing (ms);
             decay.setTimbreSmoothing (ms);
             sustain.setTimbreSmoothing (ms);
-            release.setTimbreSmoothing (ms);            
+            release.setTimbreSmoothing (ms);   
+            filterFrequency.setTimbreSmoothing (0.0);   
+            filterResonance.setTimbreSmoothing (0.0);   
         }
         tp::ChoiceParameter* currentTrajectory;
         MPESmoothedParameter mod_a, mod_b, mod_c, mod_d;
@@ -784,6 +835,8 @@ private:
         MPESmoothedParameter feedbackScalar, feedbackTime, feedbackCompression, feedbackMix;
         juce::AudioParameterBool* envelopeSize;
         MPESmoothedParameter attack, decay, sustain, release;
+        MPESmoothedParameter filterFrequency, filterResonance;
+        juce::AudioParameterBool* filterBypass;
     };
     VoiceParameters voiceParameters;
     const ModSet getModSet()

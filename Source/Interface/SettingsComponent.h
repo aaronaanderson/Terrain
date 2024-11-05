@@ -137,6 +137,14 @@ struct TimbreSmoothingComponent : public juce::Component
             };
         addAndMakeVisible (smoothingSlider);
     }
+    void paint (juce::Graphics& g) override 
+    {
+        auto bounds = getLocalBounds();
+        auto b = getLocalBounds();
+        auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
+        g.setColour (laf->getBackgroundDark());
+        g.drawRect (b.toFloat(), 2.0f);
+    }
     void resized() override
     {
         auto b = getLocalBounds();
@@ -252,8 +260,8 @@ struct RoutingComponent : public juce::Component
         juce::Rectangle<int> rangeBounds {200, 20};
         juce::Rectangle<int> toggleBounds {30, 22};
         destinationLabel.setBounds (cdBounds);
-        rangeLabel.setBounds (cdBounds.withPosition (255, 0));
         invertLabel.setBounds (toggleBounds.withPosition (220, 0));
+        rangeLabel.setBounds (cdBounds.withPosition (255, 0));
 
         draggableAssignerOne.setBounds (cdBounds.withPosition (0, 20));
         invertOneToggle.setBounds (toggleBounds.withPosition (220, 20));
@@ -438,6 +446,54 @@ private:
     RoutingComponent routingComponent;
     const int labelHeight = 20;
 };
+struct PitchBendSettingsComponent : public juce::Component
+{
+    PitchBendSettingsComponent (juce::ValueTree MPESettings)
+      : mpeSettings (MPESettings)
+    {
+        jassert (mpeSettings.getType() == id::MPE_SETTINGS);
+
+        addAndMakeVisible (pitchBendEnabledLabel);
+        addAndMakeVisible (pitchBendEnabled);
+        addAndMakeVisible (divisionOfOctaveLabel);
+        divisionOfOctave.setTextBoxStyle (juce::Slider::TextBoxLeft, false, 40, 20);
+        divisionOfOctave.setRange (1.0, 48.0, 1.0);
+        addAndMakeVisible (divisionOfOctave);
+    }
+    void paint (juce::Graphics& g) override
+    {
+        auto bounds = getLocalBounds();
+        auto b = getLocalBounds();
+        auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
+        g.setColour (laf->getBackgroundDark());
+        g.drawRect (b.toFloat(), 2.0f);
+    }
+    void resized()
+    {
+        auto b = getLocalBounds();
+        pitchBendEnabled.setToggleState (mpeSettings.getProperty (id::pitchBendEnabled), juce::dontSendNotification);
+        pitchBendEnabled.onStateChange = [&]()
+            {
+                mpeSettings.setProperty (id::pitchBendEnabled, pitchBendEnabled.getToggleState(), nullptr);
+            };
+        pitchBendEnabled.setBounds (b.removeFromLeft (22));
+        pitchBendEnabledLabel.setBounds (b.removeFromLeft (150));
+
+        divisionOfOctave.setValue (mpeSettings.getProperty (id::pitchBendDivisionOfOctave), juce::dontSendNotification);
+        divisionOfOctave.onValueChange = [&]()
+            {
+                mpeSettings.setProperty (id::pitchBendDivisionOfOctave, (int)divisionOfOctave.getValue(), nullptr);
+            };
+        divisionOfOctave.setBounds (b.removeFromLeft (228));
+        divisionOfOctaveLabel.setBounds (b.removeFromLeft (200));
+    }
+private:
+    juce::ValueTree mpeSettings;
+    juce::Label pitchBendEnabledLabel {"pbel", "Pitch Bend Enabled"};
+    juce::ToggleButton pitchBendEnabled;
+    juce::Label divisionOfOctaveLabel {"dool", "Pitch Bend Division of Octave"};
+    juce::Slider divisionOfOctave;
+};
 class SettingsComponent : public juce::Component
 {
 public:
@@ -458,7 +514,8 @@ public:
                                  apvts,
                                  "Timbre", 
                                  id::TIMBRE),
-        timbreSmoothingComponent (mpeSettings)
+        timbreSmoothingComponent (mpeSettings), 
+        pitchBendComponent (mpeSettings)
     {
         jassert (settings.getType() == id::PRESET_SETTINGS);
         addAndMakeVisible (mpeHeader);
@@ -467,6 +524,7 @@ public:
         addAndMakeVisible (pressureSmoothingComponent);
         addAndMakeVisible (timbreChannelComponent);
         addAndMakeVisible (timbreSmoothingComponent);
+        addAndMakeVisible (pitchBendComponent);
     }
     void resized() override
     {
@@ -477,7 +535,8 @@ public:
         pressureChannelComponent.setBounds (b.removeFromTop (120));
         pressureSmoothingComponent.setBounds (b.removeFromTop (20));
         timbreChannelComponent.setBounds (b.removeFromTop (120));
-        timbreSmoothingComponent.setBounds (b.removeFromTop (20));
+        timbreSmoothingComponent.setBounds (b.removeFromTop (24));
+        pitchBendComponent.setBounds (b.removeFromTop (24));
     }
     void setState (juce::ValueTree settingsBranch)
     {
@@ -492,5 +551,6 @@ private:
     PressureSmoothingComponent pressureSmoothingComponent;
     MPEChannelComponent timbreChannelComponent;
     TimbreSmoothingComponent timbreSmoothingComponent;
+    PitchBendSettingsComponent pitchBendComponent;
 };
 }
