@@ -140,6 +140,7 @@ public:
     {
         jassert (mpeRouting.getType() == id::MPE_ROUTING);
         rangedParameter->addListener (this);
+        checkAssignment();
     }
     ~MPESmoothedParameter() override { rangedParameter->removeListener (this); }
     void noteOn (float mpePressure, float mpeTimbre) 
@@ -195,7 +196,7 @@ public:
             case Assignment::None: return smoothedValue.getNextValue(); 
             case Assignment::Pressure: return smoothedPressure.getNextValue();
             case Assignment::Timbre: return smoothedTimbre.getNextValue();
-            // default: jassertfalse;
+            default: jassertfalse;
         }
         return 0.0f;
     }

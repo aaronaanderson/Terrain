@@ -600,6 +600,7 @@ public:
         mpeRouting = settingsBranch.getChildWithName (id::MPE_ROUTING);
         voiceParameters.setState (mpeRouting);
     }
+    void setRelease() {envelope.setPhase (ADSR::Phase::RELEASE); }
 private:
     juce::AudioProcessorValueTreeState& valueTreeState;
     juce::ValueTree mpeRouting;

@@ -28,6 +28,7 @@ namespace id
     static const juce::Identifier timbreCurve = "timbreCurve";
     static const juce::Identifier pressureSmoothing = "pressureSmoothing";
     static const juce::Identifier timbreSmoothing = "timbreSmoothing";
+    static const juce::Identifier releaseSensitivity = "releaseSensitivity";
 
     static const juce::Identifier MPE_CHANNEL  = "MPE_CHANNEL";
     static const juce::Identifier PRESSURE = "PRESSURE";

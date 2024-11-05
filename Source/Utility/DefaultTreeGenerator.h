@@ -11,7 +11,7 @@ struct MPERoutingTree
         tree.setProperty (id::lowerBound, 0.0f, nullptr);
         tree.setProperty (id::upperBound, 1.0f, nullptr);
         tree.setProperty (id::invertRange, false, nullptr);
-        
+
         return tree;
     }
     static juce::ValueTree create()
@@ -41,7 +41,8 @@ struct MPESettingsTree
         tree.setProperty (id::timbreCurve, 1.0f, nullptr);
         tree.setProperty (id::pressureSmoothing, 20.0f, nullptr);
         tree.setProperty (id::timbreSmoothing, 20.0f, nullptr);
-
+        tree.setProperty (id::releaseSensitivity, 0.2f, nullptr);
+        
         return tree;
     }
 };

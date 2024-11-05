@@ -110,6 +110,7 @@ public:
     }
     bool isActive() { return (phase == Phase::OFF) ? false : true; }
 
+    void setPhase (Phase nextPhase) { phase = nextPhase; }
 private:
     double currentValue = 0.0;
     double sampleRate;
@@ -163,7 +164,6 @@ private:
         release.coefficient = juce::dsp::FastMathApproximations::exp (b / release.numSamples);
         release.offset = -release.tco * (1.0 - release.coefficient);
     }
-    void setPhase (Phase nextPhase) { phase = nextPhase; }
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ADSR)
 };

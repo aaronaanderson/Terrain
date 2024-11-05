@@ -24,7 +24,8 @@ public:
         routingBranch (settingsBranch.getChildWithName (id::MPE_ROUTING)), 
         mpeSettingsBranch (MPESettings), 
         pressureCurve (mpeSettingsBranch, id::pressureCurve, nullptr),
-        timbreCurve (mpeSettingsBranch, id::timbreCurve, nullptr)
+        timbreCurve (mpeSettingsBranch, id::timbreCurve, nullptr),
+        releaseSensitivity (mpeSettingsBranch, id::releaseSensitivity, nullptr)
     {
         jassert (routingBranch.getType() == id::MPE_ROUTING);
         jassert (mpeSettingsBranch.getType() == id::MPE_SETTINGS);
@@ -61,6 +62,7 @@ public:
                               static_cast<float> (note.getFrequencyInHertz()), 
                               note.pressure.asUnsignedFloat(), 
                               note.timbre.asUnsignedFloat());
+        holdAmplitude = false;
     }
     void noteStopped (bool allowTailOff) override
     {
@@ -76,7 +78,17 @@ public:
         float curvedPressure = static_cast<float> (std::pow(pressure, 1.0 / pressureCurve.get()));
         terrain.setPressure (curvedPressure);
         trajectory.setPressure (curvedPressure);
-        trajectory.setAmplitude (curvedPressure);
+        
+        if (curvedPressure <= 0.0f)
+        {
+            trajectory.setAmplitude (previousPressure);
+            trajectory.setRelease();
+        }
+        else
+        {
+            trajectory.setAmplitude (curvedPressure);
+            previousPressure = curvedPressure;
+        }
     }
     void notePitchbendChanged() override
     {
@@ -113,7 +125,10 @@ private:
     float timbre = 0.0f;
     juce::CachedValue<float> pressureCurve;
     juce::CachedValue<float> timbreCurve;
-
+    juce::CachedValue<float> releaseSensitivity;
+    
+    bool holdAmplitude;
+    float previousPressure = 0.0f;
     void valueTreePropertyChanged (juce::ValueTree& tree,
                                    const juce::Identifier& property) override
     {

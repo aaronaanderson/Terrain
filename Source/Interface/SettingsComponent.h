@@ -97,7 +97,7 @@ struct PressureSmoothingComponent : public juce::Component
     {
         jassert (mpeSettings.getType() == id::MPE_SETTINGS);
         addAndMakeVisible (label);
-        smoothingSlider.setTextBoxStyle (juce::Slider::TextBoxLeft, false, 60, 20);
+        smoothingSlider.setTextBoxStyle (juce::Slider::TextBoxLeft, false, 60, 18);
         smoothingSlider.setNumDecimalPlacesToDisplay (1);
         smoothingSlider.setRange ({2.5, 1280.0}, 0.0);
         smoothingSlider.setSkewFactorFromMidPoint (80.0);
@@ -126,8 +126,7 @@ struct TimbreSmoothingComponent : public juce::Component
     {
         jassert (mpeSettings.getType() == id::MPE_SETTINGS);
         addAndMakeVisible (label);
-        std::cout << mpeSettings.toXmlString();
-        smoothingSlider.setTextBoxStyle (juce::Slider::TextBoxLeft, false, 60, 20);
+        smoothingSlider.setTextBoxStyle (juce::Slider::TextBoxLeft, false, 60, 18);
         smoothingSlider.setNumDecimalPlacesToDisplay (1);
         smoothingSlider.setRange ({2.5, 1280.0}, 0.0);
         smoothingSlider.setSkewFactorFromMidPoint (80.0);
