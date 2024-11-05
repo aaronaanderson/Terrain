@@ -141,7 +141,7 @@ struct ParameterSlider : public juce::Component,
         juce::ignoreUnused (sd);
         itemDragHovering = false; repaint();
         
-        auto* draggableSource = dynamic_cast<RoutingComponent::DraggableAssigner*> (sd.sourceComponent.get());
+        auto* draggableSource = dynamic_cast<DraggableAssigner*> (sd.sourceComponent.get());
         juce::ValueTree channelRouting = draggableSource->getMPEChannelRouting();
         auto name = valueTreeState.getParameter (paramID)->getName (40);
         draggableSource->setLabel (name);
