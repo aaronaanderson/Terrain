@@ -80,7 +80,7 @@ struct MPECurve : public juce::Component
         }  
         g.strokePath (curve, juce::PathStrokeType (curveThicc));
     }
-    void resized()
+    void resized() override
     {
         auto b = getLocalBounds();
         b.removeFromTop (static_cast<int> (b.getHeight() * 0.8f));
@@ -140,7 +140,6 @@ struct TimbreSmoothingComponent : public juce::Component
     }
     void paint (juce::Graphics& g) override 
     {
-        auto bounds = getLocalBounds();
         auto b = getLocalBounds();
         auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
         g.setColour (laf->getBackgroundDark());
@@ -166,8 +165,7 @@ struct DraggableAssigner : public juce::DragAndDropContainer,
                        const juce::AudioProcessorValueTreeState& apvts)
       : mpeRouting (MPERouting), 
         mpeChannel (MPEChannel), 
-        outputChannel (outChannel), 
-        valueTreeState (apvts)
+        outputChannel (outChannel)
     {
         auto paramID = mpeRouting.getChildWithName (mpeChannel)
                                  .getChildWithName (outputChannel)
@@ -218,7 +216,6 @@ private:
     juce::ValueTree mpeRouting;
     const juce::Identifier& mpeChannel;
     const juce::Identifier& outputChannel;
-    const juce::AudioProcessorValueTreeState& valueTreeState;
     juce::String name {"Drag to assign"};
 };
 struct RoutingOutputLane : public juce::Component
@@ -275,8 +272,8 @@ struct RoutingOutputLane : public juce::Component
 private:
     juce::ValueTree mpeRouting;
     const juce::Identifier& mpeChannelIdentifier;
-    const juce::Identifier& outChannelIdentifier;
     juce::ValueTree mpeChannel;
+    const juce::Identifier& outChannelIdentifier;
     DraggableAssigner draggableAssigner;
     juce::ToggleButton invertToggle;
     juce::Slider range;
@@ -329,8 +326,8 @@ struct RoutingComponent : public juce::Component
     }
 private:
     juce::ValueTree mpeRouting;
-    const juce::Identifier& mpeChannelIdentifier;
     juce::ValueTree mpeChannel;
+    const juce::Identifier& mpeChannelIdentifier;
     juce::Label destinationLabel {"destination", "Destination"};
     juce::Label rangeLabel = {"RangeLabel", "Range"};
     juce::Label invertLabel = {"InvertLabel", "Inv."};
@@ -386,11 +383,10 @@ struct MPEChannelComponent : public juce::Component
                          juce::String whichChannel, 
                          const juce::Identifier& mpeChannel)
       : mpeRouting (MPERouting), 
-        mpeSettings (MPESettings), 
         mpeCurveComponent (MPESettings, mpeChannel),  
         routingComponent (mpeRouting, mpeChannel, apvts)
     {
-        (mpeSettings.getType() == id::MPE_SETTINGS);
+        jassert (mpeSettings.getType() == id::MPE_SETTINGS);
         jassert (mpeRouting.getType() == id::MPE_ROUTING);
         channelNameLabel.setJustificationType (juce::Justification::left);
         channelNameLabel.setText (whichChannel, juce::dontSendNotification);
@@ -400,7 +396,6 @@ struct MPEChannelComponent : public juce::Component
     }
     void paint (juce::Graphics& g) override
     {
-        auto bounds = getLocalBounds();
         auto b = getLocalBounds();
         auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
         g.setColour (laf->getBackgroundDark());
@@ -416,7 +411,6 @@ struct MPEChannelComponent : public juce::Component
     }
 private:
     juce::ValueTree mpeRouting;
-    juce::ValueTree& mpeSettings;
     juce::Label channelNameLabel;
     MPECurve mpeCurveComponent;
     RoutingComponent routingComponent;
@@ -438,13 +432,12 @@ struct PitchBendSettingsComponent : public juce::Component
     }
     void paint (juce::Graphics& g) override
     {
-        auto bounds = getLocalBounds();
         auto b = getLocalBounds();
         auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
         g.setColour (laf->getBackgroundDark());
         g.drawRect (b.toFloat(), 2.0f);
     }
-    void resized()
+    void resized() override
     {
         auto b = getLocalBounds();
         pitchBendEnabled.setToggleState (mpeSettings.getProperty (id::pitchBendEnabled), juce::dontSendNotification);
@@ -477,8 +470,8 @@ public:
                        const juce::AudioProcessorValueTreeState& apvts, 
                        juce::ValueTree& MPESettings)
       :  valueTreeState (apvts),
-         settings (settingsBranch), 
          mpeSettings (MPESettings),
+         settings (settingsBranch), 
          mpeHeader ("MPE"), 
          saveComponent (MPESettings),
          pressureSmoothingComponent (MPESettings),

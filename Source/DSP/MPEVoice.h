@@ -40,7 +40,7 @@ public:
         terrain.setTimbreSmoothing (mpeSettingsBranch.getProperty (id::timbreSmoothing));
         trajectory.setTimbreSmoothing (mpeSettingsBranch.getProperty (id::timbreSmoothing));
     }
-    ~MPEVoice() { mpeSettingsBranch.removeListener (this); }
+    ~MPEVoice() override { mpeSettingsBranch.removeListener (this); }
     // Voice Interface ===================================================
     const float* getRawData() const override { return trajectory.getRawData(); }
     void prepareToPlay (double newRate, int blockSize) override 
@@ -53,7 +53,7 @@ public:
         terrain.setState (settingsBranch.getChildWithName (id::MPE_ROUTING));
         trajectory.setState (settingsBranch); 
     } 
-    bool isVoiceActive() const override { return isActive(); }
+    bool isVoiceCurrentlyActive() const override { return isActive(); }
     // MPESynthesiser Voice ===============================================
     void noteStarted() override 
     {

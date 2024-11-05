@@ -78,13 +78,13 @@ struct EphemeralStateTree
     struct DefaultSettings
     {
         static constexpr bool tuningSystemConnected = false;
-        static constexpr char* tuningSystemName = "12-TET";
+        // static constexpr char* tuningSystemName = "12-TET";
     };
     static juce::ValueTree create()
     {
         juce::ValueTree tree (id::EPHEMERAL_STATE);
         tree.setProperty (id::tuningSystemConnected, DefaultSettings::tuningSystemConnected, nullptr);
-        tree.setProperty (id::tuningSystemName, DefaultSettings::tuningSystemName, nullptr);
+        tree.setProperty (id::tuningSystemName, "12-TET", nullptr);
 
         return tree;
     }

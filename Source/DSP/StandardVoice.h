@@ -62,7 +62,7 @@ public:
     {
         trajectory.setCurrentPlaybackSampleRate (newRate);
     }
-    bool isVoiceActive() const { return juce::SynthesiserVoice::isVoiceActive(); }
+    bool isVoiceCurrentlyActive() const override { return juce::SynthesiserVoice::isVoiceActive(); }
 private:
     StandardTrajectory trajectory;
 };

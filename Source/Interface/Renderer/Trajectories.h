@@ -143,7 +143,7 @@ struct TrajectoryMesh : PointsMesh // must be constructed on GL Initialize
     
     void render (const Camera& camera, const juce::Colour color)
     {
-        if (!voice->isVoiceActive())
+        if (!voice->isVoiceCurrentlyActive())
             return; 
             
         juce::gl::glEnable (juce::gl::GL_BLEND);

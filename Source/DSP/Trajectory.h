@@ -506,7 +506,6 @@ public:
                    MTSClient& mtsc,
                    juce::AudioProcessorValueTreeState& vts)
       : Trajectory (t, settingsBranch, mtsc),
-        valueTreeState (vts),
         mpeRouting (settingsBranch.getChildWithName (id::MPE_ROUTING)),
         voiceParameters (p, vts, mpeRouting)
     {
@@ -519,7 +518,7 @@ public:
         voiceParameters.resetSampleRate (newRate);
         renderBuffer.setSize (1, blockSize, false, false, true);
 
-        processSpec.maximumBlockSize = blockSize;
+        processSpec.maximumBlockSize = static_cast<juce::uint32> (blockSize);
         processSpec.numChannels = 1;
         processSpec.sampleRate = newRate;
         ladderFilter.prepare (processSpec);
@@ -632,7 +631,6 @@ public:
         renderBuffer.setSize (1, maximumSamplesPerBlock); 
     }
 private:
-    juce::AudioProcessorValueTreeState& valueTreeState;
     juce::ValueTree mpeRouting;
     juce::AudioBuffer<float> renderBuffer;
     juce::AudioBuffer<float> scratchBuffer;
@@ -641,30 +639,30 @@ private:
     struct VoiceParameters
     {
         VoiceParameters (Parameters& p, 
-                         juce::AudioProcessorValueTreeState& valueTreeState, 
-                         juce::ValueTree mpeRouting)
+                         juce::AudioProcessorValueTreeState& vts, 
+                         juce::ValueTree MPERouting)
           : currentTrajectory (p.currentTrajectory),
-            mod_a (p.trajectoryModA, valueTreeState, mpeRouting),
-            mod_b (p.trajectoryModB, valueTreeState, mpeRouting),
-            mod_c (p.trajectoryModC, valueTreeState, mpeRouting),
-            mod_d (p.trajectoryModD, valueTreeState, mpeRouting), 
-            size (p.trajectorySize, valueTreeState, mpeRouting), 
-            rotation (p.trajectoryRotation, valueTreeState, mpeRouting), 
-            translationX (p.trajectoryTranslationX, valueTreeState, mpeRouting), 
-            translationY (p.trajectoryTranslationY, valueTreeState, mpeRouting), 
-            meanderanceScale (p.meanderanceScale, valueTreeState, mpeRouting),
-            meanderanceSpeed (p.meanderanceSpeed, valueTreeState, mpeRouting),
-            feedbackScalar (p.feedbackScalar, valueTreeState, mpeRouting), 
-            feedbackTime (p.feedbackTime, valueTreeState, mpeRouting), 
-            feedbackCompression (p.feedbackCompression, valueTreeState, mpeRouting),
-            feedbackMix (p.feedbackMix, valueTreeState, mpeRouting), 
+            mod_a (p.trajectoryModA, vts, MPERouting),
+            mod_b (p.trajectoryModB, vts, MPERouting),
+            mod_c (p.trajectoryModC, vts, MPERouting),
+            mod_d (p.trajectoryModD, vts, MPERouting), 
+            size (p.trajectorySize, vts, MPERouting), 
+            rotation (p.trajectoryRotation, vts, MPERouting), 
+            translationX (p.trajectoryTranslationX, vts, MPERouting), 
+            translationY (p.trajectoryTranslationY, vts, MPERouting), 
+            meanderanceScale (p.meanderanceScale, vts, MPERouting),
+            meanderanceSpeed (p.meanderanceSpeed, vts, MPERouting),
+            feedbackScalar (p.feedbackScalar, vts, MPERouting), 
+            feedbackTime (p.feedbackTime, vts, MPERouting), 
+            feedbackCompression (p.feedbackCompression, vts, MPERouting),
+            feedbackMix (p.feedbackMix, vts, MPERouting), 
             envelopeSize (p.envelopeSize),
-            attack (p.attack, valueTreeState, mpeRouting), 
-            decay (p.decay, valueTreeState, mpeRouting), 
-            sustain (p.sustain, valueTreeState, mpeRouting), 
-            release (p.release, valueTreeState, mpeRouting), 
-            filterFrequency (p.filterFrequency, valueTreeState, mpeRouting), 
-            filterResonance (p.filterResonance, valueTreeState, mpeRouting),
+            attack (p.attack, vts, MPERouting), 
+            decay (p.decay, vts, MPERouting), 
+            sustain (p.sustain, vts, MPERouting), 
+            release (p.release, vts, MPERouting), 
+            filterFrequency (p.filterFrequency, vts, MPERouting), 
+            filterResonance (p.filterResonance, vts, MPERouting),
             filterBypass (p.filterOnOff)
         {}
         void noteOn (float timbre, float pressure)

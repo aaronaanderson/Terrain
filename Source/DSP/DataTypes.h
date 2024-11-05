@@ -182,7 +182,7 @@ public:
         pressure = p;
         if (assignment != Assignment::Pressure) return;
         setPressureInternal (p); 
-    };
+    }
     void setTimbre (float t)
     {
         timbre = t;
