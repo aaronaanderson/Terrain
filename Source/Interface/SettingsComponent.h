@@ -252,7 +252,7 @@ struct RoutingComponent : public juce::Component
         juce::Rectangle<int> rangeBounds {200, 20};
         juce::Rectangle<int> toggleBounds {30, 22};
         destinationLabel.setBounds (cdBounds);
-        rangeLabel.setBounds (cdBounds.withPosition (220, 0));
+        rangeLabel.setBounds (cdBounds.withPosition (255, 0));
         invertLabel.setBounds (toggleBounds.withPosition (220, 0));
 
         draggableAssignerOne.setBounds (cdBounds.withPosition (0, 20));

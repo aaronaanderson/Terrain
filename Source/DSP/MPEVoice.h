@@ -62,7 +62,6 @@ public:
                               static_cast<float> (note.getFrequencyInHertz()), 
                               note.pressure.asUnsignedFloat(), 
                               note.timbre.asUnsignedFloat());
-        holdAmplitude = false;
     }
     void noteStopped (bool allowTailOff) override
     {
@@ -126,9 +125,8 @@ private:
     juce::CachedValue<float> pressureCurve;
     juce::CachedValue<float> timbreCurve;
     juce::CachedValue<float> releaseSensitivity;
-    
-    bool holdAmplitude;
     float previousPressure = 0.0f;
+
     void valueTreePropertyChanged (juce::ValueTree& tree,
                                    const juce::Identifier& property) override
     {
