@@ -96,48 +96,6 @@ private:
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Filter)
 };
-class OverSampling : public juce::Component
-{
-public:
-    OverSampling (juce::AudioProcessorValueTreeState& vts)
-    {
-        settings = vts.state.getChildWithName (id::PRESET_SETTINGS);
-
-        dropDown.addItem ("1X", 1);
-        dropDown.addItem ("2X", 2);
-        dropDown.addItem ("4X", 3);
-        dropDown.addItem ("8X", 4);
-        dropDown.addItem ("16X", 5);
-        dropDown.setSelectedId (static_cast<int> (settings.getProperty (id::oversampling)) + 1, juce::dontSendNotification);
-        dropDown.onChange = [&]() 
-            {
-                auto index = dropDown.getSelectedItemIndex();
-                settings.setProperty (id::oversampling, index, nullptr);
-            };
-        addAndMakeVisible (dropDown);
-        label.setText ("Oversampling", juce::dontSendNotification);
-        label.setJustificationType (juce::Justification::centred);
-        addAndMakeVisible (label);
-    }
-    void paint (juce::Graphics& g) override 
-    {
-        auto b = getLocalBounds();
-        g.setColour (juce::Colours::black);
-        g.drawRect (b);
-    }
-    void resized() override 
-    {
-        auto b = getLocalBounds();
-        label.setBounds (b.removeFromTop (20));
-        dropDown.setBounds (b.removeFromTop (20));
-    }
-private:
-    juce::ValueTree settings;
-    juce::Label label;
-    juce::ComboBox dropDown;
-
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OverSampling)
-};
 class Envelope : public juce::Component
 {
 public:
@@ -188,13 +146,11 @@ public:
     ControlPanel (juce::AudioProcessorValueTreeState& vts)
       : Panel ("Control Panel"), 
         envelope (vts), 
-        oversampling (vts), 
         filter (vts), 
         compressor (vts), 
         outputLevel (vts)
     {
         addAndMakeVisible (envelope);  
-        addAndMakeVisible (oversampling);
         addAndMakeVisible (filter);
         addAndMakeVisible (compressor);
         addAndMakeVisible (outputLevel);
@@ -205,14 +161,12 @@ public:
         auto b = getAdjustedBounds();
         auto unitWidth = b.getWidth() / 10.0f;
         envelope.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 4.0f)));
-        oversampling.setBounds (b.removeFromLeft (static_cast<int> (unitWidth)));
         filter.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 2.0f)));
         compressor.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 2.0f)));
         outputLevel.setBounds (b.removeFromLeft (static_cast<int> (unitWidth)));
     }
 private:
     Envelope envelope;
-    OverSampling oversampling;
     Filter filter;
     Compressor compressor;
     OutputLevel outputLevel;

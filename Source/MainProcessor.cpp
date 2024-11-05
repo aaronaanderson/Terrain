@@ -171,8 +171,6 @@ void MainProcessor::setStateInformation (const void* data, int sizeInBytes)
             presetManager->setState (valueTreeState.state);
             standardSynthesizer->setState (valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
             mpeSynthesizer->setState (valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
-
-            std::cout << valueTreeState.state.toXmlString() << std::endl;
         }
     }
 }
@@ -415,7 +413,7 @@ void MainProcessor::loadMPESettings()
     auto file = juce::File::getSpecialLocation (juce::File::SpecialLocationType::userApplicationDataDirectory);
     
 #ifdef JUCE_MAC
-	file = file.getChildFile("Audio").getChildFile("Presets");
+	file = presetFolder.getChildFile("Audio").getChildFile("Presets");
 #endif
 	file = file.getChildFile("Aaron Anderson").getChildFile("Terrain"); // "Imogen" is the name of my plugin
 	file = file.getChildFile ("MPEPresets");
@@ -440,7 +438,6 @@ void MainProcessor::saveMPESettings()
 	presetFolder = presetFolder.getChildFile("Aaron Anderson").getChildFile("Terrain"); // "Imogen" is the name of my plugin
 	presetFolder = presetFolder.getChildFile ("MPEPresets");
     auto result = presetFolder.createDirectory();
-    std::cout << presetFolder.getFullPathName();
     auto xml = mpeSettings.createXml();
     auto file = presetFolder.getChildFile ("MPESettings.xml");
     if (!file.existsAsFile()) file.setCreationTime (juce::Time::getCurrentTime());

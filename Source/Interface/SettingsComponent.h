@@ -462,6 +462,47 @@ private:
     juce::Label divisionOfOctaveLabel {"dool", "Pitch Bend Division of Octave"};
     juce::Slider divisionOfOctave;
 };
+struct OversamplingHeader : public HeaderLabel
+{
+    OversamplingHeader() : HeaderLabel ("Oversampling"){}
+};
+class OverSamplingComponent : public juce::Component
+{
+public:
+    OverSamplingComponent (juce::ValueTree presetSettings)
+      : settings (presetSettings)
+    {
+        dropDown.addItem ("1X", 1);
+        dropDown.addItem ("2X", 2);
+        dropDown.addItem ("4X", 3);
+        dropDown.addItem ("8X", 4);
+        dropDown.addItem ("16X", 5);
+        dropDown.setSelectedId (static_cast<int> (settings.getProperty (id::oversampling)) + 1, juce::dontSendNotification);
+        dropDown.onChange = [&]() 
+            {
+                auto index = dropDown.getSelectedItemIndex();
+                settings.setProperty (id::oversampling, index, nullptr);
+            };
+        addAndMakeVisible (dropDown);
+    }
+    void paint (juce::Graphics& g) override 
+    {
+        auto b = getLocalBounds();
+        auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
+        g.setColour (laf->getBackgroundDark());
+        g.drawRect (b);
+    }
+    void resized() override 
+    {
+        auto b = getLocalBounds();
+        dropDown.setBounds (b.removeFromLeft (100));
+    }
+private:
+    juce::ValueTree settings;
+    juce::ComboBox dropDown;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OverSamplingComponent)
+};
 class SettingsComponent : public juce::Component
 {
 public:
@@ -472,10 +513,10 @@ public:
          mpeSettings (MPESettings),
          settings (settingsBranch), 
          mpeHeader ("MPE"), 
-         saveComponent (MPESettings),
          pressureSmoothingComponent (MPESettings),
          timbreSmoothingComponent (MPESettings), 
-         pitchBendComponent (MPESettings)
+         pitchBendComponent (MPESettings), 
+         oversamplingComponent (settingsBranch)
     {
         jassert (settings.getType() == id::PRESET_SETTINGS);
 
@@ -489,24 +530,28 @@ public:
                                                                         valueTreeState,
                                                                         "Timbre", 
                                                                         id::TIMBRE);
-        addAndMakeVisible (saveComponent);
+        addAndMakeVisible (mpeHeader);
         addAndMakeVisible (pressureChannelComponent.get());
         addAndMakeVisible (pressureSmoothingComponent);
         addAndMakeVisible (timbreChannelComponent.get());
         addAndMakeVisible (timbreSmoothingComponent);
         addAndMakeVisible (pitchBendComponent);
+
+        addAndMakeVisible (oversamplingHeader);
+        addAndMakeVisible (oversamplingComponent);
     }
     void resized() override
     {
         auto b = getLocalBounds();
 
         mpeHeader.setBounds (b.removeFromTop (20));
-        saveComponent.setBounds (b.removeFromTop (20));
         pressureChannelComponent->setBounds (b.removeFromTop (120));
-        pressureSmoothingComponent.setBounds (b.removeFromTop (20));
+        pressureSmoothingComponent.setBounds (b.removeFromTop (24));
         timbreChannelComponent->setBounds (b.removeFromTop (120));
         timbreSmoothingComponent.setBounds (b.removeFromTop (24));
         pitchBendComponent.setBounds (b.removeFromTop (24));
+        oversamplingHeader.setBounds (b.removeFromTop (24));
+        oversamplingComponent.setBounds (b.removeFromTop (24));
     }
     void setState (juce::ValueTree settingsBranch)
     {
@@ -518,12 +563,14 @@ private:
     juce::ValueTree& mpeSettings;
     juce::ValueTree settings;
     HeaderLabel mpeHeader;
-    MPESaveComponent saveComponent;
     std::unique_ptr<MPEChannelComponent> pressureChannelComponent;
     PressureSmoothingComponent pressureSmoothingComponent;
     std::unique_ptr<MPEChannelComponent> timbreChannelComponent;
     TimbreSmoothingComponent timbreSmoothingComponent;
     PitchBendSettingsComponent pitchBendComponent;
+    
+    OversamplingHeader oversamplingHeader;
+    OverSamplingComponent oversamplingComponent;
 
     void resetChannelComponents()
     {
@@ -542,7 +589,6 @@ private:
         addAndMakeVisible (pressureChannelComponent.get());
         addAndMakeVisible (timbreChannelComponent.get());
         resized(); repaint();
-        std::cout << getTopLevelComponent()->getName() << std::endl;
     }
 };
 }
