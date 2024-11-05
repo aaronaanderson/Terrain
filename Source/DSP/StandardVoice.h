@@ -63,6 +63,7 @@ public:
         trajectory.setCurrentPlaybackSampleRate (newRate);
     }
     bool isVoiceCurrentlyActive() const override { return juce::SynthesiserVoice::isVoiceActive(); }
+    void allocate (int maxNumSamples) { trajectory.allocate (maxNumSamples); }
 private:
     StandardTrajectory trajectory;
 };

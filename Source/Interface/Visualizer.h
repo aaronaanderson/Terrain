@@ -79,10 +79,9 @@ public:
         glContext.setPixelFormat (pf);
         glContext.setMultisamplingEnabled (true);
         glContext.setComponentPaintingEnabled (false);
-        glContext.setContinuousRepainting (true);
 
         glContext.attachTo (*this);
-        // startTimerHz (60);
+        startTimerHz (60);
     }
     ~Visualizer() override 
     {

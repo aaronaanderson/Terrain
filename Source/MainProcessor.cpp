@@ -280,6 +280,12 @@ juce::AudioProcessorValueTreeState::ParameterLayout MainProcessor::createParamet
                                                             range,
                                                             800.0f));
     layout.add (std::make_unique<juce::AudioParameterBool> (juce::ParameterID {"FilterOnOff", 1}, "Filter Bypass", false));
+    layout.add (std::make_unique<tp::NormalizedFloatParameter> ("Per-Voice Filter Resonance", 0.5f));
+    range = juce::NormalisableRange<float> (-1.0f, 6.0f);
+    layout.add (std::make_unique<tp::RangedFloatParameter> ("Per-Voice Filter Frequency", 
+                                                            range,
+                                                            1.0f));
+    layout.add (std::make_unique<juce::AudioParameterBool> (juce::ParameterID {"Per-VoiceFilterOnOff", 1}, "Per-Voice Filter Bypass", false));
 
     range = {-24.0f, 0.0f};
     layout.add (std::make_unique<tp::RangedFloatParameter> ("Compressor Threshold", 

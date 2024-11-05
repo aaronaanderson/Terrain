@@ -105,6 +105,10 @@ public:
     RangedFloatParameter*     filterFrequency = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter     ("FilterFrequency"));
     juce::AudioParameterBool* filterOnOff = dynamic_cast<juce::AudioParameterBool*> (valueTreeState.getParameter     ("FilterOnOff"));
 
+    NormalizedFloatParameter* perVoiceFilterResonance = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter ("Per-VoiceFilterResonance"));
+    RangedFloatParameter*     perVoiceFilterFrequency = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter     ("Per-VoiceFilterFrequency"));
+    juce::AudioParameterBool* perVoiceFilterOnOff = dynamic_cast<juce::AudioParameterBool*> (valueTreeState.getParameter     ("Per-VoiceFilterOnOff"));
+
     RangedFloatParameter*     compressorThreshold = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter ("CompressorThreshold"));
     RangedFloatParameter*     compressorRatio = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter     ("CompressorRatio"));
 

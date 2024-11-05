@@ -31,7 +31,17 @@ public:
         
         terrain.prepareToPlay (sr, blockSize);
     }
-    void allocate (int maxNumSamples) override { terrain.allocate (maxNumSamples); }
+    void allocate (int maxNumSamples) override
+    { 
+        for (int i = 0; i < getNumVoices(); i++)
+        {
+            auto v = getVoice (i);
+            auto trajectory = dynamic_cast<StandardVoice*> (v);
+            if (trajectory != nullptr)
+                trajectory->allocate (maxNumSamples);
+        }
+        terrain.allocate (maxNumSamples); 
+    }
     void updateTerrain() override {terrain.updateParameterBuffers(); }
     juce::Array<VoiceInterface*> getVoices() override
     {

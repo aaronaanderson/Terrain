@@ -59,20 +59,64 @@ private:
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Compressor)
 };
+class PerVoiceFilter : public juce::Component
+{
+public:
+    PerVoiceFilter (juce::AudioProcessorValueTreeState& vts)
+      : perVoiceFrequency ("Frequency", "Per-VoiceFilterFrequency", vts),
+        perVoiceResonance ("Resonance", "Per-VoiceFilterResonance", vts),
+        perVoiceOnOff ("", "Per-VoiceFilterOnOff", vts)
+    {
+        label.setText ("Per-Voice Filter", juce::dontSendNotification);
+        label.setJustificationType (juce::Justification::centred);
+        addAndMakeVisible (label);
+
+        addAndMakeVisible (perVoiceFrequency);
+        addAndMakeVisible (perVoiceResonance);
+        addAndMakeVisible (perVoiceOnOff);
+
+    }
+    void paint (juce::Graphics& g) override 
+    {
+        g.setColour (juce::Colours::black);
+        g.drawRect (getLocalBounds());
+    }
+    void resized() override 
+    {
+        auto b = getLocalBounds();
+        perVoiceOnOff.setBounds (0, 0, 22, 22);
+        label.setBounds (b.removeFromTop (20));
+        auto unitWidth = b.getWidth() / 2.0f;
+        perVoiceFrequency.setBounds (b.removeFromLeft (static_cast<int> (unitWidth)));
+        perVoiceResonance.setBounds (b.removeFromLeft (static_cast<int> (unitWidth)));
+    }
+private:
+    juce::Label label;
+    ParameterSlider perVoiceFrequency, perVoiceResonance;
+    ParameterToggle perVoiceOnOff;
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PerVoiceFilter)
+};
 class Filter : public juce::Component 
 {
 public:
     Filter (juce::AudioProcessorValueTreeState& vts)
       : frequency ("Frequency", "FilterFrequency", vts), 
         resonance ("Resonance", "FilterResonance", vts), 
-        onOff ("", "FilterOnOff", vts)
+        onOff ("", "FilterOnOff", vts), 
+        perVoiceFrequency ("Frequency", "Per-VoiceFilterFrequency", vts),
+        perVoiceResonance ("Resonance", "Per-VoiceFilterResonance", vts),
+        perVoiceOnOff ("", "Per-VoiceFilterOnOff", vts)
     {
-        label.setText ("Filter", juce::dontSendNotification);
+        label.setText ("Global Filter", juce::dontSendNotification);
         label.setJustificationType (juce::Justification::centred);
         addAndMakeVisible (label);
         addAndMakeVisible (frequency);
         addAndMakeVisible (resonance);
         addAndMakeVisible (onOff);
+
+        addAndMakeVisible (perVoiceFrequency);
+        addAndMakeVisible (perVoiceResonance);
+        addAndMakeVisible (perVoiceOnOff);
 
     }
     void paint (juce::Graphics& g) override 
@@ -94,6 +138,8 @@ private:
     ParameterSlider frequency, resonance;
     ParameterToggle onOff;
 
+    ParameterSlider perVoiceFrequency, perVoiceResonance;
+    ParameterToggle perVoiceOnOff;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Filter)
 };
 class Envelope : public juce::Component
@@ -145,12 +191,14 @@ class ControlPanel : public Panel
 public:
     ControlPanel (juce::AudioProcessorValueTreeState& vts)
       : Panel ("Control Panel"), 
-        envelope (vts), 
+        envelope (vts),
+        perVoiceFilter (vts), 
         filter (vts), 
         compressor (vts), 
         outputLevel (vts)
     {
         addAndMakeVisible (envelope);  
+        addAndMakeVisible (perVoiceFilter);
         addAndMakeVisible (filter);
         addAndMakeVisible (compressor);
         addAndMakeVisible (outputLevel);
@@ -159,14 +207,16 @@ public:
     {
         Panel::resized();
         auto b = getAdjustedBounds();
-        auto unitWidth = b.getWidth() / 10.0f;
+        auto unitWidth = b.getWidth() / 11.0f;
         envelope.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 4.0f)));
+        perVoiceFilter.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 2.0f)));
         filter.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 2.0f)));
         compressor.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 2.0f)));
         outputLevel.setBounds (b.removeFromLeft (static_cast<int> (unitWidth)));
     }
 private:
     Envelope envelope;
+    PerVoiceFilter perVoiceFilter;
     Filter filter;
     Compressor compressor;
     OutputLevel outputLevel;

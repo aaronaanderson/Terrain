@@ -82,12 +82,22 @@ public:
     void noteOn() { smoothedValue.setCurrentAndTargetValue (rangedParameter->convertFrom0to1 (rangedParameter->getValue())); }
     float getNext() { return smoothedValue.getNextValue(); }
     float getCurrent() { return smoothedValue.getCurrentValue(); }
-    void prepare (double sampleRate) { smoothedValue.reset (sampleRate, 0.02f); }
-
+    void prepare (double sr) 
+    { 
+        sampleRate = sr;
+        smoothedValue.reset (sampleRate, timeMS * 0.001f); 
+    }
+    void setTimeMS (float time) 
+    {
+        timeMS = time;
+        smoothedValue.reset (sampleRate, timeMS);
+        smoothedValue.setCurrentAndTargetValue (rangedParameter->convertFrom0to1 (rangedParameter->getValue()));
+    }
 private:
     juce::RangedAudioParameter* rangedParameter;
     juce::SmoothedValue<float> smoothedValue;
-
+    double sampleRate = 48000.0;
+    float timeMS = 20.0f;
     void parameterValueChanged (int parameterIndex, float newValue) override
     {
         juce::ignoreUnused (parameterIndex);
@@ -214,7 +224,7 @@ public:
     void prepare (double sr) 
     { 
         sampleRate = sr;
-        smoothedValue.reset (sampleRate, 0.02f);
+        setControlSmoothing (controlSmoothingTimeMS);
         setPressureSmoothing (pressureSmoothingTimeMS);
         setTimbreSmoothing (timbreSmoothingTimeMS); 
     }
@@ -231,6 +241,12 @@ public:
         smoothedTimbre.reset (sampleRate, ms * 0.001); 
         smoothedTimbre.setCurrentAndTargetValue (timbre);
     }
+    void setControlSmoothing (float ms)
+    {
+        controlSmoothingTimeMS = ms;
+        smoothedValue.reset (sampleRate, ms * 0.001);
+        smoothedValue.setCurrentAndTargetValue (rangedParameter->convertFrom0to1 (rangedParameter->getValue()));
+    }
 private:
     juce::RangedAudioParameter* rangedParameter;
     juce::AudioProcessorValueTreeState& valueTreeState;
@@ -243,6 +259,8 @@ private:
     float timbre = 0.0f;
     juce::SmoothedValue<float> smoothedTimbre;
     float timbreSmoothingTimeMS = 20.0f;
+    float controlSmoothingTimeMS = 20.0f;
+    float controlValue = 0.0f;
     enum class Assignment
     {
         Pressure, 
