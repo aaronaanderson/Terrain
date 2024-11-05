@@ -386,7 +386,6 @@ struct MPEChannelComponent : public juce::Component
         mpeCurveComponent (MPESettings, mpeChannel),  
         routingComponent (mpeRouting, mpeChannel, apvts)
     {
-        jassert (mpeSettings.getType() == id::MPE_SETTINGS);
         jassert (mpeRouting.getType() == id::MPE_ROUTING);
         channelNameLabel.setJustificationType (juce::Justification::left);
         channelNameLabel.setText (whichChannel, juce::dontSendNotification);

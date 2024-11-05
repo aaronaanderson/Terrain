@@ -77,7 +77,7 @@ public:
         auto note = getCurrentlyPlayingNote();
         pressure = note.pressure.asUnsignedFloat();
         
-        jassert (pressureCurve != 0.0f);
+        jassert (pressureCurve.get() != 0.0f);
         float curvedPressure = static_cast<float> (std::pow(pressure, 1.0 / pressureCurve.get()));
         terrain.setPressure (curvedPressure);
         trajectory.setPressure (curvedPressure);
