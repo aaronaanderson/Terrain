@@ -57,6 +57,7 @@ struct MPECurve : public juce::Component
     }
     void paint (juce::Graphics& g) override
     {
+        juce::ignoreUnused (g);
         auto b = getLocalBounds();
         b.removeFromBottom (static_cast<int> (b.getHeight() * 0.2f));
         auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
@@ -175,6 +176,7 @@ struct DraggableAssigner : public juce::DragAndDropContainer,
     }
     void paint (juce::Graphics& g) override
     {
+        juce::ignoreUnused (g);
        auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
        g.setColour (laf->getBackgroundDark());
        g.drawRect (getLocalBounds().toFloat(), 2.0f);
