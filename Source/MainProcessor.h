@@ -6,6 +6,7 @@
 #include "Parameters.h"
 #include "Utility/Identifiers.h"
 #include "Utility/PresetManager.h"
+#include "Utility/Presets.h"
 
 #include "DSP/WaveTerrainSynthesizerMPE.h"
 #include "DSP/WaveTerrainSynthesizerStandard.h"

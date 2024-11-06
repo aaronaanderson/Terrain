@@ -13,6 +13,8 @@ MainProcessor::MainProcessor()
     mtsClient = MTS_RegisterClient();
     
     loadMPESettings();
+    PresetSaver::movePresetsToDisk();
+
     valueTreeState.state.addChild (SettingsTree::create(), -1, nullptr);
     presetManager = std::make_unique<PresetManager> (this, valueTreeState.state);
     standardSynthesizer = std::make_unique<tp::WaveTerrainSynthesizerStandard> (parameters, *mtsClient, valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));

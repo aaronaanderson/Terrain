@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<TERRAIN_SYNTH presetName="ButterFly">
+  <PARAM id="Attack" value="4798.404296875"/>
+  <PARAM id="CompressorRatio" value="7.64400053024292"/>
+  <PARAM id="CompressorThreshold" value="-4.048582077026367"/>
+  <PARAM id="CurrentTerrain" value="1.0"/>
+  <PARAM id="CurrentTrajectory" value="3.0"/>
+  <PARAM id="Decay" value="39.03110122680664"/>
+  <PARAM id="EnvelopeSize" value="1.0"/>
+  <PARAM id="Feedback" value="0.946872353553772"/>
+  <PARAM id="FeedbackCompression" value="4.461175918579102"/>
+  <PARAM id="FeedbackMix" value="0.3412466049194336"/>
+  <PARAM id="FeedbackTime" value="3.166930437088013"/>
+  <PARAM id="FilterFrequency" value="3595.72314453125"/>
+  <PARAM id="FilterOnOff" value="1.0"/>
+  <PARAM id="FilterResonance" value="0.2649336159229279"/>
+  <PARAM id="MeanderanceScale" value="0.5542330741882324"/>
+  <PARAM id="MeanderanceSpeed" value="0.1014492735266685"/>
+  <PARAM id="OutputLevel" value="0.0"/>
+  <PARAM id="Release" value="5000.0"/>
+  <PARAM id="Rotation" value="3.2262864112854"/>
+  <PARAM id="Size" value="0.2422022819519043"/>
+  <PARAM id="Sustain" value="0.0"/>
+  <PARAM id="TerrainModA" value="0.4708171188831329"/>
+  <PARAM id="TerrainModB" value="0.5134794116020203"/>
+  <PARAM id="TerrainModC" value="0.8911347985267639"/>
+  <PARAM id="TerrainModD" value="0.6806403994560242"/>
+  <PARAM id="TerrainSaturation" value="1.0"/>
+  <PARAM id="TrajectoryModA" value="0.3142055571079254"/>
+  <PARAM id="TrajectoryModB" value="0.2010723501443863"/>
+  <PARAM id="TrajectoryModC" value="0.7501688599586487"/>
+  <PARAM id="TrajectoryModD" value="0.005496520549058914"/>
+  <PARAM id="TranslationX" value="0.1042721271514893"/>
+  <PARAM id="TranslationY" value="-0.05072462558746338"/>
+  <PARAM id="Per-VoiceFilterFrequency" value="0.944000244140625"/>
+  <PARAM id="Per-VoiceFilterOnOff" value="1.0"/>
+  <PARAM id="Per-VoiceFilterResonance" value="0.0"/>
+  <PRESET_SETTINGS presetRandomizationScale="0.1052631578947368" oversampling="1"
+                   pitchBendRange="2.0" noteOnOrContinuous="0" mpeEnabled="1">
+    <MPE_ROUTING>
+      <PRESSURE>
+        <OUTPUT_ONE lowerBound="0.25" upperBound="0.5722222222222222" invertRange="0"
+                    name="Size"/>
+        <OUTPUT_TWO lowerBound="0.0" upperBound="1.0" invertRange="0" name=""/>
+        <OUTPUT_THREE lowerBound="0.0" upperBound="0.0" invertRange="0"/>
+      </PRESSURE>
+      <TIMBRE>
+        <OUTPUT_ONE lowerBound="0.0" upperBound="1.0" invertRange="0" name="TerrainModB"/>
+        <OUTPUT_TWO lowerBound="0.2166666666666667" upperBound="0.6722222222222223"
+                    invertRange="0" name=""/>
+        <OUTPUT_THREE lowerBound="0.3277777777777778" upperBound="0.45" invertRange="0"
+                      name="Rotation"/>
+      </TIMBRE>
+    </MPE_ROUTING>
+  </PRESET_SETTINGS>
+</TERRAIN_SYNTH>

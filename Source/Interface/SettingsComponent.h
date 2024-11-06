@@ -235,23 +235,23 @@ struct RoutingOutputLane : public juce::Component
         
         range.onValueChange = [&]()
             {
-                mpeChannel.getChildWithName (id::OUTPUT_ONE).setProperty (id::upperBound, range.getMaxValue(), nullptr);
-                mpeChannel.getChildWithName (id::OUTPUT_ONE).setProperty (id::lowerBound, range.getMinValue(), nullptr);
+                mpeChannel.getChildWithName (outChannelIdentifier).setProperty (id::upperBound, range.getMaxValue(), nullptr);
+                mpeChannel.getChildWithName (outChannelIdentifier).setProperty (id::lowerBound, range.getMinValue(), nullptr);
             };
         range.setSliderStyle (juce::Slider::SliderStyle::TwoValueHorizontal);
         range.setTextBoxStyle (juce::Slider::TextEntryBoxPosition::NoTextBox, true, 20, 20);
         range.setRange ({0.0f, 1.0f}, 0.0);
-        range.setMinAndMaxValues (mpeChannel.getChildWithName (id::OUTPUT_ONE)
+        range.setMinAndMaxValues (mpeChannel.getChildWithName (outChannelIdentifier)
                                                .getProperty (id::lowerBound),
-                                     mpeChannel.getChildWithName (id::OUTPUT_ONE)
+                                     mpeChannel.getChildWithName (outChannelIdentifier)
                                                .getProperty (id::upperBound), 
                                      juce::dontSendNotification);
         addAndMakeVisible (range);
-        invertToggle.setToggleState (mpeChannel.getChildWithName (id::OUTPUT_ONE)
+        invertToggle.setToggleState (mpeChannel.getChildWithName (outChannelIdentifier)
                                                   .getProperty (id::invertRange), juce::dontSendNotification);
         invertToggle.onClick = [&]()
             {
-                mpeChannel.getChildWithName (id::OUTPUT_ONE)
+                mpeChannel.getChildWithName (outChannelIdentifier)
                           .setProperty (id::invertRange, invertToggle.getToggleState(), nullptr);
 
             };

@@ -31,6 +31,9 @@ MainEditor::MainEditor (MainProcessor& p)
     setLookAndFeel (&lookAndFeel);
     getLookAndFeel().setDefaultLookAndFeel (&lookAndFeel);
 
+    setWantsKeyboardFocus (false);
+    giveAwayKeyboardFocus();
+
     setResizable (true, false);
     setResizeLimits (730, 505, 2400, 1600);
     setSize (1200, 800);
