@@ -260,7 +260,6 @@ private:
     juce::SmoothedValue<float> smoothedTimbre;
     float timbreSmoothingTimeMS = 20.0f;
     float controlSmoothingTimeMS = 20.0f;
-    float controlValue = 0.0f;
     enum class Assignment
     {
         Pressure, 

@@ -421,7 +421,7 @@ void MainProcessor::loadMPESettings()
     auto file = juce::File::getSpecialLocation (juce::File::SpecialLocationType::userApplicationDataDirectory);
     
 #ifdef JUCE_MAC
-	file = presetFolder.getChildFile("Audio").getChildFile("Presets");
+	file = file.getChildFile("Audio").getChildFile("Presets");
 #endif
 	file = file.getChildFile("Aaron Anderson").getChildFile("Terrain"); // "Imogen" is the name of my plugin
 	file = file.getChildFile ("MPEPresets");
