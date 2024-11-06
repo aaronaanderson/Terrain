@@ -67,7 +67,8 @@ private:
 };
 
 struct ParameterSlider : public juce::Component,
-                         public juce::DragAndDropTarget 
+                         public juce::DragAndDropTarget, 
+                         private juce::ValueTree::Listener
 {
     ParameterSlider (juce::String labelText, 
                      const juce::String pID, 
@@ -75,6 +76,9 @@ struct ParameterSlider : public juce::Component,
       : paramID (pID), 
         valueTreeState (vts)
     {
+        valueTreeState.state.addListener (this);
+        checkIfControlled();
+
         label.setText (labelText, juce::dontSendNotification);
         slider.setTextBoxStyle (juce::Slider::TextEntryBoxPosition::NoTextBox, true, 20, 20);
 
@@ -82,11 +86,19 @@ struct ParameterSlider : public juce::Component,
         addAndMakeVisible (slider);
         sliderAttachment.reset (new SliderAttachment (vts, paramID, slider));
     }
+    ~ParameterSlider() override { valueTreeState.state.removeListener (this); }
     void paint (juce::Graphics& g) override
     {
-        if (itemDragHovering)
+        auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
+        if (itemDragHovering || isControlled)
         {
-            auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
+            g.setColour (laf->getBackgroundDark());
+            g.drawRect (getLocalBounds().toFloat(), 4.0f);
+        }
+        if (isControlled)
+        {
+            g.setColour (laf->getBackgroundColour().darker());
+            g.fillRect (getLocalBounds().toFloat());
             g.setColour (laf->getBackgroundDark());
             g.drawRect (getLocalBounds().toFloat(), 4.0f);
         }
@@ -122,8 +134,14 @@ struct ParameterSlider : public juce::Component,
     bool isInterestedInDragSource (const juce::DragAndDropTarget::SourceDetails& sd) override
     {
         juce::ignoreUnused (sd);
-        if (valueTreeState.getParameter (paramID)->getName (14) == "Output Level")
+        if (valueTreeState.getParameter (paramID)->getName (30) == "Output Level"         ||
+            valueTreeState.getParameter (paramID)->getName (30) == "Filter Frequency"     ||
+            valueTreeState.getParameter (paramID)->getName (30) == "Filter Resonance"     ||
+            valueTreeState.getParameter (paramID)->getName (30) == "Compressor Threshold" ||
+            valueTreeState.getParameter (paramID)->getName (30) == "Compressor Ratio")
             return false;
+        if (isControlled) return false;
+
         return true;
     }
     void itemDragEnter (const juce::DragAndDropTarget::SourceDetails& sd) override 
@@ -146,6 +164,9 @@ struct ParameterSlider : public juce::Component,
         auto name = valueTreeState.getParameter (paramID)->getName (40);
         draggableSource->setLabel (name);
         channelRouting.setProperty (id::name, paramID, nullptr);
+
+        valueTreeState.state.getChildWithName (id::MPE_ROUTING);
+        checkIfControlled();
     }
 private:
     juce::Slider slider;
@@ -155,6 +176,43 @@ private:
     std::unique_ptr<SliderAttachment> sliderAttachment;
 
     bool itemDragHovering = false;
+    bool isControlled = false;
+
+    void valueTreeRedirected (juce::ValueTree& tree) override
+    {
+        juce::ignoreUnused (tree);
+        checkIfControlled();
+    }
+    void valueTreePropertyChanged (juce::ValueTree& tree,
+                                  const juce::Identifier& property) override
+    {
+        juce::ignoreUnused (tree);
+        if (property == id::name) checkIfControlled();
+    }
+    void checkIfControlled()
+    {
+        juce::Array<juce::Identifier> ids {id::OUTPUT_ONE, id::OUTPUT_TWO, id::OUTPUT_THREE};
+        auto routingBranch = valueTreeState.state.getChildWithName (id::PRESET_SETTINGS)
+                                                 .getChildWithName (id::MPE_ROUTING);
+        auto pressureBranch = routingBranch.getChildWithName (id::PRESSURE);
+        isControlled = false;
+        for (auto id : ids)
+        {
+            if (pressureBranch.getChildWithName (id).getProperty (id::name).toString() == paramID)
+            {
+              isControlled = true;
+            } 
+        }
+        auto timbreBranch = routingBranch.getChildWithName (id::TIMBRE);
+        for (auto id : ids)
+        {
+            if (timbreBranch.getChildWithName (id).getProperty (id::name).toString() == paramID)
+            {
+              isControlled = true;
+            } 
+        }
+        repaint();
+    }
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ParameterSlider)
 };
