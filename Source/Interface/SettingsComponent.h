@@ -565,7 +565,7 @@ public:
     {
         auto b = getLocalBounds();
 
-        mpeHeader.setBounds (b.removeFromTop (20));
+        mpeHeader.setBounds (b.removeFromTop (24));
         pressureChannelComponent->setBounds (b.removeFromTop (200));
         pressureSmoothingComponent.setBounds (b.removeFromTop (24));
         timbreChannelComponent->setBounds (b.removeFromTop (200));
@@ -579,7 +579,7 @@ public:
         settings = settingsBranch;
         resetChannelComponents();
     }
-    int getDesiredHeight() { return 540; }
+    int getDesiredHeight() { return 544; }
 private:
     const juce::AudioProcessorValueTreeState& valueTreeState;
     juce::ValueTree& mpeSettings;

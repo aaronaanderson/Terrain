@@ -368,40 +368,58 @@ juce::ValueTree MainProcessor::verifiedSettings (juce::ValueTree settings)
         settings.setProperty (id::mpeEnabled, SettingsTree::DefaultSettings::mpeEnabled, nullptr);
     
     // std::cout << settings.toXmlString() << std::endl;
-    settings.removeChild (settings.getChildWithName (id::MPE_ROUTING), nullptr);
+    // settings.removeChild (settings.getChildWithName (id::MPE_ROUTING), nullptr);
     // MPE ROUTING ==========================================
     auto mpeTree = settings.getChildWithName (id::MPE_ROUTING);
     if (mpeTree == juce::ValueTree())
         settings.addChild (MPERoutingTree::create(), -1, nullptr);
     
-    // auto pressureTree = mpeTree.getChildWithName (id::PRESSURE);
-    // if (pressureTree == juce::ValueTree())
-    //     mpeTree.addChild (juce::ValueTree (id::PRESSURE), -1, nullptr);
+    mpeTree = settings.getChildWithName (id::MPE_ROUTING);
+    auto pressureTree = mpeTree.getChildWithName (id::PRESSURE);
+    if (pressureTree == juce::ValueTree())
+        mpeTree.addChild (juce::ValueTree (id::PRESSURE), -1, nullptr);
     
-    // auto outputOneTree = pressureTree.getChildWithName (id::OUTPUT_ONE);
-    // if (outputOneTree == juce::ValueTree())
-    //     pressureTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_ONE), -1, nullptr);
-    // auto outputTwoTree = pressureTree.getChildWithName (id::OUTPUT_TWO);
-    // if (outputTwoTree == juce::ValueTree())
-    //     pressureTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_TWO), -1, nullptr);
-    // auto outputThreeTree = pressureTree.getChildWithName (id::OUTPUT_THREE);
-    // if (outputThreeTree == juce::ValueTree())
-    //     pressureTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_THREE), -1, nullptr);
+    auto outputOneTree = pressureTree.getChildWithName (id::OUTPUT_ONE);
+    if (outputOneTree == juce::ValueTree())
+        pressureTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_ONE), -1, nullptr);
+    auto outputTwoTree = pressureTree.getChildWithName (id::OUTPUT_TWO);
+    if (outputTwoTree == juce::ValueTree())
+        pressureTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_TWO), -1, nullptr);
+    auto outputThreeTree = pressureTree.getChildWithName (id::OUTPUT_THREE);
+    if (outputThreeTree == juce::ValueTree())
+        pressureTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_THREE), -1, nullptr);
+    auto outputFourTree = pressureTree.getChildWithName (id::OUTPUT_FOUR);
+    if (outputFourTree == juce::ValueTree())
+        pressureTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_FOUR), -1, nullptr);
+    auto outputFiveTree = pressureTree.getChildWithName (id::OUTPUT_FIVE);
+    if (outputFiveTree == juce::ValueTree())
+        pressureTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_FIVE), -1, nullptr);
+    auto outputSixTree = pressureTree.getChildWithName (id::OUTPUT_SIX);
+    if (outputSixTree == juce::ValueTree())
+        pressureTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_SIX), -1, nullptr);
 
-    // auto timbreTree = mpeTree.getChildWithName (id::TIMBRE);
-    // if (timbreTree == juce::ValueTree())
-    //     mpeTree.addChild (juce::ValueTree (id::TIMBRE), -1, nullptr);
+    auto timbreTree = mpeTree.getChildWithName (id::TIMBRE);
+    if (timbreTree == juce::ValueTree())
+        mpeTree.addChild (juce::ValueTree (id::TIMBRE), -1, nullptr);
     
-    // outputOneTree = timbreTree.getChildWithName (id::OUTPUT_ONE);
-    // if (outputOneTree == juce::ValueTree())
-    //     timbreTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_ONE), -1, nullptr);
-    // outputTwoTree = timbreTree.getChildWithName (id::OUTPUT_TWO);
-    // if (outputTwoTree == juce::ValueTree())
-    //     timbreTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_TWO), -1, nullptr);
-    // outputThreeTree = timbreTree.getChildWithName (id::OUTPUT_THREE);
-    // if (outputThreeTree == juce::ValueTree())
-    //     timbreTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_THREE), -1, nullptr);
-
+    outputOneTree = timbreTree.getChildWithName (id::OUTPUT_ONE);
+    if (outputOneTree == juce::ValueTree())
+        timbreTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_ONE), -1, nullptr);
+    outputTwoTree = timbreTree.getChildWithName (id::OUTPUT_TWO);
+    if (outputTwoTree == juce::ValueTree())
+        timbreTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_TWO), -1, nullptr);
+    outputThreeTree = timbreTree.getChildWithName (id::OUTPUT_THREE);
+    if (outputThreeTree == juce::ValueTree())
+        timbreTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_THREE), -1, nullptr);
+    outputFourTree = timbreTree.getChildWithName (id::OUTPUT_FOUR);
+    if (outputFourTree == juce::ValueTree())
+        timbreTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_FOUR), -1, nullptr);
+    outputFiveTree = timbreTree.getChildWithName (id::OUTPUT_FIVE);
+    if (outputFiveTree == juce::ValueTree())
+        timbreTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_FIVE), -1, nullptr);
+    outputSixTree = timbreTree.getChildWithName (id::OUTPUT_SIX);
+    if (outputSixTree == juce::ValueTree())
+        timbreTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_SIX), -1, nullptr);
     return settings;
 }
 void MainProcessor::valueTreePropertyChanged (juce::ValueTree& tree, 
