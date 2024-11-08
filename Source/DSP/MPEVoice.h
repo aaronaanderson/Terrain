@@ -6,6 +6,7 @@
 #include "VoiceInterface.h"
 #include "Trajectory.h"
 #include "Terrain.h"
+#include "../Utility/Identifiers.h"
 
 namespace tp
 {
@@ -18,14 +19,14 @@ public:
              juce::ValueTree settingsBranch, 
              juce::ValueTree& MPESettings,
              MTSClient& mtsc, 
-             juce::AudioProcessorValueTreeState& vts)
+             juce::AudioProcessorValueTreeState& vts, 
+             juce::ValueTree voicesStateTree)
       : terrain (p, vts, settingsBranch.getChildWithName (id::MPE_ROUTING)),
         trajectory (terrain, p, settingsBranch, mtsc, vts), 
         routingBranch (settingsBranch.getChildWithName (id::MPE_ROUTING)), 
         mpeSettingsBranch (MPESettings), 
         mtsClient (mtsc),
-        pressureCurve (mpeSettingsBranch, id::pressureCurve, nullptr),
-        timbreCurve (mpeSettingsBranch, id::timbreCurve, nullptr),
+        voicesState (voicesStateTree),
         releaseSensitivity (mpeSettingsBranch, id::releaseSensitivity, nullptr),
         pitchBendEnabled (mpeSettingsBranch, id::pitchBendEnabled, nullptr),
         divisionOfOctave (mpeSettingsBranch, id::pitchBendDivisionOfOctave, nullptr)
@@ -66,13 +67,11 @@ public:
                               note.pressure.asUnsignedFloat(), 
                               note.timbre.asUnsignedFloat());
         initialNote = note.initialNote;// MTS_NoteToFrequency (&mtsClient, static_cast<char> (note.initialNote), -1);
-        std::cout << "Note On: " << note.noteOnVelocity.asUnsignedFloat() << std::endl;
     }
     void noteStopped (bool allowTailOff) override
     {
         if (!allowTailOff) clearCurrentNote();
         auto note = getCurrentlyPlayingNote();
-        std::cout << "Note Off" << note.noteOffVelocity.asUnsignedFloat() << std::endl;
         trajectory.stopNote(); 
     }
     void notePressureChanged() override 
@@ -92,6 +91,9 @@ public:
             trajectory.setAmplitude (pressure);
             previousPressure = pressure;
         }
+
+        auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel));
+        channelState.setProperty (id::voicePressure, pressure, nullptr);
     }
     void notePitchbendChanged() override
     {
@@ -107,6 +109,9 @@ public:
         timbre = note.timbre.asUnsignedFloat();
         terrain.setTimbre (timbre);
         trajectory.setTimbre (timbre);
+
+        auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel));
+        channelState.setProperty (id::voiceTimbre, timbre, nullptr);
     }
     void noteKeyStateChanged() override {}
     void renderNextBlock (juce::AudioBuffer<float>& outputBuffer,
@@ -131,10 +136,10 @@ private:
     juce::ValueTree routingBranch;
     juce::ValueTree& mpeSettingsBranch;
     MTSClient& mtsClient;
+    juce::ValueTree voicesState;
     float pressure = 0.0f;
     float timbre = 0.0f;
-    juce::CachedValue<float> pressureCurve;
-    juce::CachedValue<float> timbreCurve;
+
     juce::CachedValue<float> releaseSensitivity;
     juce::CachedValue<bool> pitchBendEnabled;
     juce::CachedValue<int> divisionOfOctave;

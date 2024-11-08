@@ -1,7 +1,7 @@
 #pragma once 
 
 #include "WaveTerrainSynthesizer.h"
-
+#include "../Utility/DefaultTreeGenerator.h"
 namespace tp
 {
 class WaveTerrainSynthesizerMPE : public WaveTerrainSynthesizer,
@@ -99,7 +99,9 @@ public:
         if (numActiveVoices == 0) return 0.0f;
         return sum / static_cast<float> (numActiveVoices);
     }
+    juce::ValueTree getVoicesState() { return voicesState; }
 private:
+    juce::ValueTree voicesState = VoicesStateTree::create();
     void setPolyphony (int numVoices, 
                        Parameters& p, 
                        juce::ValueTree settingsBranch, 
@@ -112,7 +114,7 @@ private:
         juce::Array<VoiceInterface*> v;
         for (int i = 0; i < numVoices; i++)
         {
-            MPEVoice* voice = new MPEVoice (p, settingsBranch, MPESettings, mtsc, vts);
+            MPEVoice* voice = new MPEVoice (p, settingsBranch, MPESettings, mtsc, vts, voicesState);
             addVoice (voice);
             VoiceInterface* interface = dynamic_cast<VoiceInterface*> (voice);
             v.add (interface);

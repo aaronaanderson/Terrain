@@ -95,3 +95,24 @@ struct EphemeralStateTree
         return tree;
     }
 };
+
+struct VoicesStateTree
+{
+    static juce::ValueTree create()
+    {
+        juce::ValueTree tree (id::VOICES_STATE);
+        for (int i = 0; i < 15; i++)
+            tree.addChild (createChannel(), -1, nullptr);
+
+        return tree;
+    }
+private:
+    static juce::ValueTree createChannel()
+    {
+        juce::ValueTree channel (id::VOICE_CHANNEL);
+        channel.setProperty (id::voicePressure, 0.0f, nullptr);
+        channel.setProperty (id::voiceTimbre, 0.0f, nullptr);
+
+        return channel;
+    }
+};

@@ -62,9 +62,10 @@ private:
 class PerVoiceFilter : public juce::Component
 {
 public:
-    PerVoiceFilter (juce::AudioProcessorValueTreeState& vts)
-      : perVoiceFrequency ("Frequency", "Per-VoiceFilterFrequency", vts),
-        perVoiceResonance ("Resonance", "Per-VoiceFilterResonance", vts),
+    PerVoiceFilter (juce::AudioProcessorValueTreeState& vts, 
+                    juce::ValueTree voicesState)
+      : perVoiceFrequency ("Frequency", "Per-VoiceFilterFrequency", vts, voicesState),
+        perVoiceResonance ("Resonance", "Per-VoiceFilterResonance", vts, voicesState),
         perVoiceOnOff ("", "Per-VoiceFilterOnOff", vts)
     {
         label.setText ("Per-Voice Filter", juce::dontSendNotification);
@@ -145,12 +146,13 @@ private:
 class Envelope : public juce::Component
 {
 public:
-    Envelope (juce::AudioProcessorValueTreeState& vts)
+    Envelope (juce::AudioProcessorValueTreeState& vts, 
+              juce::ValueTree voicesState)
       : envelopeSize ("ES", "EnvelopeSize", vts),
-        attack ("Attack","Attack", vts),
-        decay ("Decay","Decay", vts),
-        sustain ("Sustain","Sustain", vts),
-        release ("Release","Release", vts)
+        attack ("Attack","Attack", vts, voicesState),
+        decay ("Decay","Decay", vts, voicesState),
+        sustain ("Sustain","Sustain", vts, voicesState),
+        release ("Release","Release", vts, voicesState)
     {
         label.setText ("Envelope", juce::dontSendNotification);
         label.setJustificationType (juce::Justification::centred);
@@ -189,10 +191,11 @@ private:
 class ControlPanel : public Panel
 {
 public:
-    ControlPanel (juce::AudioProcessorValueTreeState& vts)
+    ControlPanel (juce::AudioProcessorValueTreeState& vts, 
+                  juce::ValueTree voicesState)
       : Panel ("Control Panel"), 
-        envelope (vts),
-        perVoiceFilter (vts), 
+        envelope (vts, voicesState),
+        perVoiceFilter (vts, voicesState), 
         filter (vts), 
         compressor (vts), 
         outputLevel (vts)

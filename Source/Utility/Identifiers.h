@@ -45,4 +45,9 @@ namespace id
     static const juce::Identifier lowerBound = "lowerBound";
     static const juce::Identifier upperBound = "upperBound";
     static const juce::Identifier invertRange = "invertRange";
+
+    static const juce::Identifier VOICES_STATE = "VOICES_STATE";
+    static const juce::Identifier VOICE_CHANNEL = "VOICE_CHANNEL";
+    static const juce::Identifier voicePressure = "voicePressure";
+    static const juce::Identifier voiceTimbre = "voiceTimbre";
 }

@@ -9,11 +9,12 @@ class ModifierArray : public juce::Component,
                       private juce::ValueTree::Listener
 {
 public:
-    ModifierArray (juce::AudioProcessorValueTreeState& vts)
-      : aModifier ("a", "TrajectoryModA", vts),
-        bModifier ("b", "TrajectoryModB", vts),
-        cModifier ("c", "TrajectoryModC", vts),
-        dModifier ("d", "TrajectoryModD", vts)
+    ModifierArray (juce::AudioProcessorValueTreeState& vts, 
+                   juce::ValueTree voicesState)
+      : aModifier ("a", "TrajectoryModA", vts, voicesState),
+        bModifier ("b", "TrajectoryModB", vts, voicesState),
+        cModifier ("c", "TrajectoryModC", vts, voicesState),
+        dModifier ("d", "TrajectoryModD", vts, voicesState)
     {
         addAndMakeVisible (aModifier);
         addAndMakeVisible (bModifier);
@@ -70,8 +71,9 @@ private:
 class TrajectorySelector : public juce::Component
 {
 public:
-    TrajectorySelector (juce::AudioProcessorValueTreeState& vts)
-      : modifierArray (vts),
+    TrajectorySelector (juce::AudioProcessorValueTreeState& vts, 
+                        juce::ValueTree voicesState)
+      : modifierArray (vts, voicesState),
         trajectoryList ("CurrentTrajectory", vts, resetModifierArray)
     {
         trajectoryListLabel.setText ("Current Trajectory", juce::NotificationType::dontSendNotification);
@@ -127,11 +129,12 @@ private:
 class FeedbackPanel : public juce::Component
 {
 public:
-    FeedbackPanel (juce::AudioProcessorValueTreeState& vts)
-      : time ("Time", "FeedbackTime", vts), 
-        feedback ("Feedback", "Feedback", vts), 
-        mix ("Mix", "FeedbackMix", vts),
-        compression ("Compression", "FeedbackCompression", vts)
+    FeedbackPanel (juce::AudioProcessorValueTreeState& vts, 
+                   juce::ValueTree voicesState)
+      : time ("Time", "FeedbackTime", vts, voicesState), 
+        feedback ("Feedback", "Feedback", vts, voicesState), 
+        mix ("Mix", "FeedbackMix", vts, voicesState),
+        compression ("Compression", "FeedbackCompression", vts, voicesState)
     {
         label.setText ("Trajectory Feedback", juce::dontSendNotification);
         label.setJustificationType (juce::Justification::centred);
@@ -160,11 +163,12 @@ private:
 class TrajectoryVariables : public juce::Component 
 {
 public:
-    TrajectoryVariables (juce::AudioProcessorValueTreeState& vts)
-      : size ("Size", "Size", vts),
-        rotation ("Rotation", "Rotation", vts),
-        translation_x ("Translation X", "TranslationX", vts),
-        translation_y ("Translation Y", "TranslationY", vts)
+    TrajectoryVariables (juce::AudioProcessorValueTreeState& vts, 
+                         juce::ValueTree voicesState)
+      : size ("Size", "Size", vts, voicesState),
+        rotation ("Rotation", "Rotation", vts, voicesState),
+        translation_x ("Translation X", "TranslationX", vts, voicesState),
+        translation_y ("Translation Y", "TranslationY", vts, voicesState)
     {
         addAndMakeVisible (size);
         addAndMakeVisible (rotation);
@@ -191,9 +195,10 @@ private:
 class MeanderancePanel : public juce::Component
 {
 public:
-    MeanderancePanel (juce::AudioProcessorValueTreeState& vts)
-      : scale ("Scale", "MeanderanceScale", vts),
-        speed ("Speed", "MeanderanceSpeed", vts)
+    MeanderancePanel (juce::AudioProcessorValueTreeState& vts,
+                      juce::ValueTree voicesState)
+      : scale ("Scale", "MeanderanceScale", vts, voicesState),
+        speed ("Speed", "MeanderanceSpeed", vts, voicesState)
     {
         label.setText ("Meanderance", juce::dontSendNotification);
         label.setJustificationType (juce::Justification::centred);
@@ -218,12 +223,13 @@ private:
 class TrajectoryPanel : public Panel
 {
 public:
-    TrajectoryPanel (juce::AudioProcessorValueTreeState& vts)
+    TrajectoryPanel (juce::AudioProcessorValueTreeState& vts, 
+                     juce::ValueTree voicesState)
       : Panel ("Trajectory"),  
-        trajectorySelector (vts),
-        trajectoryVariables (vts),
-        meanderancePanel (vts),
-        feedbackPanel (vts)
+        trajectorySelector (vts, voicesState),
+        trajectoryVariables (vts, voicesState),
+        meanderancePanel (vts, voicesState),
+        feedbackPanel (vts, voicesState)
     {
         addAndMakeVisible (trajectorySelector);
         addAndMakeVisible (trajectoryVariables);

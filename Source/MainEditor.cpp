@@ -8,9 +8,11 @@ MainEditor::MainEditor (MainProcessor& p)
 {
     jassert (state.getType() == id::TERRAIN_SYNTH);
 
-    trajectoryPanel = std::make_unique<ti::TrajectoryPanel> (processorRef.getValueTreeState()); 
+    trajectoryPanel = std::make_unique<ti::TrajectoryPanel> (processorRef.getValueTreeState(), 
+                                                             processorRef.getMPEWaveTerrainSynthesizer().getVoicesState()); 
     terrainPanel = std::make_unique<ti::TerrainPanel> (processorRef.getValueTreeState()); 
-    controlPanel = std::make_unique<ti::ControlPanel> (processorRef.getValueTreeState());
+    controlPanel = std::make_unique<ti::ControlPanel> (processorRef.getValueTreeState(), 
+                                                       processorRef.getMPEWaveTerrainSynthesizer().getVoicesState());
     centerConsole = std::make_unique<ti::CenterConsole> (processorRef.getStandardWaveTerrainSynthesizer(),
                                                          processorRef.getMPEWaveTerrainSynthesizer(), 
                                                          processorRef.getCastedParameters(), 
@@ -89,9 +91,11 @@ void MainEditor::resetInterface()
     removeChildComponent (controlPanel.get());
     removeChildComponent (header.get());
     
-    trajectoryPanel = std::make_unique<ti::TrajectoryPanel> (processorRef.getValueTreeState()); 
+    trajectoryPanel = std::make_unique<ti::TrajectoryPanel> (processorRef.getValueTreeState(), 
+                                                             processorRef.getMPEWaveTerrainSynthesizer().getVoicesState()); 
     terrainPanel = std::make_unique<ti::TerrainPanel> (processorRef.getValueTreeState()); 
-    controlPanel = std::make_unique<ti::ControlPanel> (processorRef.getValueTreeState());
+    controlPanel = std::make_unique<ti::ControlPanel> (processorRef.getValueTreeState(), 
+                                                       processorRef.getMPEWaveTerrainSynthesizer().getVoicesState());
     header = std::make_unique<ti::Header> (processorRef.getPresetManager(), 
                                            processorRef.getState().getChildWithName (id::PRESET_SETTINGS), 
                                            ephemeralState.getState());

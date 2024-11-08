@@ -5,6 +5,7 @@
 
 #include "LookAndFeel.h"
 #include "SettingsComponent.h"
+#include "VoicesMeter.h"
 
 typedef juce::AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
 typedef juce::AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
@@ -65,26 +66,30 @@ private:
     juce::ComboBox comboBox;
     std::unique_ptr<ComboBoxAttachment> comboBoxAttachment;
 };
-
 struct ParameterSlider : public juce::Component,
                          public juce::DragAndDropTarget, 
                          private juce::ValueTree::Listener
 {
     ParameterSlider (juce::String labelText, 
                      const juce::String pID, 
-                     juce::AudioProcessorValueTreeState& vts)
+                     juce::AudioProcessorValueTreeState& vts,
+                     juce::ValueTree voicesState = juce::ValueTree())
       : paramID (pID), 
-        valueTreeState (vts)
+        valueTreeState (vts), 
+        voicesMeter (voicesState, vts.state.getChildWithName (id::PRESET_SETTINGS).getChildWithName (id::MPE_ROUTING))
     {
         valueTreeState.state.addListener (this);
         checkIfControlled();
-
+        
         label.setText (labelText, juce::dontSendNotification);
         slider.setTextBoxStyle (juce::Slider::TextEntryBoxPosition::NoTextBox, true, 20, 20);
 
         addAndMakeVisible (label);
         addAndMakeVisible (slider);
+        addChildComponent (voicesMeter);
         sliderAttachment.reset (new SliderAttachment (vts, paramID, slider));
+
+        ownershipChanged();
     }
     ~ParameterSlider() override { valueTreeState.state.removeListener (this); }
     void paint (juce::Graphics& g) override
@@ -129,6 +134,7 @@ struct ParameterSlider : public juce::Component,
             label.setJustificationType (juce::Justification::left);
         }
         slider.setBounds (b);
+        voicesMeter.setBounds (b);
     }
     // DragAndDropTarget ================================================================
     bool isInterestedInDragSource (const juce::DragAndDropTarget::SourceDetails& sd) override
@@ -170,10 +176,11 @@ struct ParameterSlider : public juce::Component,
     }
 private:
     juce::Slider slider;
+    VoiceMeter voicesMeter;
+    std::unique_ptr<SliderAttachment> sliderAttachment;
     juce::Label label;
     const juce::String paramID;
     juce::AudioProcessorValueTreeState& valueTreeState;
-    std::unique_ptr<SliderAttachment> sliderAttachment;
 
     bool itemDragHovering = false;
     bool isControlled = false;
@@ -182,6 +189,7 @@ private:
     {
         juce::ignoreUnused (tree);
         checkIfControlled();
+        voicesMeter.setRoutingState (valueTreeState.state.getChildWithName (id::MPE_ROUTING));
     }
     void valueTreePropertyChanged (juce::ValueTree& tree,
                                   const juce::Identifier& property) override
@@ -201,7 +209,9 @@ private:
         {
             if (pressureBranch.getChildWithName (id).getProperty (id::name).toString() == paramID)
             {
-              isControlled = true;
+                voicesMeter.setOutputID (id);
+                voicesMeter.setMPEChannel (id::PRESSURE);
+                isControlled = true;
             } 
         }
         auto timbreBranch = routingBranch.getChildWithName (id::TIMBRE);
@@ -209,10 +219,26 @@ private:
         {
             if (timbreBranch.getChildWithName (id).getProperty (id::name).toString() == paramID)
             {
-              isControlled = true;
+                voicesMeter.setOutputID (id);
+                voicesMeter.setMPEChannel (id::TIMBRE);
+                isControlled = true;
             } 
         }
+        ownershipChanged();
         repaint();
+    }
+    void ownershipChanged()
+    {
+        if (isControlled)
+        {
+            slider.setVisible (false);
+            voicesMeter.setVisible (true);
+        }
+        else
+        {
+            slider.setVisible (true);
+            voicesMeter.setVisible (false);
+        }
     }
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ParameterSlider)
