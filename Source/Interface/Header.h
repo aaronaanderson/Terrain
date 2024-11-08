@@ -8,7 +8,6 @@
 #include "../Utility/PresetManager.h"
 
 namespace ti{
-
 class PresetComponent : public Panel
 {
 public:

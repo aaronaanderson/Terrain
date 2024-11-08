@@ -66,31 +66,31 @@ public:
                               note.pressure.asUnsignedFloat(), 
                               note.timbre.asUnsignedFloat());
         initialNote = note.initialNote;// MTS_NoteToFrequency (&mtsClient, static_cast<char> (note.initialNote), -1);
+        std::cout << "Note On: " << note.noteOnVelocity.asUnsignedFloat() << std::endl;
     }
     void noteStopped (bool allowTailOff) override
     {
         if (!allowTailOff) clearCurrentNote();
-        trajectory.stopNote();
+        auto note = getCurrentlyPlayingNote();
+        std::cout << "Note Off" << note.noteOffVelocity.asUnsignedFloat() << std::endl;
+        trajectory.stopNote(); 
     }
     void notePressureChanged() override 
     {
         auto note = getCurrentlyPlayingNote();
         pressure = note.pressure.asUnsignedFloat();
+        terrain.setPressure (pressure);
+        trajectory.setPressure (pressure);
         
-        jassert (pressureCurve.get() != 0.0f);
-        float curvedPressure = static_cast<float> (std::pow(pressure, 1.0 / pressureCurve.get()));
-        terrain.setPressure (curvedPressure);
-        trajectory.setPressure (curvedPressure);
-        
-        if (curvedPressure <= 0.0f)
+        if (pressure <= 0.0f)
         {
             trajectory.setAmplitude (previousPressure);
             trajectory.setRelease();
         }
         else
         {
-            trajectory.setAmplitude (curvedPressure);
-            previousPressure = curvedPressure;
+            trajectory.setAmplitude (pressure);
+            previousPressure = pressure;
         }
     }
     void notePitchbendChanged() override
@@ -105,9 +105,8 @@ public:
     {
         auto note = getCurrentlyPlayingNote();
         timbre = note.timbre.asUnsignedFloat();
-        float curvedTimbre = static_cast<float> (std::pow (timbre, 1.0 / timbreCurve.get()));
-        terrain.setTimbre (curvedTimbre);
-        trajectory.setTimbre (curvedTimbre);
+        terrain.setTimbre (timbre);
+        trajectory.setTimbre (timbre);
     }
     void noteKeyStateChanged() override {}
     void renderNextBlock (juce::AudioBuffer<float>& outputBuffer,

@@ -29,10 +29,16 @@ private:
 };
 struct MPECurve : public juce::Component
 {
+    enum class CurveMode
+    {
+        Absolute,
+        Relative,
+        Continuation
+    };
     MPECurve (juce::ValueTree MPESettings, 
               const juce::Identifier& MPEChannel)
       : mpeSettings (MPESettings), 
-        mpeChannel (MPEChannel) 
+        mpeChannel (MPEChannel)
     {
         jassert (mpeSettings.getType() == id::MPE_SETTINGS);
 
@@ -71,11 +77,16 @@ struct MPECurve : public juce::Component
         curve.startNewSubPath ({0.0f, static_cast<float> (b.getHeight())});
         for (int i = 0; i < b.getWidth(); i++)
         {
-            auto normalX = juce::jmap (static_cast<float> (i), 0.0f, static_cast<float> (b.getWidth()) - 1.0f, 0.0f, 1.0f);
+            float normalX = juce::jmap (static_cast<float> (i), 0.0f, static_cast<float> (b.getWidth()) - 1.0f, 0.0f, 1.0f);
             auto normalY = static_cast<float> (std::pow (normalX, 1.0f / curveFactorSlider.getValue()));
-
-            juce::Point<float> nextPoint = {juce::jmap (normalX, curveThicc * 0.5f, static_cast<float> (b.getWidth())), 
-                                            juce::jmap (normalY, static_cast<float> (b.getHeight()), 0.0f)};
+  
+            auto halfLine = curveThicc * 0.5f;
+            juce::Point<float> nextPoint = {juce::jmap (normalX, 
+                                                        halfLine, 
+                                                        static_cast<float> (b.getWidth()) - halfLine), 
+                                                        juce::jmap (normalY, 
+                                                                   static_cast<float> (b.getHeight() - halfLine), 
+                                                                   halfLine)};
             curve.lineTo (nextPoint); 
         }  
         g.strokePath (curve, juce::PathStrokeType (curveThicc));
@@ -260,14 +271,14 @@ struct RoutingOutputLane : public juce::Component
     void resized() override
     {
         auto b = getLocalBounds();
-        auto height = b.getHeight();
-        juce::Rectangle<int> cdBounds {200, height};
-        juce::Rectangle<int> rangeBounds {200, height};
-        juce::Rectangle<int> toggleBounds {30, height};
-
-        draggableAssigner.setBounds (cdBounds.withPosition (0, 0));
-        invertToggle.setBounds (toggleBounds.withPosition (220, 0));
-        range.setBounds (rangeBounds.withPosition (255, 0));
+        auto hScale = static_cast<float> (b.getWidth()) / 430.0f;
+        int pad = 4;
+        b.removeFromLeft (pad);
+        draggableAssigner.setBounds (b.removeFromLeft (static_cast<int> (200  * hScale)));
+        b.removeFromLeft (pad);
+        invertToggle.setBounds (b.removeFromLeft (static_cast<int> (juce::jmax (24  * hScale, 22.0f))));
+        b.removeFromLeft (pad);
+        range.setBounds (b.removeFromLeft (static_cast<int> (186  * hScale)));
     }
 private:
     juce::ValueTree mpeRouting;
@@ -308,20 +319,21 @@ struct RoutingComponent : public juce::Component
     void resized() override
     {
         auto b = getLocalBounds();
-        juce::Rectangle<int> cdBounds {200, 20};
-        juce::Rectangle<int> rangeBounds {200, 22};
-        juce::Rectangle<int> toggleBounds {30, 22};
-        destinationLabel.setBounds (cdBounds);
-        invertLabel.setBounds (toggleBounds.withPosition (220, 0));
-        rangeLabel.setBounds (cdBounds.withPosition (255, 0));
+        auto labels = b.removeFromTop (20);
+        float hScale = static_cast<float> (b.getWidth()) / 430.0f;
+        int pad = 4;
+        labels.removeFromLeft (pad);
+        destinationLabel.setBounds (labels.removeFromLeft (static_cast<int> (200  * hScale)));
+        labels.removeFromLeft (pad);
+        invertLabel.setBounds (labels.removeFromLeft (static_cast<int> (juce::jmax (24  * hScale, 22.0f))));
+        labels.removeFromLeft (pad);
+        rangeLabel.setBounds (labels.removeFromLeft (static_cast<int> (30  * hScale)));
         
-        b.removeFromTop (20);
         laneOne.setBounds (b.removeFromTop (21));
-        
-        b.removeFromTop (4);
+        b.removeFromTop (pad);
         laneTwo.setBounds (b.removeFromTop (21));
 
-        b.removeFromTop (4);
+        b.removeFromTop (pad);
         laneThree.setBounds (b.removeFromTop (21));
     }
 private:
@@ -377,20 +389,17 @@ private:
 };
 struct MPEChannelComponent : public juce::Component 
 {
-    MPEChannelComponent (juce::ValueTree MPERouting, 
-                         juce::ValueTree& MPESettings,
+    MPEChannelComponent (juce::ValueTree MPERouting,
                          const juce::AudioProcessorValueTreeState& apvts,
                          juce::String whichChannel, 
                          const juce::Identifier& mpeChannel)
       : mpeRouting (MPERouting), 
-        mpeCurveComponent (MPESettings, mpeChannel),  
         routingComponent (mpeRouting, mpeChannel, apvts)
     {
         jassert (mpeRouting.getType() == id::MPE_ROUTING);
         channelNameLabel.setJustificationType (juce::Justification::left);
         channelNameLabel.setText (whichChannel, juce::dontSendNotification);
         addAndMakeVisible (channelNameLabel);
-        addAndMakeVisible (mpeCurveComponent);
         addAndMakeVisible (routingComponent);
     }
     void paint (juce::Graphics& g) override
@@ -405,13 +414,11 @@ struct MPEChannelComponent : public juce::Component
     {
         auto b = getLocalBounds();
         channelNameLabel.setBounds (b.removeFromTop (labelHeight));
-        mpeCurveComponent.setBounds (b.removeFromLeft (120).reduced (4));
         routingComponent.setBounds (b);
     }
 private:
     juce::ValueTree mpeRouting;
     juce::Label channelNameLabel;
-    MPECurve mpeCurveComponent;
     RoutingComponent routingComponent;
     const int labelHeight = 20;
 };
@@ -521,12 +528,10 @@ public:
         jassert (settings.getType() == id::PRESET_SETTINGS);
 
         pressureChannelComponent = std::make_unique<MPEChannelComponent> (settings.getChildWithName (id::MPE_ROUTING), 
-                                                                          mpeSettings,
                                                                           valueTreeState,
                                                                           "Pressure", 
                                                                           id::PRESSURE);  
         timbreChannelComponent = std::make_unique<MPEChannelComponent> (settings.getChildWithName (id::MPE_ROUTING), 
-                                                                        mpeSettings,
                                                                         valueTreeState,
                                                                         "Timbre", 
                                                                         id::TIMBRE);
@@ -545,9 +550,9 @@ public:
         auto b = getLocalBounds();
 
         mpeHeader.setBounds (b.removeFromTop (20));
-        pressureChannelComponent->setBounds (b.removeFromTop (120));
+        pressureChannelComponent->setBounds (b.removeFromTop (240));
         pressureSmoothingComponent.setBounds (b.removeFromTop (24));
-        timbreChannelComponent->setBounds (b.removeFromTop (120));
+        timbreChannelComponent->setBounds (b.removeFromTop (240));
         timbreSmoothingComponent.setBounds (b.removeFromTop (24));
         pitchBendComponent.setBounds (b.removeFromTop (24));
         oversamplingHeader.setBounds (b.removeFromTop (24));
@@ -577,12 +582,10 @@ private:
         removeChildComponent (pressureChannelComponent.get());
         removeChildComponent (timbreChannelComponent.get());
         pressureChannelComponent = std::make_unique<MPEChannelComponent> (settings.getChildWithName (id::MPE_ROUTING), 
-                                                                          mpeSettings,
                                                                           valueTreeState,
                                                                           "Pressure", 
                                                                           id::PRESSURE);  
         timbreChannelComponent = std::make_unique<MPEChannelComponent> (settings.getChildWithName (id::MPE_ROUTING), 
-                                                                        mpeSettings,
                                                                         valueTreeState,
                                                                         "Timbre", 
                                                                         id::TIMBRE);
