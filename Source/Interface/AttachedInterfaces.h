@@ -191,7 +191,8 @@ private:
     }
     void checkIfControlled()
     {
-        juce::Array<juce::Identifier> ids {id::OUTPUT_ONE, id::OUTPUT_TWO, id::OUTPUT_THREE};
+        juce::Array<juce::Identifier> ids {id::OUTPUT_ONE, id::OUTPUT_TWO, id::OUTPUT_THREE,
+                                           id::OUTPUT_FOUR, id::OUTPUT_FIVE, id::OUTPUT_SIX};
         auto routingBranch = valueTreeState.state.getChildWithName (id::PRESET_SETTINGS)
                                                  .getChildWithName (id::MPE_ROUTING);
         auto pressureBranch = routingBranch.getChildWithName (id::PRESSURE);

@@ -21,10 +21,16 @@ struct MPERoutingTree
         pressureTree.addChild (createRoute (id::OUTPUT_ONE), -1, nullptr);
         pressureTree.addChild (createRoute (id::OUTPUT_TWO), -1, nullptr);
         pressureTree.addChild (createRoute (id::OUTPUT_THREE), -1, nullptr);
+        pressureTree.addChild (createRoute (id::OUTPUT_FOUR), -1, nullptr);
+        pressureTree.addChild (createRoute (id::OUTPUT_FIVE), -1, nullptr);
+        pressureTree.addChild (createRoute (id::OUTPUT_SIX), -1, nullptr);
         juce::ValueTree timbreTree (id::TIMBRE);
         timbreTree.addChild (createRoute (id::OUTPUT_ONE), -1, nullptr);
         timbreTree.addChild (createRoute (id::OUTPUT_TWO), -1, nullptr);
         timbreTree.addChild (createRoute (id::OUTPUT_THREE), -1, nullptr);
+        timbreTree.addChild (createRoute (id::OUTPUT_FOUR), -1, nullptr);
+        timbreTree.addChild (createRoute (id::OUTPUT_FIVE), -1, nullptr);
+        timbreTree.addChild (createRoute (id::OUTPUT_SIX), -1, nullptr);
         
         tree.addChild (pressureTree, -1, nullptr);
         tree.addChild (timbreTree, -1, nullptr);

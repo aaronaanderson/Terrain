@@ -38,6 +38,9 @@ namespace id
     static const juce::Identifier OUTPUT_ONE = "OUTPUT_ONE";
     static const juce::Identifier OUTPUT_TWO = "OUTPUT_TWO";
     static const juce::Identifier OUTPUT_THREE = "OUTPUT_THREE";
+    static const juce::Identifier OUTPUT_FOUR = "OUTPUT_FOUR";
+    static const juce::Identifier OUTPUT_FIVE = "OUTPUT_FIVE";
+    static const juce::Identifier OUTPUT_SIX = "OUTPUT_SIX";
     static const juce::Identifier name = "name";
     static const juce::Identifier lowerBound = "lowerBound";
     static const juce::Identifier upperBound = "upperBound";

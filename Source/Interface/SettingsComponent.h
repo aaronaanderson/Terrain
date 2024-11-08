@@ -301,7 +301,10 @@ struct RoutingComponent : public juce::Component
         mpeChannelIdentifier (MPEChannel),
         laneOne (mpeRouting, mpeChannelIdentifier, id::OUTPUT_ONE, apvts),
         laneTwo (mpeRouting, mpeChannelIdentifier, id::OUTPUT_TWO, apvts),
-        laneThree (mpeRouting, mpeChannelIdentifier, id::OUTPUT_THREE, apvts)
+        laneThree (mpeRouting, mpeChannelIdentifier, id::OUTPUT_THREE, apvts),
+        laneFour (mpeRouting, mpeChannelIdentifier, id::OUTPUT_FOUR, apvts),
+        laneFive (mpeRouting, mpeChannelIdentifier, id::OUTPUT_FIVE, apvts),
+        laneSix (mpeRouting, mpeChannelIdentifier, id::OUTPUT_SIX, apvts)
     {
         jassert (mpeRouting.getType() == id::MPE_ROUTING);
         jassert (mpeChannel.getType() == MPEChannel);
@@ -317,6 +320,9 @@ struct RoutingComponent : public juce::Component
         addAndMakeVisible (laneOne);
         addAndMakeVisible (laneTwo);
         addAndMakeVisible (laneThree);
+        addAndMakeVisible (laneFour);
+        addAndMakeVisible (laneFive);
+        addAndMakeVisible (laneSix);
     }
     void resized() override
     {
@@ -329,14 +335,19 @@ struct RoutingComponent : public juce::Component
         labels.removeFromLeft (pad);
         invertLabel.setBounds (labels.removeFromLeft (static_cast<int> (juce::jmax (24  * hScale, 22.0f))));
         labels.removeFromLeft (pad);
-        rangeLabel.setBounds (labels.removeFromLeft (static_cast<int> (30  * hScale)));
+        rangeLabel.setBounds (labels.removeFromLeft (static_cast<int> (186  * hScale)));
         
         laneOne.setBounds (b.removeFromTop (21));
         b.removeFromTop (pad);
         laneTwo.setBounds (b.removeFromTop (21));
-
         b.removeFromTop (pad);
         laneThree.setBounds (b.removeFromTop (21));
+        b.removeFromTop (pad);
+        laneFour.setBounds (b.removeFromTop (21));
+        b.removeFromTop (pad);
+        laneFive.setBounds (b.removeFromTop (21));
+        b.removeFromTop (pad);
+        laneSix.setBounds (b.removeFromTop (21));
     }
 private:
     juce::ValueTree mpeRouting;
@@ -346,7 +357,8 @@ private:
     juce::Label rangeLabel = {"RangeLabel", "Range"};
     juce::Label invertLabel = {"InvertLabel", "Inv."};
     
-    RoutingOutputLane laneOne, laneTwo, laneThree;
+    RoutingOutputLane laneOne, laneTwo, laneThree, 
+                      laneFour, laneFive, laneSix;
 };
 struct MPESaveComponent : public juce::Component
 {
@@ -554,9 +566,9 @@ public:
         auto b = getLocalBounds();
 
         mpeHeader.setBounds (b.removeFromTop (20));
-        pressureChannelComponent->setBounds (b.removeFromTop (240));
+        pressureChannelComponent->setBounds (b.removeFromTop (200));
         pressureSmoothingComponent.setBounds (b.removeFromTop (24));
-        timbreChannelComponent->setBounds (b.removeFromTop (240));
+        timbreChannelComponent->setBounds (b.removeFromTop (200));
         timbreSmoothingComponent.setBounds (b.removeFromTop (24));
         pitchBendComponent.setBounds (b.removeFromTop (24));
         oversamplingHeader.setBounds (b.removeFromTop (24));
@@ -567,7 +579,7 @@ public:
         settings = settingsBranch;
         resetChannelComponents();
     }
-    int getDesiredHeight() { return 620; }
+    int getDesiredHeight() { return 540; }
 private:
     const juce::AudioProcessorValueTreeState& valueTreeState;
     juce::ValueTree& mpeSettings;
@@ -607,13 +619,14 @@ public:
                        juce::ValueTree& MPESettings)
     {
         viewport.setViewedComponent (new SettingsComponentLayout (settingsBranch, apvts, MPESettings));
+        viewport.setScrollBarsShown (true, false);
         addAndMakeVisible (viewport);
     }
     void resized() override 
     {
         auto b = getLocalBounds();
         viewport.setBounds (b);
-        
+
         auto scl = dynamic_cast<SettingsComponentLayout*> (viewport.getViewedComponent());
         scl->setBounds ({b.getWidth(), scl->getDesiredHeight()});
     }
