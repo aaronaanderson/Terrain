@@ -533,7 +533,6 @@ public:
                              const juce::AudioProcessorValueTreeState& apvts, 
                              juce::ValueTree& MPESettings)
       :  valueTreeState (apvts),
-         mpeSettings (MPESettings),
          settings (settingsBranch), 
          mpeHeader ("MPE"), 
          pressureSmoothingComponent (MPESettings),
@@ -582,7 +581,6 @@ public:
     int getDesiredHeight() { return 544; }
 private:
     const juce::AudioProcessorValueTreeState& valueTreeState;
-    juce::ValueTree& mpeSettings;
     juce::ValueTree settings;
     HeaderLabel mpeHeader;
     std::unique_ptr<MPEChannelComponent> pressureChannelComponent;

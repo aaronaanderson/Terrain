@@ -74,9 +74,9 @@ struct ParameterSlider : public juce::Component,
                      const juce::String pID, 
                      juce::AudioProcessorValueTreeState& vts,
                      juce::ValueTree voicesState = juce::ValueTree())
-      : paramID (pID), 
-        valueTreeState (vts), 
-        voicesMeter (voicesState, vts.state.getChildWithName (id::PRESET_SETTINGS).getChildWithName (id::MPE_ROUTING))
+      : voicesMeter (voicesState, vts.state.getChildWithName (id::PRESET_SETTINGS).getChildWithName (id::MPE_ROUTING)),
+        paramID (pID), 
+        valueTreeState (vts)
     {
         valueTreeState.state.addListener (this);
         checkIfControlled();
