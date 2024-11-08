@@ -514,12 +514,12 @@ private:
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OverSamplingComponent)
 };
-class SettingsComponent : public juce::Component
+class SettingsComponentLayout : public juce::Component
 {
 public:
-    SettingsComponent (juce::ValueTree settingsBranch, 
-                       const juce::AudioProcessorValueTreeState& apvts, 
-                       juce::ValueTree& MPESettings)
+    SettingsComponentLayout (juce::ValueTree settingsBranch, 
+                             const juce::AudioProcessorValueTreeState& apvts, 
+                             juce::ValueTree& MPESettings)
       :  valueTreeState (apvts),
          mpeSettings (MPESettings),
          settings (settingsBranch), 
@@ -567,6 +567,7 @@ public:
         settings = settingsBranch;
         resetChannelComponents();
     }
+    int getDesiredHeight() { return 620; }
 private:
     const juce::AudioProcessorValueTreeState& valueTreeState;
     juce::ValueTree& mpeSettings;
@@ -597,5 +598,31 @@ private:
         addAndMakeVisible (timbreChannelComponent.get());
         resized(); repaint();
     }
+};
+class SettingsComponent : public juce::Component
+{
+public:
+    SettingsComponent (juce::ValueTree settingsBranch, 
+                       const juce::AudioProcessorValueTreeState& apvts, 
+                       juce::ValueTree& MPESettings)
+    {
+        viewport.setViewedComponent (new SettingsComponentLayout (settingsBranch, apvts, MPESettings));
+        addAndMakeVisible (viewport);
+    }
+    void resized() override 
+    {
+        auto b = getLocalBounds();
+        viewport.setBounds (b);
+        
+        auto scl = dynamic_cast<SettingsComponentLayout*> (viewport.getViewedComponent());
+        scl->setBounds ({b.getWidth(), scl->getDesiredHeight()});
+    }
+    void setState (juce::ValueTree state)
+    {
+        auto scl = dynamic_cast<SettingsComponentLayout*> (viewport.getViewedComponent());
+        scl->setState (state);
+    }
+private:
+    juce::Viewport viewport;
 };
 }
