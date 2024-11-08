@@ -123,8 +123,9 @@ struct PressureSmoothingComponent : public juce::Component
     void resized() override
     {
         auto b = getLocalBounds();
-        label.setBounds (b.removeFromLeft (150));
-        smoothingSlider.setBounds (b.removeFromLeft (250));
+        auto hScalar = static_cast<float> (b.getWidth()) / 430.0f;
+        label.setBounds (b.removeFromLeft (static_cast <int> (130 * hScalar)));
+        smoothingSlider.setBounds (b.removeFromLeft (static_cast<int> (200 * hScalar)));
     }
 private:
     juce::ValueTree mpeSettings;
@@ -159,8 +160,9 @@ struct TimbreSmoothingComponent : public juce::Component
     void resized() override
     {
         auto b = getLocalBounds();
-        label.setBounds (b.removeFromLeft (150));
-        smoothingSlider.setBounds (b.removeFromLeft (250));
+        auto hScalar = static_cast<float> (b.getWidth()) / 430.0f;
+        label.setBounds (b.removeFromLeft (static_cast <int> (130 * hScalar)));
+        smoothingSlider.setBounds (b.removeFromLeft (static_cast<int> (200 * hScalar)));
     }
 private:
     juce::ValueTree mpeSettings;
@@ -429,6 +431,17 @@ struct PitchBendSettingsComponent : public juce::Component
     {
         jassert (mpeSettings.getType() == id::MPE_SETTINGS);
 
+        pitchBendEnabled.setToggleState (mpeSettings.getProperty (id::pitchBendEnabled), juce::dontSendNotification);
+        pitchBendEnabled.onStateChange = [&]()
+            {
+                mpeSettings.setProperty (id::pitchBendEnabled, pitchBendEnabled.getToggleState(), nullptr);
+            };
+        
+        divisionOfOctave.setValue (mpeSettings.getProperty (id::pitchBendDivisionOfOctave), juce::dontSendNotification);
+        divisionOfOctave.onValueChange = [&]()
+            {
+                mpeSettings.setProperty (id::pitchBendDivisionOfOctave, (int)divisionOfOctave.getValue(), nullptr);
+            };
         addAndMakeVisible (pitchBendEnabledLabel);
         addAndMakeVisible (pitchBendEnabled);
         addAndMakeVisible (divisionOfOctaveLabel);
@@ -446,21 +459,12 @@ struct PitchBendSettingsComponent : public juce::Component
     void resized() override
     {
         auto b = getLocalBounds();
-        pitchBendEnabled.setToggleState (mpeSettings.getProperty (id::pitchBendEnabled), juce::dontSendNotification);
-        pitchBendEnabled.onStateChange = [&]()
-            {
-                mpeSettings.setProperty (id::pitchBendEnabled, pitchBendEnabled.getToggleState(), nullptr);
-            };
-        pitchBendEnabled.setBounds (b.removeFromLeft (22));
-        pitchBendEnabledLabel.setBounds (b.removeFromLeft (150));
+        auto hScalar = static_cast<float> (b.getWidth()) / 430.0f;
+        pitchBendEnabled.setBounds (b.removeFromLeft (static_cast<int> (juce::jmax (22 * hScalar, 22.0f))));
+        pitchBendEnabledLabel.setBounds (b.removeFromLeft (static_cast<int> (70 * hScalar)));
 
-        divisionOfOctave.setValue (mpeSettings.getProperty (id::pitchBendDivisionOfOctave), juce::dontSendNotification);
-        divisionOfOctave.onValueChange = [&]()
-            {
-                mpeSettings.setProperty (id::pitchBendDivisionOfOctave, (int)divisionOfOctave.getValue(), nullptr);
-            };
-        divisionOfOctave.setBounds (b.removeFromLeft (228));
-        divisionOfOctaveLabel.setBounds (b.removeFromLeft (200));
+        divisionOfOctave.setBounds (b.removeFromLeft (static_cast<int> (200 * hScalar)));
+        divisionOfOctaveLabel.setBounds (b.removeFromLeft (static_cast<int> (200 * hScalar)));
     }
 private:
     juce::ValueTree mpeSettings;
