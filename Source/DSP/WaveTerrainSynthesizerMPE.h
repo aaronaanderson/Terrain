@@ -8,12 +8,14 @@ class WaveTerrainSynthesizerMPE : public WaveTerrainSynthesizer,
                                   public juce::MPESynthesiser
 {
 public:
-    WaveTerrainSynthesizerMPE (Parameters& p, 
+    WaveTerrainSynthesizerMPE (juce::MPEInstrument& i,
+                               Parameters& p, 
                                MTSClient& mtsc, 
                                juce::ValueTree settings, 
                                juce::ValueTree& MPESettings,
                                juce::AudioProcessorValueTreeState& vts)
-      :  WaveTerrainSynthesizer (mtsc)
+      : WaveTerrainSynthesizer (mtsc), 
+        juce::MPESynthesiser (i)
     {
         setPolyphony (15, p, settings, MPESettings, mtsClient, vts);
     }
@@ -100,6 +102,46 @@ public:
         return sum / static_cast<float> (numActiveVoices);
     }
     juce::ValueTree getVoicesState() { return voicesState; }
+    void handleMidiEvent (const juce::MidiMessage& m) override
+    {
+        if (m.isPitchWheel())
+        {
+            int channel = m.getChannel();
+            int pitchWheelValue = m.getPitchWheelValue();
+            float normalizedPitchWheel = (pitchWheelValue - 8192) / 8192.0f;
+            
+            if (channel == 1)
+                setGlobalPitchWheel (normalizedPitchWheel);
+            else
+                setChannelPitchWheel (channel, normalizedPitchWheel);
+                
+            auto* l = juce::Logger::getCurrentLogger();
+            l->writeToLog ("Channel: " + juce::String (channel) + " | Value: " + juce::String (m.getPitchWheelValue()));
+        }
+        juce::MPESynthesiser::handleMidiEvent (m);
+    }
+    void setChannelPitchWheel (int channel, float pitchWheelNormalized)
+    {
+        for (int i = 0; i < getNumVoices(); i++)
+        {
+            auto v = getVoice (i);
+            auto* t = dynamic_cast<MPEVoice*> (v);
+            if (t->getCurrentlyPlayingNote().midiChannel == channel)
+            {
+                t->setPitchWheel (pitchWheelNormalized);
+                break;
+            }
+        } 
+    }
+    void setGlobalPitchWheel (float pitchWheelNormalized)
+    {
+        for (int i = 0; i < getNumVoices(); i++)
+        {
+            auto v = getVoice (i);
+            auto* t = dynamic_cast<MPEVoice*> (v);
+            t->setGlobalPitchWheel (pitchWheelNormalized);
+        }         
+    }
 private:
     juce::ValueTree voicesState = VoicesStateTree::create();
     void setPolyphony (int numVoices, 

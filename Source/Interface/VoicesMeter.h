@@ -37,7 +37,6 @@ private:
     juce::Identifier mpeChannel;
     juce::Identifier outputID;
     
-
     void paintHorizontal (juce::Graphics& g)
     {
         auto b = getLocalBounds();
@@ -49,9 +48,10 @@ private:
         g.fillRect (sliderRect.toFloat());
 
         float width = sliderRect.getHeight() * 0.6f;
-        // float halfWidth = width / 2.0f;
         for (int i = 0; i < voicesState.getNumChildren(); i++)
         {
+            if (!(bool)voicesState.getChild (i).getProperty (id::voiceActive)) continue;
+            
             g.setColour (laf->getAccentColour());
             float x = 0.0f;
             if (mpeChannel == id::PRESSURE) x = voicesState.getChild (i).getProperty (id::voicePressure);
@@ -98,6 +98,7 @@ private:
 
         for (int i = 0; i < voicesState.getNumChildren(); i++)
         {
+            if (!voicesState.getChild (i).getProperty (id::voiceActive)) continue;
             float x = 0.0f;
             if (mpeChannel == id::PRESSURE) x = voicesState.getChild (i).getProperty (id::voicePressure);
             if (mpeChannel == id::TIMBRE) x = voicesState.getChild (i).getProperty (id::voiceTimbre);
@@ -132,6 +133,7 @@ private:
         // float halfWidth = width / 2.0f;
         for (int i = 0; i < voicesState.getNumChildren(); i++)
         {
+            if (!voicesState.getChild (i).getProperty (id::voiceActive)) continue;
             g.setColour (laf->getAccentColour());
             float x = 0.0f;
             if (mpeChannel == id::PRESSURE) x = voicesState.getChild (i).getProperty (id::voicePressure);

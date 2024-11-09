@@ -112,7 +112,7 @@ private:
         juce::ValueTree channel (id::VOICE_CHANNEL);
         channel.setProperty (id::voicePressure, 0.0f, nullptr);
         channel.setProperty (id::voiceTimbre, 0.0f, nullptr);
-
+        channel.setProperty (id::voiceActive, false, nullptr);
         return channel;
     }
 };

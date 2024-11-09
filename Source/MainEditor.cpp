@@ -10,7 +10,8 @@ MainEditor::MainEditor (MainProcessor& p)
 
     trajectoryPanel = std::make_unique<ti::TrajectoryPanel> (processorRef.getValueTreeState(), 
                                                              processorRef.getMPEWaveTerrainSynthesizer().getVoicesState()); 
-    terrainPanel = std::make_unique<ti::TerrainPanel> (processorRef.getValueTreeState()); 
+    terrainPanel = std::make_unique<ti::TerrainPanel> (processorRef.getValueTreeState(), 
+                                                       processorRef.getMPEWaveTerrainSynthesizer().getVoicesState()); 
     controlPanel = std::make_unique<ti::ControlPanel> (processorRef.getValueTreeState(), 
                                                        processorRef.getMPEWaveTerrainSynthesizer().getVoicesState());
     centerConsole = std::make_unique<ti::CenterConsole> (processorRef.getStandardWaveTerrainSynthesizer(),
@@ -93,7 +94,8 @@ void MainEditor::resetInterface()
     
     trajectoryPanel = std::make_unique<ti::TrajectoryPanel> (processorRef.getValueTreeState(), 
                                                              processorRef.getMPEWaveTerrainSynthesizer().getVoicesState()); 
-    terrainPanel = std::make_unique<ti::TerrainPanel> (processorRef.getValueTreeState()); 
+    terrainPanel = std::make_unique<ti::TerrainPanel> (processorRef.getValueTreeState(), 
+                                                       processorRef.getMPEWaveTerrainSynthesizer().getVoicesState()); 
     controlPanel = std::make_unique<ti::ControlPanel> (processorRef.getValueTreeState(), 
                                                        processorRef.getMPEWaveTerrainSynthesizer().getVoicesState());
     header = std::make_unique<ti::Header> (processorRef.getPresetManager(), 

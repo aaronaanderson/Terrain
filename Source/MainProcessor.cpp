@@ -8,17 +8,27 @@
 MainProcessor::MainProcessor()
      : AudioProcessor (BusesProperties().withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
        valueTreeState (*this, &undoManager, id::TERRAIN_SYNTH, createParameterLayout()),
-       parameters (valueTreeState)
+       parameters (valueTreeState), 
+       instrument (juce::MPEZone (juce::MPEZone::Type::lower, 15))
 {
     mtsClient = MTS_RegisterClient();
     
     loadMPESettings();
     PresetSaver::movePresetsToDisk();
 
+    juce::Logger::setCurrentLogger (juce::FileLogger::createDateStampedLogger (juce::FileLogger::getSystemLogFileFolder().getFullPathName() + "/Terrain",
+                                                                               "Terrain",
+                                                                               ".txt",
+                                                                               "Hello From Terrain"));
+
     valueTreeState.state.addChild (SettingsTree::create(), -1, nullptr);
     presetManager = std::make_unique<PresetManager> (this, valueTreeState.state);
+    instrument.setTimbreTrackingMode (juce::MPEInstrument::allNotesOnChannel);
+    instrument.setPressureTrackingMode (juce::MPEInstrument::allNotesOnChannel);
+
     standardSynthesizer = std::make_unique<tp::WaveTerrainSynthesizerStandard> (parameters, *mtsClient, valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
-    mpeSynthesizer = std::make_unique<tp::WaveTerrainSynthesizerMPE> (parameters, 
+    mpeSynthesizer = std::make_unique<tp::WaveTerrainSynthesizerMPE> (instrument, 
+                                                                      parameters, 
                                                                       *mtsClient, 
                                                                       valueTreeState.state.getChildWithName (id::PRESET_SETTINGS),
                                                                       mpeSettings,
@@ -34,6 +44,8 @@ MainProcessor::~MainProcessor()
     saveMPESettings();
     MTS_DeregisterClient (mtsClient);
     valueTreeState.state.removeListener (this);
+    
+    juce::Logger::setCurrentLogger (nullptr);
 }
 //==============================================================================
 const juce::String MainProcessor::getName() const  { return JucePlugin_Name; }

@@ -49,10 +49,11 @@ public:
         terrain.prepareToPlay (newRate, blockSize);
         trajectory.prepareToPlay (newRate, blockSize); 
     }
-    void setState (juce::ValueTree settingsBranch) override 
+    void setState (juce::ValueTree SettingsBranch) override 
     { 
-        terrain.setState (settingsBranch.getChildWithName (id::MPE_ROUTING));
-        trajectory.setState (settingsBranch); 
+        terrain.setState (SettingsBranch.getChildWithName (id::MPE_ROUTING));
+        trajectory.setState (SettingsBranch); 
+        settingsBranch = SettingsBranch;
     } 
     bool isVoiceCurrentlyActive() const override { return isActive(); }
     // MPESynthesiser Voice ===============================================
@@ -67,13 +68,20 @@ public:
                               note.pressure.asUnsignedFloat(), 
                               note.timbre.asUnsignedFloat());
         initialNote = note.initialNote;// MTS_NoteToFrequency (&mtsClient, static_cast<char> (note.initialNote), -1);
+
+        auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel));
+        channelState.setProperty (id::voiceActive, true, nullptr);
     }
     void noteStopped (bool allowTailOff) override
     {
         if (!allowTailOff) clearCurrentNote();
         auto note = getCurrentlyPlayingNote();
         trajectory.stopNote(); 
+
+        auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel));
+        channelState.setProperty (id::voiceActive, false, nullptr);
     }
+    
     void notePressureChanged() override 
     {
         auto note = getCurrentlyPlayingNote();
@@ -97,11 +105,29 @@ public:
     }
     void notePitchbendChanged() override
     {
+        // if (!pitchBendEnabled.get()) return;
+        // auto note = getCurrentlyPlayingNote();
+        // auto tunedBaseFrequency = MTS_NoteToFrequency (&mtsClient, static_cast<char> (initialNote), -1);
+        // auto adjustedFrequency = tunedBaseFrequency * semitonesToScalar (note.totalPitchbendInSemitones);
+        // trajectory.setFrequencySmooth (static_cast<float> (adjustedFrequency));
+    }
+    void setPitchWheel (float pitchWheel)
+    {
         if (!pitchBendEnabled.get()) return;
+        jassert (pitchWheel >= -1.0f && pitchWheel <= 1.0f);
+        currentPitchWheel = pitchWheel;
         auto note = getCurrentlyPlayingNote();
         auto tunedBaseFrequency = MTS_NoteToFrequency (&mtsClient, static_cast<char> (initialNote), -1);
-        auto adjustedFrequency = tunedBaseFrequency * semitonesToScalar (note.totalPitchbendInSemitones);
+        auto semitones = getPitchBendToSemitones (pitchWheel);
+        auto adjustedFrequency = tunedBaseFrequency * semitonesToScalar (semitones + globalPitchBendSemitones);
         trajectory.setFrequencySmooth (static_cast<float> (adjustedFrequency));
+    }
+    void setGlobalPitchWheel (float pitchWheelNormalized)
+    {
+        if (!pitchBendEnabled.get()) return;
+        jassert (pitchWheelNormalized >= -1.0f && pitchWheelNormalized <= 1.0f);
+        globalPitchBendSemitones = getGlobalPitchBendSemitones (pitchWheelNormalized);
+        setPitchWheel (currentPitchWheel);
     }
     void noteTimbreChanged() override
     {
@@ -135,6 +161,7 @@ private:
     MPETrajectory trajectory;
     juce::ValueTree routingBranch;
     juce::ValueTree& mpeSettingsBranch;
+    juce::ValueTree settingsBranch;
     MTSClient& mtsClient;
     juce::ValueTree voicesState;
     float pressure = 0.0f;
@@ -145,6 +172,9 @@ private:
     juce::CachedValue<int> divisionOfOctave;
     float previousPressure = 0.0f;
     double initialNote;
+
+    float currentPitchWheel = 0.0f;
+    double globalPitchBendSemitones = 0.0f;
     void valueTreePropertyChanged (juce::ValueTree& tree,
                                    const juce::Identifier& property) override
     {
@@ -159,6 +189,15 @@ private:
             terrain.setTimbreSmoothing (tree.getProperty (property));
             trajectory.setTimbreSmoothing (tree.getProperty (property));
         }
+    }
+    double getPitchBendToSemitones (float pitchWheelNormalized)
+    {
+        return juce::jmap ((double)pitchWheelNormalized, -1.0, 1.0, -48.0, 48.0);
+    }
+    double getGlobalPitchBendSemitones (float pitchWheelNormalized)
+    {
+        double bend = settingsBranch.getProperty (id::pitchBendRange);
+        return juce::jmap ((double) pitchWheelNormalized, -1.0, 1.0, -bend, bend);
     }
     double semitonesToScalar (double semitones) 
     { 

@@ -7,8 +7,9 @@ namespace ti
 class TerrainVariables : public juce::Component 
 {
 public:
-    TerrainVariables (juce::AudioProcessorValueTreeState& vts)
-      : saturation ("Saturation", "TerrainSaturation", vts)
+    TerrainVariables (juce::AudioProcessorValueTreeState& vts, 
+                      juce::ValueTree voicesState)
+      : saturation ("Saturation", "TerrainSaturation", vts, voicesState)
     {
         addAndMakeVisible (saturation);
     }
@@ -25,11 +26,12 @@ private:
 class TerrainModifierArray : public juce::Component
 {
 public:
-    TerrainModifierArray (juce::AudioProcessorValueTreeState& vts)
-      : aModifier ("a", "TerrainModA", vts),
-        bModifier ("b", "TerrainModB", vts),
-        cModifier ("c", "TerrainModC", vts),
-        dModifier ("d", "TerrainModD", vts)
+    TerrainModifierArray (juce::AudioProcessorValueTreeState& vts, 
+                          juce::ValueTree voicesState)
+      : aModifier ("a", "TerrainModA", vts, voicesState),
+        bModifier ("b", "TerrainModB", vts, voicesState),
+        cModifier ("c", "TerrainModC", vts, voicesState),
+        dModifier ("d", "TerrainModD", vts, voicesState)
     {
         addAndMakeVisible (aModifier);
         addAndMakeVisible (bModifier);
@@ -87,8 +89,9 @@ private:
 class TerrainSelector : public juce::Component
 {
 public:
-    TerrainSelector (juce::AudioProcessorValueTreeState& vts)
-      : modifierArray (vts), 
+    TerrainSelector (juce::AudioProcessorValueTreeState& vts, 
+                     juce::ValueTree voicesState)
+      : modifierArray (vts, voicesState), 
         terrainList ("CurrentTerrain", vts, resetModifierArray)
     {
 
@@ -138,10 +141,11 @@ private:
 class TerrainPanel : public Panel
 {
 public:
-    TerrainPanel (juce::AudioProcessorValueTreeState& vts)
+    TerrainPanel (juce::AudioProcessorValueTreeState& vts, 
+                  juce::ValueTree voicesState)
       : Panel ("Terrain"), 
-        terrainSelector (vts), 
-        terrainVariables (vts)
+        terrainSelector (vts, voicesState), 
+        terrainVariables (vts, voicesState)
     {
         addAndMakeVisible (terrainSelector);
         addAndMakeVisible (terrainVariables);
