@@ -17,7 +17,7 @@ struct VoiceMeter : public juce::Component,
         startTimerHz (24);
     }
 
-    void paint (juce::Graphics& g)
+    void paint (juce::Graphics& g) override
     {
         auto b = getLocalBounds();
         if (b.getHeight() > b.getWidth() * 1.5)

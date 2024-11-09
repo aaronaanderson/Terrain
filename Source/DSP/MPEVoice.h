@@ -75,7 +75,6 @@ public:
     void noteStopped (bool allowTailOff) override
     {
         if (!allowTailOff) clearCurrentNote();
-        auto note = getCurrentlyPlayingNote();
         trajectory.stopNote(); 
 
         auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel));
