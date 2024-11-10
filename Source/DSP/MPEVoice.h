@@ -75,6 +75,7 @@ public:
     void noteStopped (bool allowTailOff) override
     {
         if (!allowTailOff) clearCurrentNote();
+        auto note = getCurrentlyPlayingNote();
         trajectory.stopNote(); 
 
         auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel));
@@ -102,14 +103,7 @@ public:
         auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel));
         channelState.setProperty (id::voicePressure, pressure, nullptr);
     }
-    void notePitchbendChanged() override
-    {
-        // if (!pitchBendEnabled.get()) return;
-        // auto note = getCurrentlyPlayingNote();
-        // auto tunedBaseFrequency = MTS_NoteToFrequency (&mtsClient, static_cast<char> (initialNote), -1);
-        // auto adjustedFrequency = tunedBaseFrequency * semitonesToScalar (note.totalPitchbendInSemitones);
-        // trajectory.setFrequencySmooth (static_cast<float> (adjustedFrequency));
-    }
+    void notePitchbendChanged() override {}
     void setPitchWheel (float pitchWheel)
     {
         if (!pitchBendEnabled.get()) return;

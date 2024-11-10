@@ -51,7 +51,6 @@ struct PlaneMesh
     }
     void draw (Attributes& attributes)
     {
-        juce::ignoreUnused (attributes);
         vertexBuffer->bind();
         attributes.enable();
         juce::gl::glDrawElements (juce::gl::GL_TRIANGLES, vertexBuffer->numIndices, juce::gl::GL_UNSIGNED_INT, nullptr);ERROR_CHECK();
@@ -105,7 +104,7 @@ private:
             juce::gl::glGenBuffers (1, &glIndexBuffer); ERROR_CHECK();
             juce::gl::glBindBuffer (juce::gl::GL_ELEMENT_ARRAY_BUFFER, glIndexBuffer); ERROR_CHECK();
             juce::gl::glBufferData (juce::gl::GL_ELEMENT_ARRAY_BUFFER, numIndices * (int) sizeof (juce::uint32),
-                                                   initialIndexData.getRawDataPointer(), juce::gl::GL_DYNAMIC_DRAW);
+                                                   initialIndexData.getRawDataPointer(), juce::gl::GL_DYNAMIC_DRAW);ERROR_CHECK();
         }
         ~VertexBuffer()
         {
@@ -122,7 +121,7 @@ private:
         
         int numVertices;
         int numIndices;
-        juce::Colour color;
+
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VertexBuffer)
     };
     std::unique_ptr<VertexBuffer> vertexBuffer;    
@@ -142,31 +141,45 @@ public:
     }
     void render (const Camera& camera, juce::Colour color, int index, float modA, float modB, float modC, float modD, float saturation)
     {
-        juce::ignoreUnused (camera,color,index,modA,modC,modB,modD,saturation);
-        juce::gl::glDisable (juce::gl::GL_BLEND);
+        juce::gl::glEnable (juce::gl::GL_BLEND);
         juce::gl::glEnable (juce::gl::GL_DEPTH_TEST);
-        juce::gl::glPolygonMode (juce::gl::GL_FRONT_AND_BACK, juce::gl::GL_FILL);
+        // juce::gl::glDepthMask (juce::gl::GL_FALSE);
+        // juce::gl::glBlendFunc (juce::gl::GL_SRC_ALPHA, juce::gl::GL_ONE_MINUS_SRC_ALPHA);
+        // juce::gl::glBlendFunc (juce::gl::GL_SRC_ALPHA, juce::gl::GL_ONE_MINUS_SRC_ALPHA); ERROR_CHECK();
+                // juce::gl::glBlendFunc (juce::gl::GL_SRC_ALPHA, juce::gl::GL_ONE);
+
+        // juce::gl::glBlendFuncSeparate (juce::gl::GL_SRC_ALPHA, juce::gl::GL_ONE_MINUS_SRC_ALPHA, juce::gl::GL_ONE, juce::gl::GL_ZERO); ERROR_CHECK();
+        
+        juce::gl::glDisable (juce::gl::GL_BLEND); ERROR_CHECK();
+        juce::gl::glEnable (juce::gl::GL_DEPTH_TEST); ERROR_CHECK();
+        juce::gl::glPolygonMode (juce::gl::GL_FRONT_AND_BACK, juce::gl::GL_FILL); ERROR_CHECK();
         if(shaders.get() == nullptr)
             return;
             
         shaders->use();
 
         if (uniforms->projectionMatrix.get() != nullptr)
-            uniforms->projectionMatrix->setMatrix4 (&camera.getProjectionMatrix()[0][0], 1, false);
+            uniforms->projectionMatrix->setMatrix4 (&camera.getProjectionMatrix()[0][0], 1, false); ERROR_CHECK();
         if (uniforms->viewMatrix.get() != nullptr)
-            uniforms->viewMatrix->setMatrix4 (&camera.getViewMatrix()[0][0], 1, false);
+            uniforms->viewMatrix->setMatrix4 (&camera.getViewMatrix()[0][0], 1, false); ERROR_CHECK();
         if (uniforms->lightPosition.get() != nullptr)
         {
             phase = phase + 0.005f;
-            uniforms->lightPosition->set (std::sin (phase) * 8, std::cos (phase) * 8, 2.0f);
+            uniforms->lightPosition->set (std::sin (phase) * 8, std::cos (phase) * 8, 2.0f); ERROR_CHECK();
         }
-        if (uniforms->color.get() != nullptr) uniforms->color->set (color.getRed(), color.getGreen(), color.getBlue());
-        if (uniforms->terrainIndex.get() != nullptr) uniforms->terrainIndex->set (index);
-        if (uniforms->modifierA.get() != nullptr) uniforms->modifierA->set (modA);
-        if (uniforms->modifierB.get() != nullptr) uniforms->modifierB->set (modB);
-        if (uniforms->modifierC.get() != nullptr) uniforms->modifierC->set (modC);
-        if (uniforms->modifierD.get() != nullptr) uniforms->modifierD->set (modD);
-        if (uniforms->saturation.get() != nullptr) uniforms->saturation->set (saturation);
+        //juce::ignoreUnused (color);
+        if (uniforms->color.get() != nullptr) uniforms->color->set (color.getRed(), 
+                                                                    color.getGreen(), 
+                                                                    color.getBlue(), 
+                                                                    static_cast<int> (color.getAlpha() * 1.0f)); ERROR_CHECK();// color.getAlpha()); ERROR_CHECK();
+        // juce::Array<float> c {color.getRed() / 255.0f, color.getGreen() / 255.0f, color.getBlue() / 255.0f, color.getAlpha() / 255.0f};
+        // if (uniforms->color.get() != nullptr) uniforms->color->set (c.data(), 4); ERROR_CHECK();// color.getAlpha()); ERROR_CHECK();
+        if (uniforms->terrainIndex.get() != nullptr) uniforms->terrainIndex->set (index); ERROR_CHECK();
+        if (uniforms->modifierA.get() != nullptr) uniforms->modifierA->set (modA); ERROR_CHECK();
+        if (uniforms->modifierB.get() != nullptr) uniforms->modifierB->set (modB); ERROR_CHECK();
+        if (uniforms->modifierC.get() != nullptr) uniforms->modifierC->set (modC); ERROR_CHECK();
+        if (uniforms->modifierD.get() != nullptr) uniforms->modifierD->set (modD); ERROR_CHECK();
+        if (uniforms->saturation.get() != nullptr) uniforms->saturation->set (saturation); ERROR_CHECK();
 
         mesh.draw (*attributes.get());
         // // juce::gl::glBindBuffer (juce::gl::GL_ARRAY_BUFFER, 0);
@@ -196,3 +209,11 @@ private:
         return loaded;        
     }
 };
+
+// class MPETerrains 
+// {
+// public:
+
+// private:
+//     juce::Array<Terrain> terrains;
+// };

@@ -21,15 +21,15 @@ struct Attributes
                                              juce::gl::GL_FLOAT, 
                                              juce::gl::GL_FALSE, 
                                              sizeof(float) * 3, 
-                                             nullptr); // no offset since first entry
+                                             nullptr); ERROR_CHECK(); // no offset since first entry
             
-            juce::gl::glEnableVertexAttribArray (position->attributeID);
+            juce::gl::glEnableVertexAttribArray (position->attributeID); ERROR_CHECK();
         }
     }
     void disable()
     {
         if (position.get() != nullptr) 
-            juce::gl::glDisableVertexAttribArray (position->attributeID);
+            juce::gl::glDisableVertexAttribArray (position->attributeID); ERROR_CHECK();
     }
     std::unique_ptr<juce::OpenGLShaderProgram::Attribute> position;
 private:
