@@ -55,18 +55,7 @@ private:
             g.setColour (laf->getAccentColour());
             float x = 0.0f;
             if (mpeChannel == id::PRESSURE) x = voicesState.getChild (i).getProperty (id::voicePressure);
-            if (mpeChannel == id::TIMBRE) x = voicesState.getChild (i).getProperty (id::voiceTimbre);
-            // bool inverted = routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::invertRange);
-            // float normalX = 0.0f;
-            // if (!inverted)
-            //     normalX = juce::jmap (x, 
-            //                          (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::lowerBound), 
-            //                          (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::upperBound));
-            // else 
-            //     normalX = juce::jmap (x, 
-            //                          (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::upperBound),
-            //                          (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::lowerBound));
-                                    
+            if (mpeChannel == id::TIMBRE) x = voicesState.getChild (i).getProperty (id::voiceTimbre);                       
             auto curvedX = curveValue (x, 
                                        (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::curve),
                                        (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::handleOne),
@@ -107,16 +96,6 @@ private:
             float x = 0.0f;
             if (mpeChannel == id::PRESSURE) x = voicesState.getChild (i).getProperty (id::voicePressure);
             if (mpeChannel == id::TIMBRE) x = voicesState.getChild (i).getProperty (id::voiceTimbre);
-            // float normalX = 0.0f;
-            // bool inverted = routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::invertRange);
-            // if (!inverted)
-            //     normalX = juce::jmap (x, 
-            //                          (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::lowerBound), 
-            //                          (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::upperBound));
-            // else 
-            //     normalX = juce::jmap (x, 
-            //                          (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::upperBound),
-            //                          (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::lowerBound));
             auto curvedX = curveValue (x, 
                                        (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::curve),
                                        (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::handleOne),
@@ -139,7 +118,6 @@ private:
         g.fillRect (sliderRect.toFloat());
 
         float width = sliderRect.getWidth() * 0.6f;
-        // float halfWidth = width / 2.0f;
         for (int i = 0; i < voicesState.getNumChildren(); i++)
         {
             if (!voicesState.getChild (i).getProperty (id::voiceActive)) continue;
@@ -147,16 +125,6 @@ private:
             float x = 0.0f;
             if (mpeChannel == id::PRESSURE) x = voicesState.getChild (i).getProperty (id::voicePressure);
             if (mpeChannel == id::TIMBRE) x = voicesState.getChild (i).getProperty (id::voiceTimbre);
-            // bool inverted = routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::invertRange);
-            // float normalX = 0.0f;
-            // if (!inverted)
-            //     normalX = juce::jmap (x, 
-            //                          (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::lowerBound), 
-            //                          (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::upperBound));
-            // else 
-            //     normalX = juce::jmap (x, 
-            //                          (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::upperBound),
-            //                          (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::lowerBound));
             auto curvedX = curveValue (x, 
                                        (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::curve),
                                        (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::handleOne),
