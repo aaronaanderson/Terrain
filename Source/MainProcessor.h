@@ -88,6 +88,8 @@ private:
     void valueTreePropertyChanged (juce::ValueTree& tree, 
                                    const juce::Identifier& property) override;
     void valueTreeRedirected (juce::ValueTree& treeWhichHasBeenChanged) override;
+
+    std::unique_ptr<juce::FileLogger> logger;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainProcessor)
 };

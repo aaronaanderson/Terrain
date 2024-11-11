@@ -143,7 +143,6 @@ struct RoutingCurve : public juce::Component,
         curve = (float)std::pow (2, preCurve - 4.0f);
 
         repaint();
-        std::cout << curve << std::endl;
     }
 private:
     juce::ValueTree routingChannel;

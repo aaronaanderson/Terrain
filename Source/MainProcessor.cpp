@@ -15,11 +15,12 @@ MainProcessor::MainProcessor()
     
     loadMPESettings();
     PresetSaver::movePresetsToDisk();
-
-    juce::Logger::setCurrentLogger (juce::FileLogger::createDateStampedLogger (juce::FileLogger::getSystemLogFileFolder().getFullPathName() + "/Terrain",
+    
+    logger.reset (juce::FileLogger::createDateStampedLogger (juce::FileLogger::getSystemLogFileFolder().getFullPathName() + "/Terrain",
                                                                                "Terrain",
                                                                                ".txt",
                                                                                "Hello From Terrain"));
+    juce::Logger::setCurrentLogger (logger.get());
 
     valueTreeState.state.addChild (SettingsTree::create(), -1, nullptr);
     presetManager = std::make_unique<PresetManager> (this, valueTreeState.state);
@@ -45,7 +46,7 @@ MainProcessor::~MainProcessor()
     MTS_DeregisterClient (mtsClient);
     valueTreeState.state.removeListener (this);
     
-    // juce::Logger::setCurrentLogger (nullptr);
+    juce::Logger::setCurrentLogger (nullptr);
 }
 //==============================================================================
 const juce::String MainProcessor::getName() const  { return JucePlugin_Name; }
