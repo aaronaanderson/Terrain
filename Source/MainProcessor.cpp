@@ -45,7 +45,7 @@ MainProcessor::~MainProcessor()
     MTS_DeregisterClient (mtsClient);
     valueTreeState.state.removeListener (this);
     
-    juce::Logger::setCurrentLogger (nullptr);
+    // juce::Logger::setCurrentLogger (nullptr);
 }
 //==============================================================================
 const juce::String MainProcessor::getName() const  { return JucePlugin_Name; }

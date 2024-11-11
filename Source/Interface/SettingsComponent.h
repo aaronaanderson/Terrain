@@ -3,6 +3,7 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <juce_data_structures/juce_data_structures.h>
 #include "LookAndFeel.h"
+#include "RoutingCurve.h"
 namespace ti
 {
 struct HeaderLabel : public juce::Component
@@ -169,196 +170,117 @@ private:
     juce::Label label {"pSMooth", "Timbre Smoothing (ms)"};
     juce::Slider smoothingSlider;
 };
-struct DraggableAssigner : public juce::DragAndDropContainer, 
-                           public juce::Component
-{
-    DraggableAssigner (juce::ValueTree MPERouting, 
-                       const juce::Identifier& MPEChannel, 
-                       const juce::Identifier& outChannel, 
-                       const juce::AudioProcessorValueTreeState& apvts)
-      : mpeRouting (MPERouting), 
-        mpeChannel (MPEChannel), 
-        outputChannel (outChannel)
-    {
-        auto paramID = mpeRouting.getChildWithName (mpeChannel)
-                                 .getChildWithName (outputChannel)
-                                 .getProperty (id::name).toString();
-        if (paramID != "") name = apvts.getParameter (paramID)->getName (20);
-    }
-    void paint (juce::Graphics& g) override
-    {
-        juce::ignoreUnused (g);
-       auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
-       g.setColour (laf->getBackgroundDark());
-       g.drawRect (getLocalBounds().toFloat(), 2.0f);
-       
-       g.setColour (juce::Colours::white);
-       g.drawText (name, 
-                   getLocalBounds().toFloat(), 
-                   juce::Justification::centred); 
-    }
-    void mouseDrag (const juce::MouseEvent& event) override 
-    {
-        juce::ignoreUnused (event);
-        startDragging ("MPE Source", this, juce::ScaledImage(), true);
-    }
-    void mouseUp (const juce::MouseEvent& event) override 
-    {
-        if(event.mods.isRightButtonDown())
-        {
-            juce::PopupMenu m;
-            m.addItem(1, "Unassign");
-            m.showMenuAsync (juce::PopupMenu::Options(), [&](int result)
-            {
-                if(result == 1)
-                {
-                    mpeRouting.getChildWithName (mpeChannel)
-                              .getChildWithName (outputChannel)
-                              .setProperty (id::name, "", nullptr);
-                    name = "Drag to assign";
-                    repaint();
-                }  
-            });
-        }
-    }
-    juce::ValueTree getMPEChannelRouting() { return mpeRouting.getChildWithName (mpeChannel)
-                                                              .getChildWithName (outputChannel); }
-    void setLabel (juce::String label) { name = label; repaint(); }
-    void setState (juce::ValueTree routingBranch) { mpeRouting = routingBranch; }
-private:
-    juce::ValueTree mpeRouting;
-    const juce::Identifier& mpeChannel;
-    const juce::Identifier& outputChannel;
-    juce::String name {"Drag to assign"};
-};
-struct RoutingOutputLane : public juce::Component
-{
-    RoutingOutputLane (juce::ValueTree MPERouting, 
-                      const juce::Identifier& MPEChannelIdentifier, /*Pressure or Timbre*/
-                      const juce::Identifier& outputChannelIdentifier,
-                      const juce::AudioProcessorValueTreeState& apvts)
-      : mpeRouting (MPERouting),
-        mpeChannelIdentifier (MPEChannelIdentifier),
-        mpeChannel (mpeRouting.getChildWithName (mpeChannelIdentifier)),
-        outChannelIdentifier (outputChannelIdentifier),
-        draggableAssigner (mpeRouting, mpeChannelIdentifier, outChannelIdentifier, apvts)
-    {
-        jassert (mpeRouting.getType() == id::MPE_ROUTING);
-        addAndMakeVisible (draggableAssigner);
-        
-        range.onValueChange = [&]()
-            {
-                mpeChannel.getChildWithName (outChannelIdentifier).setProperty (id::upperBound, range.getMaxValue(), nullptr);
-                mpeChannel.getChildWithName (outChannelIdentifier).setProperty (id::lowerBound, range.getMinValue(), nullptr);
-            };
-        range.setSliderStyle (juce::Slider::SliderStyle::TwoValueHorizontal);
-        range.setTextBoxStyle (juce::Slider::TextEntryBoxPosition::NoTextBox, true, 20, 20);
-        range.setRange ({0.0f, 1.0f}, 0.0);
-        range.setMinAndMaxValues (mpeChannel.getChildWithName (outChannelIdentifier)
-                                               .getProperty (id::lowerBound),
-                                     mpeChannel.getChildWithName (outChannelIdentifier)
-                                               .getProperty (id::upperBound), 
-                                     juce::dontSendNotification);
-        addAndMakeVisible (range);
-        invertToggle.setToggleState (mpeChannel.getChildWithName (outChannelIdentifier)
-                                                  .getProperty (id::invertRange), juce::dontSendNotification);
-        invertToggle.onClick = [&]()
-            {
-                mpeChannel.getChildWithName (outChannelIdentifier)
-                          .setProperty (id::invertRange, invertToggle.getToggleState(), nullptr);
 
-            };
-        addAndMakeVisible (invertToggle);
-    }
-    void resized() override
-    {
-        auto b = getLocalBounds();
-        auto hScale = static_cast<float> (b.getWidth()) / 430.0f;
-        int pad = 4;
-        b.removeFromLeft (pad);
-        draggableAssigner.setBounds (b.removeFromLeft (static_cast<int> (200  * hScale)));
-        b.removeFromLeft (pad);
-        invertToggle.setBounds (b.removeFromLeft (static_cast<int> (juce::jmax (24  * hScale, 22.0f))));
-        b.removeFromLeft (pad);
-        range.setBounds (b.removeFromLeft (static_cast<int> (186  * hScale)));
-    }
-private:
-    juce::ValueTree mpeRouting;
-    const juce::Identifier& mpeChannelIdentifier;
-    juce::ValueTree mpeChannel;
-    const juce::Identifier& outChannelIdentifier;
-    DraggableAssigner draggableAssigner;
-    juce::ToggleButton invertToggle;
-    juce::Slider range;
-};
+// struct RoutingOutputLane : public juce::Component
+// {
+//     RoutingOutputLane (juce::ValueTree MPERouting, 
+//                       const juce::Identifier& MPEChannelIdentifier, /*Pressure or Timbre*/
+//                       const juce::Identifier& outputChannelIdentifier,
+//                       const juce::AudioProcessorValueTreeState& apvts)
+//       : mpeRouting (MPERouting),
+//         mpeChannelIdentifier (MPEChannelIdentifier),
+//         mpeChannel (mpeRouting.getChildWithName (mpeChannelIdentifier)),
+//         outChannelIdentifier (outputChannelIdentifier),
+//         // draggableAssigner (mpeRouting, mpeChannelIdentifier, outChannelIdentifier, apvts)
+//     {
+//         jassert (mpeRouting.getType() == id::MPE_ROUTING);
+//         addAndMakeVisible (draggableAssigner);
+        
+//         range.onValueChange = [&]()
+//             {
+//                 mpeChannel.getChildWithName (outChannelIdentifier).setProperty (id::upperBound, range.getMaxValue(), nullptr);
+//                 mpeChannel.getChildWithName (outChannelIdentifier).setProperty (id::lowerBound, range.getMinValue(), nullptr);
+//             };
+//         range.setSliderStyle (juce::Slider::SliderStyle::TwoValueHorizontal);
+//         range.setTextBoxStyle (juce::Slider::TextEntryBoxPosition::NoTextBox, true, 20, 20);
+//         range.setRange ({0.0f, 1.0f}, 0.0);
+//         range.setMinAndMaxValues (mpeChannel.getChildWithName (outChannelIdentifier)
+//                                                .getProperty (id::lowerBound),
+//                                      mpeChannel.getChildWithName (outChannelIdentifier)
+//                                                .getProperty (id::upperBound), 
+//                                      juce::dontSendNotification);
+//         addAndMakeVisible (range);
+//         invertToggle.setToggleState (mpeChannel.getChildWithName (outChannelIdentifier)
+//                                                   .getProperty (id::invertRange), juce::dontSendNotification);
+//         invertToggle.onClick = [&]()
+//             {
+//                 mpeChannel.getChildWithName (outChannelIdentifier)
+//                           .setProperty (id::invertRange, invertToggle.getToggleState(), nullptr);
+
+//             };
+//         addAndMakeVisible (invertToggle);
+//     }
+//     void resized() override
+//     {
+//         auto b = getLocalBounds();
+//         auto hScale = static_cast<float> (b.getWidth()) / 430.0f;
+//         int pad = 4;
+//         b.removeFromLeft (pad);
+//         draggableAssigner.setBounds (b.removeFromLeft (static_cast<int> (200  * hScale)));
+//         b.removeFromLeft (pad);
+//         invertToggle.setBounds (b.removeFromLeft (static_cast<int> (juce::jmax (24  * hScale, 22.0f))));
+//         b.removeFromLeft (pad);
+//         range.setBounds (b.removeFromLeft (static_cast<int> (186  * hScale)));
+//     }
+// private:
+//     juce::ValueTree mpeRouting;
+//     const juce::Identifier& mpeChannelIdentifier;
+//     juce::ValueTree mpeChannel;
+//     const juce::Identifier& outChannelIdentifier;
+//     DraggableAssigner draggableAssigner;
+//     juce::ToggleButton invertToggle;
+//     juce::Slider range;
+// };
 struct RoutingComponent : public juce::Component
 {
     RoutingComponent (juce::ValueTree MPERouting, 
-                      const juce::Identifier& MPEChannel, 
+                      const juce::Identifier& MPEChannel, // timbre or pressure
                       const juce::AudioProcessorValueTreeState& apvts)
-      : mpeRouting (MPERouting), 
-        mpeChannel (mpeRouting.getChildWithName (MPEChannel)),
-        mpeChannelIdentifier (MPEChannel),
-        laneOne (mpeRouting, mpeChannelIdentifier, id::OUTPUT_ONE, apvts),
-        laneTwo (mpeRouting, mpeChannelIdentifier, id::OUTPUT_TWO, apvts),
-        laneThree (mpeRouting, mpeChannelIdentifier, id::OUTPUT_THREE, apvts),
-        laneFour (mpeRouting, mpeChannelIdentifier, id::OUTPUT_FOUR, apvts),
-        laneFive (mpeRouting, mpeChannelIdentifier, id::OUTPUT_FIVE, apvts),
-        laneSix (mpeRouting, mpeChannelIdentifier, id::OUTPUT_SIX, apvts)
+      : mpeRouting (MPERouting),
+        curveOne   (mpeRouting.getChildWithName (MPEChannel).getChildWithName (id::OUTPUT_ONE), apvts),
+        curveTwo   (mpeRouting.getChildWithName (MPEChannel).getChildWithName (id::OUTPUT_TWO), apvts),
+        curveThree (mpeRouting.getChildWithName (MPEChannel).getChildWithName (id::OUTPUT_THREE), apvts),
+        curveFour  (mpeRouting.getChildWithName (MPEChannel).getChildWithName (id::OUTPUT_FOUR), apvts),
+        curveFive  (mpeRouting.getChildWithName (MPEChannel).getChildWithName (id::OUTPUT_FIVE), apvts),
+        curveSix   (mpeRouting.getChildWithName (MPEChannel).getChildWithName (id::OUTPUT_SIX), apvts)
     {
         jassert (mpeRouting.getType() == id::MPE_ROUTING);
-        jassert (mpeChannel.getType() == MPEChannel);
-        destinationLabel.setJustificationType (juce::Justification::centred);
-        addAndMakeVisible (destinationLabel);
-        
-        rangeLabel.setJustificationType (juce::Justification::centred);
-        addAndMakeVisible (rangeLabel);
 
-        invertLabel.setJustificationType (juce::Justification::centred);
-        addAndMakeVisible (invertLabel);
-
-        addAndMakeVisible (laneOne);
-        addAndMakeVisible (laneTwo);
-        addAndMakeVisible (laneThree);
-        addAndMakeVisible (laneFour);
-        addAndMakeVisible (laneFive);
-        addAndMakeVisible (laneSix);
+        addAndMakeVisible (curveOne);
+        addAndMakeVisible (curveTwo);
+        addAndMakeVisible (curveThree);
+        addAndMakeVisible (curveFour);
+        addAndMakeVisible (curveFive);
+        addAndMakeVisible (curveSix);
     }
     void resized() override
     {
         auto b = getLocalBounds();
-        auto labels = b.removeFromTop (20);
-        float hScale = static_cast<float> (b.getWidth()) / 430.0f;
+        float hScale = static_cast<float> (b.getWidth()) / 598.0f;
         int pad = 4;
-        labels.removeFromLeft (pad);
-        destinationLabel.setBounds (labels.removeFromLeft (static_cast<int> (200  * hScale)));
-        labels.removeFromLeft (pad);
-        invertLabel.setBounds (labels.removeFromLeft (static_cast<int> (juce::jmax (24  * hScale, 22.0f))));
-        labels.removeFromLeft (pad);
-        rangeLabel.setBounds (labels.removeFromLeft (static_cast<int> (186  * hScale)));
+        b.removeFromTop (pad);
+        auto top = b.removeFromTop (b.getHeight() / 2);
+
+        top.removeFromLeft (pad / 2); top.removeFromRight (pad / 2);
+        curveOne.setBounds (top.removeFromLeft (static_cast<int> (196 * hScale)));
+        // curveOne.setBounds ({20, 20, 100, 100});
+        top.removeFromLeft (pad);
+        curveTwo.setBounds (top.removeFromLeft (static_cast<int> (196 * hScale)));
+        top.removeFromLeft (pad);
+        curveOne.setBounds (top.removeFromLeft (static_cast<int> (196 * hScale)));
         
-        laneOne.setBounds (b.removeFromTop (21));
-        b.removeFromTop (pad);
-        laneTwo.setBounds (b.removeFromTop (21));
-        b.removeFromTop (pad);
-        laneThree.setBounds (b.removeFromTop (21));
-        b.removeFromTop (pad);
-        laneFour.setBounds (b.removeFromTop (21));
-        b.removeFromTop (pad);
-        laneFive.setBounds (b.removeFromTop (21));
-        b.removeFromTop (pad);
-        laneSix.setBounds (b.removeFromTop (21));
+        b.removeFromTop (pad); b.removeFromBottom (pad);
+        b.removeFromLeft (pad / 2); b.removeFromRight (pad / 2);
+        curveFour.setBounds (b.removeFromLeft (static_cast<int> (196 * hScale)));
+        b.removeFromLeft (pad);
+        curveFive.setBounds (b.removeFromLeft (static_cast<int> (196 * hScale)));
+        b.removeFromLeft (pad);
+        curveSix.setBounds (b.removeFromLeft (static_cast<int> (196 * hScale)));
     }
 private:
     juce::ValueTree mpeRouting;
-    juce::ValueTree mpeChannel;
-    const juce::Identifier& mpeChannelIdentifier;
-    juce::Label destinationLabel {"destination", "Destination"};
-    juce::Label rangeLabel = {"RangeLabel", "Range"};
-    juce::Label invertLabel = {"InvertLabel", "Inv."};
-    
-    RoutingOutputLane laneOne, laneTwo, laneThree, 
-                      laneFour, laneFive, laneSix;
+    AssignableCurve curveOne, curveTwo, curveThree, 
+                    curveFour, curveFive, curveSix;
 };
 struct MPESaveComponent : public juce::Component
 {
@@ -565,9 +487,9 @@ public:
         auto b = getLocalBounds();
 
         mpeHeader.setBounds (b.removeFromTop (24));
-        pressureChannelComponent->setBounds (b.removeFromTop (200));
+        pressureChannelComponent->setBounds (b.removeFromTop (370));
         pressureSmoothingComponent.setBounds (b.removeFromTop (24));
-        timbreChannelComponent->setBounds (b.removeFromTop (200));
+        timbreChannelComponent->setBounds (b.removeFromTop (370));
         timbreSmoothingComponent.setBounds (b.removeFromTop (24));
         pitchBendComponent.setBounds (b.removeFromTop (24));
         oversamplingHeader.setBounds (b.removeFromTop (24));
@@ -578,7 +500,7 @@ public:
         settings = settingsBranch;
         resetChannelComponents();
     }
-    int getDesiredHeight() { return 544; }
+    int getDesiredHeight() { return 884; }
 private:
     const juce::AudioProcessorValueTreeState& valueTreeState;
     juce::ValueTree settings;
