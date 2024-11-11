@@ -44,19 +44,19 @@ struct Handle : public juce::Component
         float offset = e.getDistanceFromDragStartY() * normilazationScalar * -1.0f;
         normalizedPosition = juce::jlimit (0.0f, 1.0f, preDragPosition + offset);
 
-        if (listener != nullptr) listener->onHandleDrag();
+        if (listener != nullptr) listener->onHandleDrag (this);
     }
     struct Listener 
     {
-        virtual void onHandleDrag () = 0;
+        virtual void onHandleDrag (const Handle*) = 0;
     };
     void setListener (Listener* l) { listener = l; }
-    void setNormalizedPosition (float newPosition) 
+    void setNormalizedPosition (const float newPosition) 
     {
         jassert (newPosition >= 0.0f && newPosition <= 1.0f);
         normalizedPosition = newPosition;
     }
-    float getNormalizedPosition() { return normalizedPosition; }
+    float getNormalizedPosition() const { return normalizedPosition; }
 private:
     bool mouseOver = false;
     Listener* listener = nullptr;
@@ -69,10 +69,16 @@ struct RoutingCurve : public juce::Component,
     RoutingCurve (juce::ValueTree routingChannelBranch)
       : routingChannel (routingChannelBranch)
     {
+        std::cout << routingChannel.toXmlString() << std::endl;
+        handleOne.setNormalizedPosition (routingChannel.getProperty (id::handleOne));
         handleOne.setListener (this);
-        handleTwo.setListener (this);
         addAndMakeVisible (handleOne);
+        
+        handleTwo.setNormalizedPosition (routingChannel.getProperty (id::handleTwo));
+        handleTwo.setListener (this);
         addAndMakeVisible (handleTwo);
+
+        curve = routingChannel.getProperty (id::curve);
     }
     void paint (juce::Graphics& g) override
     {
@@ -141,6 +147,7 @@ struct RoutingCurve : public juce::Component,
         if (handleOne.getNormalizedPosition() < handleTwo.getNormalizedPosition()) preCurve *= -1.0f;
         preCurve = juce::jlimit (0.0f, 8.0f, preDragPosition + preCurve);
         curve = (float)std::pow (2, preCurve - 4.0f);
+        routingChannel.setProperty (id::curve, curve, nullptr);
 
         repaint();
     }
@@ -155,7 +162,15 @@ private:
     float preCurve = 4.0f; // 0 - 8
     float curve = 1.0f;
 
-    void onHandleDrag() override { resized(); repaint(); }
+    void onHandleDrag (const Handle* h) override 
+    { 
+        if (h == &handleOne)
+            routingChannel.setProperty (id::handleOne, h->getNormalizedPosition(), nullptr);
+        else if (h == &handleTwo)
+            routingChannel.setProperty (id::handleTwo, h->getNormalizedPosition(), nullptr);
+        resized(); repaint(); 
+        std::cout << routingChannel.toXmlString() << std::endl;
+    }
 };
 struct DraggableAssigner : public juce::DragAndDropContainer, 
                            public juce::Component

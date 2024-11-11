@@ -56,18 +56,23 @@ private:
             float x = 0.0f;
             if (mpeChannel == id::PRESSURE) x = voicesState.getChild (i).getProperty (id::voicePressure);
             if (mpeChannel == id::TIMBRE) x = voicesState.getChild (i).getProperty (id::voiceTimbre);
-            bool inverted = routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::invertRange);
-            float normalX = 0.0f;
-            if (!inverted)
-                normalX = juce::jmap (x, 
-                                     (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::lowerBound), 
-                                     (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::upperBound));
-            else 
-                normalX = juce::jmap (x, 
-                                     (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::upperBound),
-                                     (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::lowerBound));
+            // bool inverted = routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::invertRange);
+            // float normalX = 0.0f;
+            // if (!inverted)
+            //     normalX = juce::jmap (x, 
+            //                          (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::lowerBound), 
+            //                          (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::upperBound));
+            // else 
+            //     normalX = juce::jmap (x, 
+            //                          (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::upperBound),
+            //                          (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::lowerBound));
                                     
-            x = juce::jmap (normalX, width, (float)sliderRect.getWidth());
+            auto curvedX = curveValue (x, 
+                                       (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::curve),
+                                       (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::handleOne),
+                                       (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::handleTwo));
+            
+            x = juce::jmap (curvedX, width, (float)sliderRect.getWidth());
             auto thumbRect = juce::Rectangle<float> ((float)width, (float)width);
             g.fillEllipse (thumbRect.withCentre({x, (float)sliderRect.getCentreY()}));
         }
@@ -102,17 +107,21 @@ private:
             float x = 0.0f;
             if (mpeChannel == id::PRESSURE) x = voicesState.getChild (i).getProperty (id::voicePressure);
             if (mpeChannel == id::TIMBRE) x = voicesState.getChild (i).getProperty (id::voiceTimbre);
-            float normalX = 0.0f;
-            bool inverted = routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::invertRange);
-            if (!inverted)
-                normalX = juce::jmap (x, 
-                                     (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::lowerBound), 
-                                     (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::upperBound));
-            else 
-                normalX = juce::jmap (x, 
-                                     (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::upperBound),
-                                     (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::lowerBound));
-            auto p = normalToArc (normalX, rotaryStartAngle, rotaryEndAngle, arcRadius, bounds);
+            // float normalX = 0.0f;
+            // bool inverted = routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::invertRange);
+            // if (!inverted)
+            //     normalX = juce::jmap (x, 
+            //                          (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::lowerBound), 
+            //                          (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::upperBound));
+            // else 
+            //     normalX = juce::jmap (x, 
+            //                          (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::upperBound),
+            //                          (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::lowerBound));
+            auto curvedX = curveValue (x, 
+                                       (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::curve),
+                                       (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::handleOne),
+                                       (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::handleTwo));
+            auto p = normalToArc (curvedX, rotaryStartAngle, rotaryEndAngle, arcRadius, bounds);
             auto width = lineW * 0.6f;
             g.setColour (laf->getAccentColour());
             g.fillEllipse (juce::Rectangle<float> (width, width).withCentre (p));
@@ -138,18 +147,21 @@ private:
             float x = 0.0f;
             if (mpeChannel == id::PRESSURE) x = voicesState.getChild (i).getProperty (id::voicePressure);
             if (mpeChannel == id::TIMBRE) x = voicesState.getChild (i).getProperty (id::voiceTimbre);
-            bool inverted = routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::invertRange);
-            float normalX = 0.0f;
-            if (!inverted)
-                normalX = juce::jmap (x, 
-                                     (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::lowerBound), 
-                                     (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::upperBound));
-            else 
-                normalX = juce::jmap (x, 
-                                     (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::upperBound),
-                                     (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::lowerBound));
-                                    
-            x = juce::jmap (normalX, 0.0f, (float)sliderRect.getHeight() - width);
+            // bool inverted = routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::invertRange);
+            // float normalX = 0.0f;
+            // if (!inverted)
+            //     normalX = juce::jmap (x, 
+            //                          (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::lowerBound), 
+            //                          (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::upperBound));
+            // else 
+            //     normalX = juce::jmap (x, 
+            //                          (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::upperBound),
+            //                          (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::lowerBound));
+            auto curvedX = curveValue (x, 
+                                       (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::curve),
+                                       (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::handleOne),
+                                       (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::handleTwo));            
+            x = juce::jmap (curvedX, 0.0f, (float)sliderRect.getHeight() - width);
             auto thumbRect = juce::Rectangle<float> ((float)width, (float)width);
             g.fillEllipse (thumbRect.withCentre({(float)sliderRect.getCentreX(), sliderRect.getHeight() - x}));
         }
@@ -160,6 +172,12 @@ private:
         auto angle = startAngle + normalPosition * (endAngle - startAngle);
         return juce::Point<float> (bounds.toFloat().getCentreX() + radius * std::cos (angle - juce::MathConstants<float>::halfPi),
                                    bounds.toFloat().getCentreY() + radius * std::sin (angle - juce::MathConstants<float>::halfPi));
+    }
+    float curveValue (const float linearValue, const float curve, const float min, const float max)
+    {
+    
+        float curvedValue = (float)std::pow (linearValue, 1.0f / curve);
+        return juce::jmap (curvedValue, min, max);
     }
 };
 }

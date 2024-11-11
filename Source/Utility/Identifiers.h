@@ -42,9 +42,9 @@ namespace id
     static const juce::Identifier OUTPUT_FIVE = "OUTPUT_FIVE";
     static const juce::Identifier OUTPUT_SIX = "OUTPUT_SIX";
     static const juce::Identifier name = "name";
-    static const juce::Identifier lowerBound = "lowerBound";
-    static const juce::Identifier upperBound = "upperBound";
-    static const juce::Identifier invertRange = "invertRange";
+    static const juce::Identifier handleOne = "handleOne";
+    static const juce::Identifier handleTwo = "handleTwo";
+    static const juce::Identifier curve = "curve";
 
     static const juce::Identifier VOICES_STATE = "VOICES_STATE";
     static const juce::Identifier VOICE_CHANNEL = "VOICE_CHANNEL";

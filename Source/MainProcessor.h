@@ -65,7 +65,6 @@ private:
     std::unique_ptr<PresetManager> presetManager;
     std::unique_ptr<tp::WaveTerrainSynthesizerStandard> standardSynthesizer;
     std::unique_ptr<tp::WaveTerrainSynthesizerMPE> mpeSynthesizer;
-    juce::MPEInstrument instrument;
     std::atomic<bool> mpeOn;
     std::unique_ptr<juce::dsp::Oversampling<float>> overSampler;
     int storedFactor = -1; // initialize with invalid factor

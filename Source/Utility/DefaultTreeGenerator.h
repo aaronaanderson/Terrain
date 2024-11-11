@@ -8,9 +8,9 @@ struct MPERoutingTree
     static juce::ValueTree createRoute (juce::Identifier output)
     {
         auto tree = juce::ValueTree (output);
-        tree.setProperty (id::lowerBound, 0.0f, nullptr);
-        tree.setProperty (id::upperBound, 1.0f, nullptr);
-        tree.setProperty (id::invertRange, false, nullptr);
+        tree.setProperty (id::handleOne, 0.0f, nullptr);
+        tree.setProperty (id::handleTwo, 1.0f, nullptr);
+        tree.setProperty (id::curve, 1.0f, nullptr);
 
         return tree;
     }

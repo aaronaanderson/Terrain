@@ -8,8 +8,7 @@
 MainProcessor::MainProcessor()
      : AudioProcessor (BusesProperties().withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
        valueTreeState (*this, &undoManager, id::TERRAIN_SYNTH, createParameterLayout()),
-       parameters (valueTreeState), 
-       instrument (juce::MPEZone (juce::MPEZone::Type::lower, 15))
+       parameters (valueTreeState)
 {
     mtsClient = MTS_RegisterClient();
     
@@ -24,12 +23,9 @@ MainProcessor::MainProcessor()
 
     valueTreeState.state.addChild (SettingsTree::create(), -1, nullptr);
     presetManager = std::make_unique<PresetManager> (this, valueTreeState.state);
-    instrument.setTimbreTrackingMode (juce::MPEInstrument::allNotesOnChannel);
-    instrument.setPressureTrackingMode (juce::MPEInstrument::allNotesOnChannel);
 
     standardSynthesizer = std::make_unique<tp::WaveTerrainSynthesizerStandard> (parameters, *mtsClient, valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
-    mpeSynthesizer = std::make_unique<tp::WaveTerrainSynthesizerMPE> (instrument, 
-                                                                      parameters, 
+    mpeSynthesizer = std::make_unique<tp::WaveTerrainSynthesizerMPE> (parameters, 
                                                                       *mtsClient, 
                                                                       valueTreeState.state.getChildWithName (id::PRESET_SETTINGS),
                                                                       mpeSettings,
@@ -380,8 +376,8 @@ juce::ValueTree MainProcessor::verifiedSettings (juce::ValueTree settings)
     if (!settings.hasProperty (id::mpeEnabled))
         settings.setProperty (id::mpeEnabled, SettingsTree::DefaultSettings::mpeEnabled, nullptr);
     
-    // std::cout << settings.toXmlString() << std::endl;
-    // settings.removeChild (settings.getChildWithName (id::MPE_ROUTING), nullptr);
+    //std::cout << settings.toXmlString() << std::endl;
+    settings.removeChild (settings.getChildWithName (id::MPE_ROUTING), nullptr);
     // MPE ROUTING ==========================================
     auto mpeTree = settings.getChildWithName (id::MPE_ROUTING);
     if (mpeTree == juce::ValueTree())

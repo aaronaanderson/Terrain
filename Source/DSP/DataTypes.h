@@ -164,22 +164,20 @@ public:
             case Assignment::Pressure:
                 {
                     jassert (outputChannel.isValid());
-                    float min = outputChannel.getProperty (id::lowerBound);
-                    float max = outputChannel.getProperty (id::upperBound);
-                    bool inv = outputChannel.getProperty (id::invertRange);
-                    auto value = inv ? juce::jmap (mpePressure, max, min) : 
-                                       juce::jmap (mpePressure, min, max);
+                    auto value = curveValue (mpePressure, 
+                                             (float)outputChannel.getProperty (id::curve), 
+                                             outputChannel.getProperty (id::handleOne),
+                                             outputChannel.getProperty (id::handleTwo));
                     smoothedPressure.setCurrentAndTargetValue (rangedParameter->convertFrom0to1 (value));
                 }; 
             break;
             case Assignment::Timbre:
                 {
                     jassert (outputChannel.isValid());
-                    float min = outputChannel.getProperty (id::lowerBound);
-                    float max = outputChannel.getProperty (id::upperBound);
-                    bool inv = outputChannel.getProperty (id::invertRange);
-                    auto value = inv ? juce::jmap (mpeTimbre, max, min) : 
-                                       juce::jmap (mpeTimbre, min, max);
+                    auto value = curveValue (mpeTimbre, 
+                                             (float)outputChannel.getProperty (id::curve), 
+                                             outputChannel.getProperty (id::handleOne),
+                                             outputChannel.getProperty (id::handleTwo));
                     smoothedTimbre.setCurrentAndTargetValue (rangedParameter->convertFrom0to1 (value));
                 }
             break;
@@ -301,22 +299,26 @@ private:
     void setPressureInternal (float p)
     {
         jassert (outputChannel.isValid());
-        float min = outputChannel.getProperty (id::lowerBound);
-        float max = outputChannel.getProperty (id::upperBound);
-        bool inv = outputChannel.getProperty (id::invertRange);
-        auto value = inv ? juce::jmap (p, max, min) : 
-                           juce::jmap (p, min, max);
+        auto value = curveValue (p, 
+                                 (float)outputChannel.getProperty (id::curve), 
+                                 outputChannel.getProperty (id::handleOne),
+                                 outputChannel.getProperty (id::handleTwo));
         smoothedPressure.setTargetValue (rangedParameter->convertFrom0to1 (value));
     }
     void setTimbreInternal (float t)
     {
         jassert (outputChannel.isValid());
-        float min = outputChannel.getProperty (id::lowerBound);
-        float max = outputChannel.getProperty (id::upperBound);
-        bool inv = outputChannel.getProperty (id::invertRange);
-        auto value = inv ? juce::jmap (t, max, min) : 
-                           juce::jmap (t, min, max);
+        auto value = curveValue (t, 
+                                 (float)outputChannel.getProperty (id::curve), 
+                                 outputChannel.getProperty (id::handleOne),
+                                 outputChannel.getProperty (id::handleTwo));
         smoothedTimbre.setTargetValue (rangedParameter->convertFrom0to1 (value));
+    }
+    float curveValue (const float linearValue, const float curve, const float min, const float max)
+    {
+    
+        float curvedValue = (float)std::pow (linearValue, 1.0f / curve);
+        return juce::jmap (curvedValue, min, max);
     }
     void parameterValueChanged (int parameterIndex, float newValue) override
     {

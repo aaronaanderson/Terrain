@@ -8,14 +8,12 @@ class WaveTerrainSynthesizerMPE : public WaveTerrainSynthesizer,
                                   public juce::MPESynthesiser
 {
 public:
-    WaveTerrainSynthesizerMPE (juce::MPEInstrument& i,
-                               Parameters& p, 
+    WaveTerrainSynthesizerMPE (Parameters& p, 
                                MTSClient& mtsc, 
                                juce::ValueTree settings, 
                                juce::ValueTree& MPESettings,
                                juce::AudioProcessorValueTreeState& vts)
-      : WaveTerrainSynthesizer (mtsc), 
-        juce::MPESynthesiser (i)
+      : WaveTerrainSynthesizer (mtsc)
     {
         setPolyphony (15, p, settings, MPESettings, mtsClient, vts);
     }

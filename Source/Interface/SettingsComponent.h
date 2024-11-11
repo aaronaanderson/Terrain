@@ -263,11 +263,10 @@ struct RoutingComponent : public juce::Component
 
         top.removeFromLeft (pad / 2); top.removeFromRight (pad / 2);
         curveOne.setBounds (top.removeFromLeft (static_cast<int> (196 * hScale)));
-        // curveOne.setBounds ({20, 20, 100, 100});
         top.removeFromLeft (pad);
         curveTwo.setBounds (top.removeFromLeft (static_cast<int> (196 * hScale)));
         top.removeFromLeft (pad);
-        curveOne.setBounds (top.removeFromLeft (static_cast<int> (196 * hScale)));
+        curveThree.setBounds (top.removeFromLeft (static_cast<int> (196 * hScale)));
         
         b.removeFromTop (pad); b.removeFromBottom (pad);
         b.removeFromLeft (pad / 2); b.removeFromRight (pad / 2);
