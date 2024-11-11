@@ -159,27 +159,50 @@ public:
         shaders->use();
 
         if (uniforms->projectionMatrix.get() != nullptr)
+        {
             uniforms->projectionMatrix->setMatrix4 (&camera.getProjectionMatrix()[0][0], 1, false); ERROR_CHECK();
+        }
         if (uniforms->viewMatrix.get() != nullptr)
+        {
             uniforms->viewMatrix->setMatrix4 (&camera.getViewMatrix()[0][0], 1, false); ERROR_CHECK();
+        }
         if (uniforms->lightPosition.get() != nullptr)
         {
             phase = phase + 0.005f;
             uniforms->lightPosition->set (std::sin (phase) * 8, std::cos (phase) * 8, 2.0f); ERROR_CHECK();
         }
         //juce::ignoreUnused (color);
-        if (uniforms->color.get() != nullptr) uniforms->color->set (color.getRed(), 
-                                                                    color.getGreen(), 
-                                                                    color.getBlue(), 
-                                                                    static_cast<int> (color.getAlpha() * 1.0f)); ERROR_CHECK();// color.getAlpha()); ERROR_CHECK();
-        // juce::Array<float> c {color.getRed() / 255.0f, color.getGreen() / 255.0f, color.getBlue() / 255.0f, color.getAlpha() / 255.0f};
-        // if (uniforms->color.get() != nullptr) uniforms->color->set (c.data(), 4); ERROR_CHECK();// color.getAlpha()); ERROR_CHECK();
-        if (uniforms->terrainIndex.get() != nullptr) uniforms->terrainIndex->set (index); ERROR_CHECK();
-        if (uniforms->modifierA.get() != nullptr) uniforms->modifierA->set (modA); ERROR_CHECK();
-        if (uniforms->modifierB.get() != nullptr) uniforms->modifierB->set (modB); ERROR_CHECK();
-        if (uniforms->modifierC.get() != nullptr) uniforms->modifierC->set (modC); ERROR_CHECK();
-        if (uniforms->modifierD.get() != nullptr) uniforms->modifierD->set (modD); ERROR_CHECK();
-        if (uniforms->saturation.get() != nullptr) uniforms->saturation->set (saturation); ERROR_CHECK();
+        if (uniforms->color.get() != nullptr)
+        {
+            uniforms->color->set (color.getRed(), 
+                                  color.getGreen(), 
+                                  color.getBlue(), 
+                                  static_cast<int> (color.getAlpha() * 1.0f)); ERROR_CHECK();
+        }
+        if (uniforms->terrainIndex.get() != nullptr)
+        {
+            uniforms->terrainIndex->set (index); ERROR_CHECK();
+        }
+        if (uniforms->modifierA.get() != nullptr)
+        {
+            uniforms->modifierA->set (modA); ERROR_CHECK();
+        }
+        if (uniforms->modifierB.get() != nullptr)
+        {
+            uniforms->modifierB->set (modB); ERROR_CHECK();
+        }
+        if (uniforms->modifierC.get() != nullptr)
+        {
+            uniforms->modifierC->set (modC); ERROR_CHECK();
+        }
+        if (uniforms->modifierD.get() != nullptr)
+        {
+            uniforms->modifierD->set (modD); ERROR_CHECK();
+        }
+        if (uniforms->saturation.get() != nullptr)
+        {
+            uniforms->saturation->set (saturation); ERROR_CHECK();
+        }
 
         mesh.draw (*attributes.get());
         // // juce::gl::glBindBuffer (juce::gl::GL_ARRAY_BUFFER, 0);

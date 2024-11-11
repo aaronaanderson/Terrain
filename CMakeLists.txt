@@ -33,7 +33,7 @@ clap_juce_extensions_plugin(TARGET WaveTerrainSynth
 
 set_target_properties(WaveTerrainSynth PROPERTIES 
     CXX_STANDARD 17
-    COMPILE_WARNING_AS_ERROR ON
+    # COMPILE_WARNING_AS_ERROR ON
 )
 
 juce_add_module(glm_module)

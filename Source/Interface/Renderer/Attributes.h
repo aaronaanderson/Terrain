@@ -29,7 +29,9 @@ struct Attributes
     void disable()
     {
         if (position.get() != nullptr) 
+        {
             juce::gl::glDisableVertexAttribArray (position->attributeID); ERROR_CHECK();
+        }
     }
     std::unique_ptr<juce::OpenGLShaderProgram::Attribute> position;
 private:

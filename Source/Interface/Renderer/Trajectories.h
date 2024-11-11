@@ -36,7 +36,6 @@ public:
     CircularBuffer(const int initialAllocation)
     {
         positionsBuffer.resize(initialAllocation); // nearly a second at 48000khz
-        writeSampleIndex = 0;
     }
     virtual ~CircularBuffer() {}
     virtual void feed(const juce::AudioBuffer<float>& input)
@@ -47,13 +46,13 @@ public:
             Position p = {input.getReadPointer(0)[i], input.getReadPointer(1)[i], input.getReadPointer(2)[i] * 0.6f};
             positionsBuffer.set(writeSampleIndex, p); 
             
-            writeSampleIndex = (++writeSampleIndex) % positionsBuffer.size();
+            writeSampleIndex = (writeSampleIndex + 1) % positionsBuffer.size();
         }
     }
 private:
     struct Position {float x = 0.0f; float y = 0.0f; float z = 0.0f;};
     juce::Array<Position> positionsBuffer;
-    int writeSampleIndex;
+    int writeSampleIndex = 0;
 };
 class PointsMesh
 {

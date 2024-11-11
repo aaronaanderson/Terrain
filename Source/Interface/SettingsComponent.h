@@ -121,6 +121,13 @@ struct PressureSmoothingComponent : public juce::Component
             };
         addAndMakeVisible (smoothingSlider);
     }
+    void paint (juce::Graphics& g) override 
+    {
+        auto b = getLocalBounds();
+        auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
+        g.setColour (laf->getBackgroundDark());
+        g.drawRect (b.toFloat(), 2.0f);
+    }
     void resized() override
     {
         auto b = getLocalBounds();
@@ -486,7 +493,7 @@ public:
         viewport.setBounds (b);
 
         auto scl = dynamic_cast<SettingsComponentLayout*> (viewport.getViewedComponent());
-        scl->setBounds ({b.getWidth(), scl->getDesiredHeight()});
+        scl->setBounds ({b.getWidth() - viewport.getScrollBarThickness(), scl->getDesiredHeight()});
     }
     void setState (juce::ValueTree state)
     {
