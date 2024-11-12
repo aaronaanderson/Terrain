@@ -196,6 +196,16 @@ private:
     {
         juce::ignoreUnused (tree);
         if (property == id::name) checkIfControlled();
+
+        if (property == id::mpeEnabled)
+        {
+            if (!tree.getProperty (property))
+            {
+                isControlled = false;
+                ownershipChanged();
+                repaint();
+            }else { checkIfControlled(); }    
+        }
     }
     void checkIfControlled()
     {
