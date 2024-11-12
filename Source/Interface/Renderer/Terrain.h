@@ -196,8 +196,6 @@ public:
         }
 
         mesh.draw (*attributes.get());
-        // // juce::gl::glBindBuffer (juce::gl::GL_ARRAY_BUFFER, 0);
-        // // juce::gl::glPolygonMode (juce::gl::GL_FRONT_AND_BACK, juce::gl::GL_FILL );
     }
     void renderMultiple (const Camera& camera, 
                          juce::Colour color, 
@@ -209,18 +207,18 @@ public:
                          juce::Array<float> modD,
                          juce::Array<float> saturation)
     {
-        if (numTerrains > 1)
+        // if (numTerrains > 1)
         {
-            juce::gl::glEnable (juce::gl::GL_BLEND); ERROR_CHECK();
             juce::gl::glDisable (juce::gl::GL_DEPTH_TEST); ERROR_CHECK();
+            juce::gl::glEnable (juce::gl::GL_BLEND); ERROR_CHECK();
             juce::gl::glEnable (juce::gl::GL_ALPHA_TEST); ERROR_CHECK();
             juce::gl::glBlendFunc(juce::gl::GL_SRC_ALPHA, juce::gl::GL_ONE_MINUS_SRC_ALPHA); ERROR_CHECK();
         }
-        else
-        {
-            juce::gl::glDisable (juce::gl::GL_BLEND); ERROR_CHECK();
-            juce::gl::glEnable (juce::gl::GL_DEPTH_TEST); ERROR_CHECK();
-        }
+        // else
+        // {
+        //     juce::gl::glDisable (juce::gl::GL_BLEND); ERROR_CHECK();
+        //     juce::gl::glEnable (juce::gl::GL_DEPTH_TEST); ERROR_CHECK();
+        // }
         juce::gl::glPolygonMode (juce::gl::GL_FRONT_AND_BACK, juce::gl::GL_FILL); ERROR_CHECK();
         
         if(shaders.get() == nullptr)
@@ -249,7 +247,7 @@ public:
                 uniforms->color->set (color.getRed(), 
                                       color.getGreen(), 
                                       color.getBlue(), 
-                                      static_cast<int> (color.getAlpha() * 1.0f)); ERROR_CHECK();
+                                      static_cast<int> (color.getAlpha() * (1.0f / (numTerrains + 1.0f)))); ERROR_CHECK();
             }
             if (uniforms->terrainIndex.get() != nullptr)
             {

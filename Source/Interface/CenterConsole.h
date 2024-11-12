@@ -32,7 +32,7 @@ public:
                    juce::ValueTree& mpeSettings, 
                    juce::ValueTree voicesState)
       :  juce::TabbedComponent (juce::TabbedButtonBar::Orientation::TabsAtTop),
-         visualizer (wts, wtsmpe, p, settingsBranch, voicesState),
+         visualizer (wts, wtsmpe, p, settingsBranch, voicesState, apvts),
          settingsComponent (settingsBranch, apvts, mpeSettings)
     { 
         auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());

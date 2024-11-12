@@ -75,11 +75,7 @@ public:
     void noteStopped (bool allowTailOff) override
     {
         if (!allowTailOff) clearCurrentNote();
-        auto note = getCurrentlyPlayingNote();
         trajectory.stopNote(); 
-
-        auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel));
-        channelState.setProperty (id::voiceActive, false, nullptr);
     }
     
     void notePressureChanged() override 
@@ -137,7 +133,13 @@ public:
                           int numSamples) override
     {
         trajectory.renderNextBlock (outputBuffer, startSample, numSamples);
-        if (trajectory.shouldClear()) clearCurrentNote();
+        if (trajectory.shouldClear())
+        {
+            auto note = getCurrentlyPlayingNote();
+            auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel));
+            channelState.setProperty (id::voiceActive, false, nullptr);
+            clearCurrentNote();
+        }
     }
     void setCurrentSampleRate (double newRate) override { trajectory.setCurrentPlaybackSampleRate (newRate); }
     void allocate (int maxBlockSize) 

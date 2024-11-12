@@ -27,9 +27,9 @@ struct ParameterWatcher
         index (parameters.currentTerrain), 
         saturation (parameters.terrainSaturation)
     {}
-    UBO getUBO() { return { juce::roundToInt ((index.getValue())), 
-                            a.getValue(), b.getValue(), c.getValue(), d.getValue(),
-                            saturation.getValue()};}
+    UBO getUBO() const { return { juce::roundToInt ((index.getValue())), 
+                                  a.getValue(), b.getValue(), c.getValue(), d.getValue(),
+                                  saturation.getValue()};}
 
 private:
     struct WatchedParameter : private juce::AudioProcessorParameter::Listener
@@ -41,7 +41,7 @@ private:
             value.store (parameter->convertFrom0to1 (parameter->getValue()));
         }
         ~WatchedParameter() override { parameter->removeListener (this); }
-        float getValue() { return value.load(); }
+        float getValue() const { return value.load(); }
     private:
         juce::RangedAudioParameter* parameter;
         std::atomic<float> value;
@@ -54,6 +54,198 @@ private:
     };
     WatchedParameter a, b, c, d, index, saturation;
 };
+struct MPEWatcher : private juce::ValueTree::Listener
+{
+    MPEWatcher (juce::ValueTree mpeVoices, 
+                const juce::AudioProcessorValueTreeState& apvts)
+      : voicesState (mpeVoices), 
+        valueTreeState (apvts)
+    {
+
+    }
+    int getSize() const
+    {
+        int size = 0;
+        for (int i = 0; i < voicesState.getNumChildren(); i++)
+            if (voicesState.getChild (i).getProperty (id::voiceActive))
+                size++;
+        return size;
+    }
+    bool aControlled() const { return channelsData[0].isControlled; }
+    bool bControlled() const { return channelsData[1].isControlled; }
+    bool cControlled() const { return channelsData[2].isControlled; }
+    bool dControlled() const { return channelsData[3].isControlled; }
+    bool saturationControlled() const { return channelsData[4].isControlled; }
+    juce::Array<float> getArrayA() const
+    {
+        juce::Array<float> a;
+        int index = 0;
+        for (int i = 0; i < voicesState.getNumChildren(); i++)
+        {
+            if (!voicesState.getChild (i).getProperty (id::voiceActive)) continue;
+            float x = 0;
+            if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesState.getChild (i).getProperty (id::voicePressure);
+            if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesState.getChild (i).getProperty (id::voiceTimbre);
+            a.add (curveValue (x,
+                               (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::curve),
+                               (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::handleOne),
+                               (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::handleTwo)));
+        }
+        return a;
+    }
+    juce::Array<float> getArrayB() const
+    {
+        juce::Array<float> a;
+        int index = 1;
+        for (int i = 0; i < voicesState.getNumChildren(); i++)
+        {
+            if (!voicesState.getChild (i).getProperty (id::voiceActive)) continue;
+            float x = 0;
+            if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesState.getChild (i).getProperty (id::voicePressure);
+            if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesState.getChild (i).getProperty (id::voiceTimbre);
+            a.add (curveValue (x,
+                               (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::curve),
+                               (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::handleOne),
+                               (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::handleTwo)));
+        }
+        return a;
+    }
+    juce::Array<float> getArrayC() const
+    {
+        juce::Array<float> a;
+        int index = 2;
+        for (int i = 0; i < voicesState.getNumChildren(); i++)
+        {
+            if (!voicesState.getChild (i).getProperty (id::voiceActive)) continue;
+            float x = 0;
+            if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesState.getChild (i).getProperty (id::voicePressure);
+            if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesState.getChild (i).getProperty (id::voiceTimbre);
+            a.add (curveValue (x,
+                               (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::curve),
+                               (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::handleOne),
+                               (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::handleTwo)));
+        }
+        return a;
+    }
+    juce::Array<float> getArrayD() const
+    {
+        juce::Array<float> a;
+        int index = 3;
+        for (int i = 0; i < voicesState.getNumChildren(); i++)
+        {
+            if (!voicesState.getChild (i).getProperty (id::voiceActive)) continue;
+            float x = 0;
+            if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesState.getChild (i).getProperty (id::voicePressure);
+            if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesState.getChild (i).getProperty (id::voiceTimbre);
+            a.add (curveValue (x,
+                               (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::curve),
+                               (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::handleOne),
+                               (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::handleTwo)));
+        }
+        return a;
+    }
+    juce::Array<float> getArraySaturation() const
+    {
+        juce::Array<float> a;
+        int index = 4;
+        for (int i = 0; i < voicesState.getNumChildren(); i++)
+        {
+            if (!voicesState.getChild (i).getProperty (id::voiceActive)) continue;
+            float x = 0;
+            if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesState.getChild (i).getProperty (id::voicePressure);
+            if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesState.getChild (i).getProperty (id::voiceTimbre);
+            a.add (curveValue (x,
+                               (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::curve),
+                               (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::handleOne),
+                               (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::handleTwo)));
+        }
+        return a;
+    }
+private:
+    juce::ValueTree routingBranch;
+    juce::ValueTree voicesState;
+    const juce::AudioProcessorValueTreeState& valueTreeState;
+
+    struct ChannelData
+    {
+        ChannelData() = default;
+        ChannelData (juce::String pid, 
+                     juce::Identifier vc,
+                     juce::Identifier oid,
+                     bool controlled)
+          : paramID (pid), 
+            voiceChannel (vc),
+            outputID (oid),
+            isControlled (controlled)
+        {}
+        juce::String paramID;
+        juce::Identifier voiceChannel;
+        juce::Identifier outputID;
+        bool isControlled;
+    };
+    juce::Array<ChannelData> channelsData
+        {
+            ChannelData ("TerrainModA", "", "", false),
+            ChannelData ("TerrainModB", "", "", false),
+            ChannelData ("TerrainModC", "", "", false),
+            ChannelData ("TerrainModD", "", "", false),
+            ChannelData ("TerrainSaturation", "", "", false)
+        };
+
+    void checkIfControlled()
+    {
+        juce::Array<juce::Identifier> ids {id::OUTPUT_ONE, id::OUTPUT_TWO, id::OUTPUT_THREE,
+                                           id::OUTPUT_FOUR, id::OUTPUT_FIVE, id::OUTPUT_SIX};
+        routingBranch = valueTreeState.state.getChildWithName (id::PRESET_SETTINGS)
+                                            .getChildWithName (id::MPE_ROUTING);
+        auto pressureBranch = routingBranch.getChildWithName (id::PRESSURE);
+
+        for (auto id : ids)
+        {
+            for (auto cd : channelsData)
+            {
+                cd.isControlled = false;
+                if (pressureBranch.getChildWithName (id).getProperty (id::name).toString() == cd.paramID)
+                {
+                    cd.outputID = id;
+                    cd.voiceChannel = (id::PRESSURE);
+                    cd.isControlled = true;
+                } 
+            }
+        }
+        auto timbreBranch = routingBranch.getChildWithName (id::TIMBRE);
+        for (auto id : ids)
+        {
+            for (auto cd : channelsData)
+            {
+                cd.isControlled = false;
+                if (timbreBranch.getChildWithName (id).getProperty (id::name).toString() == cd.paramID)
+                {
+                    cd.outputID = id;
+                    cd.voiceChannel = (id::TIMBRE);
+                    cd.isControlled = true;
+                } 
+            }
+        }
+    }
+    void valueTreeRedirected (juce::ValueTree& tree) override
+    {
+        juce::ignoreUnused (tree);
+        checkIfControlled();
+    }
+    void valueTreePropertyChanged (juce::ValueTree& tree,
+                                  const juce::Identifier& property) override
+    {
+        juce::ignoreUnused (tree);
+        if (property == id::name) checkIfControlled();
+    }
+    static float curveValue (const float linearValue, const float curve, const float min, const float max)
+    {
+    
+        float curvedValue = (float)std::pow (linearValue, 1.0f / curve);
+        return juce::jmap (curvedValue, min, max);
+    }
+};
 class Visualizer : public juce::Component, 
                    private juce::OpenGLRenderer, 
                    private juce::Timer
@@ -63,9 +255,11 @@ public:
                 tp::WaveTerrainSynthesizerMPE& wtsmpe, 
                 tp::Parameters parameters, 
                 juce::ValueTree settings, 
-                juce::ValueTree voicesStateBranch)
+                juce::ValueTree voicesStateBranch, 
+                const juce::AudioProcessorValueTreeState& apvts)
       : camera (mutex), 
         parameterWatcher (parameters), 
+        mpeWatcher (voicesStateBranch, apvts),
         waveTerrainSynthesizerStandard (wts), 
         waveTerrainSynthesizerMPE (wtsmpe), 
         useMPE (settings, id::mpeEnabled, nullptr), 
@@ -125,6 +319,7 @@ private:
     Camera camera;
     std::unique_ptr<Terrain> terrain;
     ParameterWatcher parameterWatcher;
+    MPEWatcher mpeWatcher;
     std::unique_ptr<Trajectories> trajectories;
     tp::WaveTerrainSynthesizerStandard& waveTerrainSynthesizerStandard;
     tp::WaveTerrainSynthesizerMPE& waveTerrainSynthesizerMPE;
@@ -166,7 +361,7 @@ private:
         }
         else
         {
-            auto mpef = makeMPEFrame (voicesState, mpeRouting, parameterWatcher);
+            auto mpef = makeMPEFrame (mpeWatcher, parameterWatcher);
             terrain->renderMultiple (camera, color, ubo.index, mpef.size, mpef.a, mpef.b, mpef.c, mpef.d, mpef.saturation);
         }
 
@@ -188,23 +383,33 @@ private:
         juce::Array<float> saturation;
     };
     
-    static MPEFrame makeMPEFrame (juce::ValueTree voicesState, juce::ValueTree mpeRouting, const ParameterWatcher& pw)
+    static MPEFrame makeMPEFrame (const MPEWatcher& mpew, const ParameterWatcher& pw)
     {
         MPEFrame frame;
-        int size = 0;
-        for (int i = 0; i < voicesState.getNumChildren(); i++)
-            if (voicesState.getChild (i).getProperty (id::voiceActive))
-                size++;
-        frame.size = size;
-        frame.a.resize (size);
-        frame.b.resize (size);
-        frame.c.resize (size);
-        frame.d.resize (size);
-        frame.saturation.resize (size);
-        
-        juce::ignoreUnused (pw, mpeRouting);
-        // std::cout << voicesState.toXmlString() << std::endl;
-    
+        frame.size = mpew.getSize();
+        frame.a.resize (frame.size);
+        frame.b.resize (frame.size);
+        frame.c.resize (frame.size);
+        frame.d.resize (frame.size);
+        frame.saturation.resize (frame.size);
+
+        auto ubo = pw.getUBO();
+ 
+        if (!mpew.aControlled()) frame.a.fill (ubo.a);
+        else frame.a = mpew.getArrayA();
+
+        if (!mpew.bControlled()) frame.b.fill (ubo.b);
+        else frame.b = mpew.getArrayB();
+
+        if (!mpew.cControlled()) frame.c.fill (ubo.c);
+        else frame.c = mpew.getArrayC();
+
+        if (!mpew.dControlled()) frame.d.fill (ubo.d);
+        else frame.d = mpew.getArrayD();
+
+        if (!mpew.saturationControlled()) frame.saturation.fill (ubo.saturation);
+        else frame.saturation = mpew.getArraySaturation();
+
         return frame;
     }
 };
