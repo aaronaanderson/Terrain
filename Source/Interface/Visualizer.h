@@ -57,20 +57,15 @@ private:
 struct MPEWatcher : private juce::ValueTree::Listener
 {
     MPEWatcher (juce::ValueTree mpeVoices, 
-                const juce::AudioProcessorValueTreeState& apvts)
+                juce::AudioProcessorValueTreeState& apvts)
       : voicesState (mpeVoices), 
         valueTreeState (apvts)
     {
+        checkIfControlled();
+        valueTreeState.state.addListener (this);
+    }
+    ~MPEWatcher() { valueTreeState.state.removeListener (this); }
 
-    }
-    int getSize() const
-    {
-        int size = 0;
-        for (int i = 0; i < voicesState.getNumChildren(); i++)
-            if (voicesState.getChild (i).getProperty (id::voiceActive))
-                size++;
-        return size;
-    }
     bool aControlled() const { return channelsData[0].isControlled; }
     bool bControlled() const { return channelsData[1].isControlled; }
     bool cControlled() const { return channelsData[2].isControlled; }
@@ -82,7 +77,6 @@ struct MPEWatcher : private juce::ValueTree::Listener
         int index = 0;
         for (int i = 0; i < voicesState.getNumChildren(); i++)
         {
-            if (!voicesState.getChild (i).getProperty (id::voiceActive)) continue;
             float x = 0;
             if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesState.getChild (i).getProperty (id::voicePressure);
             if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesState.getChild (i).getProperty (id::voiceTimbre);
@@ -99,7 +93,6 @@ struct MPEWatcher : private juce::ValueTree::Listener
         int index = 1;
         for (int i = 0; i < voicesState.getNumChildren(); i++)
         {
-            if (!voicesState.getChild (i).getProperty (id::voiceActive)) continue;
             float x = 0;
             if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesState.getChild (i).getProperty (id::voicePressure);
             if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesState.getChild (i).getProperty (id::voiceTimbre);
@@ -116,7 +109,6 @@ struct MPEWatcher : private juce::ValueTree::Listener
         int index = 2;
         for (int i = 0; i < voicesState.getNumChildren(); i++)
         {
-            if (!voicesState.getChild (i).getProperty (id::voiceActive)) continue;
             float x = 0;
             if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesState.getChild (i).getProperty (id::voicePressure);
             if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesState.getChild (i).getProperty (id::voiceTimbre);
@@ -133,7 +125,6 @@ struct MPEWatcher : private juce::ValueTree::Listener
         int index = 3;
         for (int i = 0; i < voicesState.getNumChildren(); i++)
         {
-            if (!voicesState.getChild (i).getProperty (id::voiceActive)) continue;
             float x = 0;
             if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesState.getChild (i).getProperty (id::voicePressure);
             if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesState.getChild (i).getProperty (id::voiceTimbre);
@@ -150,21 +141,22 @@ struct MPEWatcher : private juce::ValueTree::Listener
         int index = 4;
         for (int i = 0; i < voicesState.getNumChildren(); i++)
         {
-            if (!voicesState.getChild (i).getProperty (id::voiceActive)) continue;
             float x = 0;
             if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesState.getChild (i).getProperty (id::voicePressure);
             if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesState.getChild (i).getProperty (id::voiceTimbre);
-            a.add (curveValue (x,
+            auto cv = curveValue (x,
                                (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::curve),
                                (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::handleOne),
-                               (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::handleTwo)));
+                               (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::handleTwo));
+            auto value = valueTreeState.getParameter (channelsData[index].paramID)->convertFrom0to1 (cv);
+            a.add (value);
         }
         return a;
     }
 private:
     juce::ValueTree routingBranch;
     juce::ValueTree voicesState;
-    const juce::AudioProcessorValueTreeState& valueTreeState;
+    juce::AudioProcessorValueTreeState& valueTreeState;
 
     struct ChannelData
     {
@@ -185,45 +177,47 @@ private:
     };
     juce::Array<ChannelData> channelsData
         {
-            ChannelData ("TerrainModA", "", "", false),
-            ChannelData ("TerrainModB", "", "", false),
-            ChannelData ("TerrainModC", "", "", false),
-            ChannelData ("TerrainModD", "", "", false),
-            ChannelData ("TerrainSaturation", "", "", false)
+            ChannelData ("TerrainModA", "null", "null", false),
+            ChannelData ("TerrainModB", "null", "null", false),
+            ChannelData ("TerrainModC", "null", "null", false),
+            ChannelData ("TerrainModD", "null", "null", false),
+            ChannelData ("TerrainSaturation", "null", "null", false)
         };
 
     void checkIfControlled()
     {
+        for (auto& cd : channelsData) cd.isControlled = false;
+
         juce::Array<juce::Identifier> ids {id::OUTPUT_ONE, id::OUTPUT_TWO, id::OUTPUT_THREE,
                                            id::OUTPUT_FOUR, id::OUTPUT_FIVE, id::OUTPUT_SIX};
         routingBranch = valueTreeState.state.getChildWithName (id::PRESET_SETTINGS)
                                             .getChildWithName (id::MPE_ROUTING);
-        auto pressureBranch = routingBranch.getChildWithName (id::PRESSURE);
 
-        for (auto id : ids)
+        auto pressureBranch = routingBranch.getChildWithName (id::PRESSURE);
+        for (auto& id : ids)
         {
-            for (auto cd : channelsData)
+            for (auto& cd : channelsData)
             {
-                cd.isControlled = false;
                 if (pressureBranch.getChildWithName (id).getProperty (id::name).toString() == cd.paramID)
                 {
                     cd.outputID = id;
                     cd.voiceChannel = (id::PRESSURE);
                     cd.isControlled = true;
+                    break;
                 } 
             }
         }
         auto timbreBranch = routingBranch.getChildWithName (id::TIMBRE);
-        for (auto id : ids)
+        for (auto& id : ids)
         {
-            for (auto cd : channelsData)
+            for (auto& cd : channelsData)
             {
-                cd.isControlled = false;
                 if (timbreBranch.getChildWithName (id).getProperty (id::name).toString() == cd.paramID)
                 {
                     cd.outputID = id;
                     cd.voiceChannel = (id::TIMBRE);
                     cd.isControlled = true;
+                    break;
                 } 
             }
         }
@@ -256,7 +250,7 @@ public:
                 tp::Parameters parameters, 
                 juce::ValueTree settings, 
                 juce::ValueTree voicesStateBranch, 
-                const juce::AudioProcessorValueTreeState& apvts)
+                juce::AudioProcessorValueTreeState& apvts)
       : camera (mutex), 
         parameterWatcher (parameters), 
         mpeWatcher (voicesStateBranch, apvts),
@@ -266,7 +260,6 @@ public:
         voicesState (voicesStateBranch)
     {
         mpeRouting = settings.getChildWithName (id::MPE_ROUTING);
-        std::cout << mpeRouting.toXmlString() << std::endl;
 
 #ifdef JUCE_MAC
         glContext.setOpenGLVersionRequired (juce::OpenGLContext::OpenGLVersion::openGL4_1);
@@ -362,7 +355,10 @@ private:
         else
         {
             auto mpef = makeMPEFrame (mpeWatcher, parameterWatcher);
-            terrain->renderMultiple (camera, color, ubo.index, mpef.size, mpef.a, mpef.b, mpef.c, mpef.d, mpef.saturation);
+            if (mpef.isMPEControlled)
+                terrain->renderMultiple (camera, color, ubo.index, mpef.a, mpef.b, mpef.c, mpef.d, mpef.saturation);
+            else
+                terrain->render(camera, color, ubo.index, ubo.a, ubo.b, ubo.c, ubo.d, ubo.saturation);
         }
 
         color = getLookAndFeel().findColour (juce::Slider::ColourIds::thumbColourId);
@@ -375,7 +371,7 @@ private:
     }
     struct MPEFrame
     {
-        int size;
+        bool isMPEControlled;
         juce::Array<float> a;
         juce::Array<float> b;
         juce::Array<float> c;
@@ -386,14 +382,23 @@ private:
     static MPEFrame makeMPEFrame (const MPEWatcher& mpew, const ParameterWatcher& pw)
     {
         MPEFrame frame;
-        frame.size = mpew.getSize();
-        frame.a.resize (frame.size);
-        frame.b.resize (frame.size);
-        frame.c.resize (frame.size);
-        frame.d.resize (frame.size);
-        frame.saturation.resize (frame.size);
-
+        if (mpew.aControlled() ||
+            mpew.bControlled() ||
+            mpew.cControlled() ||
+            mpew.dControlled() ||
+            mpew.saturationControlled())
+        {
+            frame.isMPEControlled = true;
+        }
+        else { frame.isMPEControlled = false; }
+        
         auto ubo = pw.getUBO();
+
+        frame.a.resize (15);
+        frame.b.resize (15);
+        frame.c.resize (15);
+        frame.d.resize (15);
+        frame.saturation.resize (15);
  
         if (!mpew.aControlled()) frame.a.fill (ubo.a);
         else frame.a = mpew.getArrayA();

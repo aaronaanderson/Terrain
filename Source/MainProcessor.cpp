@@ -115,7 +115,6 @@ void MainProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     prepareOversampling (buffer.getNumSamples());
     if (mpeOn.load())
     {
-        updateMPEParameters();
         mpeSynthesizer->updateTerrain();
         mpeSynthesizer->renderNextBlock (overSamplingBufferReference, midiMessages, 0, overSamplingBufferReference.getNumSamples());
     }
@@ -477,30 +476,4 @@ void MainProcessor::saveMPESettings()
     auto file = presetFolder.getChildFile ("MPESettings.xml");
     if (!file.existsAsFile()) file.setCreationTime (juce::Time::getCurrentTime());
     xml->writeTo (file);
-}
-void MainProcessor::updateMPEParameters()
-{
-       juce::Array<juce::String> parameterIDs;
-        auto timbreBranch = valueTreeState.state.getChildWithName (id::PRESET_SETTINGS)
-                                                .getChildWithName (id::MPE_ROUTING)
-                                                .getChildWithName (id::TIMBRE);
-        parameterIDs.add (timbreBranch.getChildWithName (id::OUTPUT_ONE).getProperty (id::name));
-        parameterIDs.add (timbreBranch.getChildWithName (id::OUTPUT_TWO).getProperty (id::name));
-        parameterIDs.add (timbreBranch.getChildWithName (id::OUTPUT_THREE).getProperty (id::name));
-        auto averageTimbre = mpeSynthesizer->getAverageTimbre();
-        for (auto pid : parameterIDs)
-            if (valueTreeState.getParameter (pid) != nullptr)
-                valueTreeState.getParameter (pid)->setValueNotifyingHost (averageTimbre);
-
-        parameterIDs.clear();
-        auto pressureBranch = valueTreeState.state.getChildWithName (id::PRESET_SETTINGS)
-                                                  .getChildWithName (id::MPE_ROUTING)
-                                                  .getChildWithName (id::PRESSURE);
-        parameterIDs.add (pressureBranch.getChildWithName (id::OUTPUT_ONE).getProperty (id::name));
-        parameterIDs.add (pressureBranch.getChildWithName (id::OUTPUT_TWO).getProperty (id::name));
-        parameterIDs.add (pressureBranch.getChildWithName (id::OUTPUT_THREE).getProperty (id::name));
-        auto maxPressure = mpeSynthesizer->getMaximumPressure();
-        for (auto pid : parameterIDs)
-            if (valueTreeState.getParameter (pid) != nullptr)
-                valueTreeState.getParameter (pid)->setValueNotifyingHost (maxPressure);
 }

@@ -53,7 +53,7 @@ public:
     const tp::Parameters& getCastedParameters() const { return parameters; }
     tp::WaveTerrainSynthesizerStandard& getStandardWaveTerrainSynthesizer() { return *standardSynthesizer.get(); }
     tp::WaveTerrainSynthesizerMPE& getMPEWaveTerrainSynthesizer() { return *mpeSynthesizer.get(); }
-    const juce::AudioProcessorValueTreeState& getAudioProcessorValueTreeState() {return valueTreeState; }
+    juce::AudioProcessorValueTreeState& getAudioProcessorValueTreeState() {return valueTreeState; }
     bool getMTSConnectionStatus() { return MTS_HasMaster (mtsClient); }
     juce::String getTuningSystemName() { return MTS_GetScaleName (mtsClient); }
     juce::ValueTree& getMPESettings() { return mpeSettings; }
@@ -83,7 +83,6 @@ private:
     juce::ValueTree mpeSettings;
     void loadMPESettings();
     void saveMPESettings();
-    void updateMPEParameters();
     void valueTreePropertyChanged (juce::ValueTree& tree, 
                                    const juce::Identifier& property) override;
     void valueTreeRedirected (juce::ValueTree& treeWhichHasBeenChanged) override;

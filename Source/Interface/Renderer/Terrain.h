@@ -200,33 +200,27 @@ public:
     void renderMultiple (const Camera& camera, 
                          juce::Colour color, 
                          int index, 
-                         int numTerrains,
                          juce::Array<float> modA, 
                          juce::Array<float> modB, 
                          juce::Array<float> modC, 
                          juce::Array<float> modD,
                          juce::Array<float> saturation)
     {
-        // if (numTerrains > 1)
-        {
-            juce::gl::glDisable (juce::gl::GL_DEPTH_TEST); ERROR_CHECK();
-            juce::gl::glEnable (juce::gl::GL_BLEND); ERROR_CHECK();
-            juce::gl::glEnable (juce::gl::GL_ALPHA_TEST); ERROR_CHECK();
-            juce::gl::glBlendFunc(juce::gl::GL_SRC_ALPHA, juce::gl::GL_ONE_MINUS_SRC_ALPHA); ERROR_CHECK();
-        }
-        // else
-        // {
-        //     juce::gl::glDisable (juce::gl::GL_BLEND); ERROR_CHECK();
-        //     juce::gl::glEnable (juce::gl::GL_DEPTH_TEST); ERROR_CHECK();
-        // }
+
+        juce::gl::glDisable (juce::gl::GL_DEPTH_TEST); ERROR_CHECK();
+        juce::gl::glEnable (juce::gl::GL_BLEND); ERROR_CHECK();
+        juce::gl::glEnable (juce::gl::GL_ALPHA_TEST); ERROR_CHECK();
+        juce::gl::glBlendFunc(juce::gl::GL_SRC_ALPHA, juce::gl::GL_ONE_MINUS_SRC_ALPHA); ERROR_CHECK();
         juce::gl::glPolygonMode (juce::gl::GL_FRONT_AND_BACK, juce::gl::GL_FILL); ERROR_CHECK();
         
         if(shaders.get() == nullptr)
             return;
             
         shaders->use();
-
-        for (int i = 0; i < numTerrains; i++)
+        
+        phase = phase + 0.005f;
+        juce::Point<float> lightLocation {std::sin (phase) * 8.0f, std::cos (phase) * 8.0f};
+        for (int i = 0; i < 15; i++) 
         {
             if (uniforms->projectionMatrix.get() != nullptr)
             {
@@ -238,8 +232,7 @@ public:
             }
             if (uniforms->lightPosition.get() != nullptr)
             {
-                phase = phase + 0.005f;
-                uniforms->lightPosition->set (std::sin (phase) * 8, std::cos (phase) * 8, 2.0f); ERROR_CHECK();
+                uniforms->lightPosition->set (lightLocation.x, lightLocation.y, 2.0f); ERROR_CHECK();
             }
             //juce::ignoreUnused (color);
             if (uniforms->color.get() != nullptr)
@@ -247,7 +240,7 @@ public:
                 uniforms->color->set (color.getRed(), 
                                       color.getGreen(), 
                                       color.getBlue(), 
-                                      static_cast<int> (color.getAlpha() * (1.0f / (numTerrains + 1.0f)))); ERROR_CHECK();
+                                      static_cast<int> (color.getAlpha() * 0.8f)); ERROR_CHECK();
             }
             if (uniforms->terrainIndex.get() != nullptr)
             {
@@ -301,11 +294,3 @@ private:
         return loaded;        
     }
 };
-
-// class MPETerrains 
-// {
-// public:
-
-// private:
-//     juce::Array<Terrain> terrains;
-// };

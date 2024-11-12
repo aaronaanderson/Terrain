@@ -28,7 +28,7 @@ public:
                    tp::WaveTerrainSynthesizerMPE& wtsmpe,
                    const tp::Parameters& p, 
                    juce::ValueTree settingsBranch, 
-                   const juce::AudioProcessorValueTreeState& apvts, 
+                   juce::AudioProcessorValueTreeState& apvts, 
                    juce::ValueTree& mpeSettings, 
                    juce::ValueTree voicesState)
       :  juce::TabbedComponent (juce::TabbedButtonBar::Orientation::TabsAtTop),
