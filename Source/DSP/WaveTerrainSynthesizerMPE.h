@@ -112,9 +112,6 @@ public:
                 setGlobalPitchWheel (normalizedPitchWheel);
             else
                 setChannelPitchWheel (channel, normalizedPitchWheel);
-                
-            auto* l = juce::Logger::getCurrentLogger();
-            l->writeToLog ("Channel: " + juce::String (channel) + " | Value: " + juce::String (m.getPitchWheelValue()));
         }
         juce::MPESynthesiser::handleMidiEvent (m);
     }

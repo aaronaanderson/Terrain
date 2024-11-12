@@ -69,7 +69,6 @@ struct RoutingCurve : public juce::Component,
     RoutingCurve (juce::ValueTree routingChannelBranch)
       : routingChannel (routingChannelBranch)
     {
-        std::cout << routingChannel.toXmlString() << std::endl;
         handleOne.setNormalizedPosition (routingChannel.getProperty (id::handleOne));
         handleOne.setListener (this);
         addAndMakeVisible (handleOne);
@@ -169,23 +168,16 @@ private:
         else if (h == &handleTwo)
             routingChannel.setProperty (id::handleTwo, h->getNormalizedPosition(), nullptr);
         resized(); repaint(); 
-        std::cout << routingChannel.toXmlString() << std::endl;
     }
 };
 struct DraggableAssigner : public juce::DragAndDropContainer, 
                            public juce::Component
 {
-    DraggableAssigner (juce::ValueTree routingChannelBranch, 
-                    //    const juce::Identifier& MPEChannel, 
-                    //    const juce::Identifier& outChannel, 
+    DraggableAssigner (juce::ValueTree routingChannelBranch,
                        const juce::AudioProcessorValueTreeState& apvts)
       : routingChannel (routingChannelBranch)
     {
-        // mpeChannel (MPEChannel), 
-        // outputChannel (outChannel)
-        // auto paramID = mpeRouting.getChildWithName (mpeChannel)
-        //                          .getChildWithName (outputChannel)
-        //                          .getProperty (id::name).toString();
+
         auto paramID = routingChannel.getProperty (id::name).toString();
         if (paramID != "") name = apvts.getParameter (paramID)->getName (20);
     }
@@ -231,15 +223,11 @@ struct DraggableAssigner : public juce::DragAndDropContainer,
             });
         }
     }
-    // juce::ValueTree getMPEChannelRouting() { return mpeRouting.getChildWithName (mpeChannel)
-    //                                                           .getChildWithName (outputChannel); }
     juce::ValueTree getMPEChannelRouting() { return routingChannel; }
     void setLabel (juce::String label) { name = label; repaint(); }
     void setState (juce::ValueTree routingBranch) { routingChannel = routingBranch; }
 private:
     juce::ValueTree routingChannel;
-    // const juce::Identifier& mpeChannel;
-    // const juce::Identifier& outputChannel;
     juce::String name {"Drag to assign"};
 };
 

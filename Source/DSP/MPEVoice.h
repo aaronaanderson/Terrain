@@ -16,14 +16,14 @@ class MPEVoice : public VoiceInterface,
 {
 public:
     MPEVoice(Parameters& p, 
-             juce::ValueTree settingsBranch, 
+             juce::ValueTree SettingsBranch, 
              juce::ValueTree& MPESettings,
              MTSClient& mtsc, 
              juce::AudioProcessorValueTreeState& vts, 
              juce::ValueTree voicesStateTree)
-      : terrain (p, vts, settingsBranch.getChildWithName (id::MPE_ROUTING)),
-        trajectory (terrain, p, settingsBranch, mtsc, vts), 
-        routingBranch (settingsBranch.getChildWithName (id::MPE_ROUTING)), 
+      : terrain (p, vts, SettingsBranch.getChildWithName (id::MPE_ROUTING)),
+        trajectory (terrain, p, SettingsBranch, mtsc, vts), 
+        routingBranch (SettingsBranch.getChildWithName (id::MPE_ROUTING)), 
         mpeSettingsBranch (MPESettings), 
         mtsClient (mtsc),
         voicesState (voicesStateTree),
@@ -109,7 +109,6 @@ public:
         if (!pitchBendEnabled.get()) return;
         jassert (pitchWheel >= -1.0f && pitchWheel <= 1.0f);
         currentPitchWheel = pitchWheel;
-        auto note = getCurrentlyPlayingNote();
         auto tunedBaseFrequency = MTS_NoteToFrequency (&mtsClient, static_cast<char> (initialNote), -1);
         auto semitones = getPitchBendToSemitones (pitchWheel);
         auto adjustedFrequency = tunedBaseFrequency * semitonesToScalar (semitones + globalPitchBendSemitones);

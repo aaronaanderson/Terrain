@@ -33,10 +33,14 @@ clap_juce_extensions_plugin(TARGET WaveTerrainSynth
 
 set_target_properties(WaveTerrainSynth PROPERTIES 
     CXX_STANDARD 17
-    # COMPILE_WARNING_AS_ERROR ON
+    COMPILE_WARNING_AS_ERROR ON
 )
 
 juce_add_module(glm_module)
+set_target_properties(glm_module PROPERTIES 
+    COMPILE_WARNING_AS_ERROR OFF,
+    COMPILE_FLAGS "${CMAKE_CXX_FLAGS} -W"
+)
 
 target_sources(WaveTerrainSynth
     PRIVATE

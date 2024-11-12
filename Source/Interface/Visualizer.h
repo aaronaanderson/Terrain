@@ -61,12 +61,19 @@ class Visualizer : public juce::Component,
 public:
     Visualizer (tp::WaveTerrainSynthesizerStandard& wts, 
                 tp::WaveTerrainSynthesizerMPE& wtsmpe, 
-                tp::Parameters parameters)
+                tp::Parameters parameters, 
+                juce::ValueTree settings, 
+                juce::ValueTree voicesStateBranch)
       : camera (mutex), 
         parameterWatcher (parameters), 
         waveTerrainSynthesizerStandard (wts), 
-        waveTerrainSynthesizerMPE (wtsmpe)
+        waveTerrainSynthesizerMPE (wtsmpe), 
+        useMPE (settings, id::mpeEnabled, nullptr), 
+        voicesState (voicesStateBranch)
     {
+        mpeRouting = settings.getChildWithName (id::MPE_ROUTING);
+        std::cout << mpeRouting.toXmlString() << std::endl;
+
 #ifdef JUCE_MAC
         glContext.setOpenGLVersionRequired (juce::OpenGLContext::OpenGLVersion::openGL4_1);
 #else
@@ -122,6 +129,11 @@ private:
     tp::WaveTerrainSynthesizerStandard& waveTerrainSynthesizerStandard;
     tp::WaveTerrainSynthesizerMPE& waveTerrainSynthesizerMPE;
 
+    juce::ValueTree settings;
+    juce::ValueTree voicesState;
+    juce::ValueTree mpeRouting;
+    juce::CachedValue<bool> useMPE;
+
     void timerCallback() override 
     {
         glContext.triggerRepaint();
@@ -148,7 +160,16 @@ private:
                               juce::roundToInt(desktopScale * static_cast<float>(bounds.getHeight())));    
         auto ubo = parameterWatcher.getUBO();
         auto color = getLookAndFeel().findColour (juce::Slider::ColourIds::trackColourId);
-        terrain->render(camera, color, ubo.index, ubo.a, ubo.b, ubo.c, ubo.d, ubo.saturation);
+        if (!useMPE.get())
+        {
+            terrain->render(camera, color, ubo.index, ubo.a, ubo.b, ubo.c, ubo.d, ubo.saturation);
+        }
+        else
+        {
+            auto mpef = makeMPEFrame (voicesState, mpeRouting, parameterWatcher);
+            terrain->renderMultiple (camera, color, ubo.index, mpef.size, mpef.a, mpef.b, mpef.c, mpef.d, mpef.saturation);
+        }
+
         color = getLookAndFeel().findColour (juce::Slider::ColourIds::thumbColourId);
         trajectories->render (camera, color);
     }
@@ -157,4 +178,34 @@ private:
         terrain.reset();
         trajectories.reset();
     }
+    struct MPEFrame
+    {
+        int size;
+        juce::Array<float> a;
+        juce::Array<float> b;
+        juce::Array<float> c;
+        juce::Array<float> d;
+        juce::Array<float> saturation;
+    };
+    
+    static MPEFrame makeMPEFrame (juce::ValueTree voicesState, juce::ValueTree mpeRouting, const ParameterWatcher& pw)
+    {
+        MPEFrame frame;
+        int size = 0;
+        for (int i = 0; i < voicesState.getNumChildren(); i++)
+            if (voicesState.getChild (i).getProperty (id::voiceActive))
+                size++;
+        frame.size = size;
+        frame.a.resize (size);
+        frame.b.resize (size);
+        frame.c.resize (size);
+        frame.d.resize (size);
+        frame.saturation.resize (size);
+        
+        juce::ignoreUnused (pw, mpeRouting);
+        // std::cout << voicesState.toXmlString() << std::endl;
+    
+        return frame;
+    }
 };
+

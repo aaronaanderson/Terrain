@@ -29,9 +29,10 @@ public:
                    const tp::Parameters& p, 
                    juce::ValueTree settingsBranch, 
                    const juce::AudioProcessorValueTreeState& apvts, 
-                   juce::ValueTree& mpeSettings)
+                   juce::ValueTree& mpeSettings, 
+                   juce::ValueTree voicesState)
       :  juce::TabbedComponent (juce::TabbedButtonBar::Orientation::TabsAtTop),
-         visualizer (wts, wtsmpe, p),
+         visualizer (wts, wtsmpe, p, settingsBranch, voicesState),
          settingsComponent (settingsBranch, apvts, mpeSettings)
     { 
         auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
