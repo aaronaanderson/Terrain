@@ -69,7 +69,7 @@ public:
                               note.timbre.asUnsignedFloat());
         initialNote = note.initialNote;// MTS_NoteToFrequency (&mtsClient, static_cast<char> (note.initialNote), -1);
 
-        auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel));
+        auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel - 1));
         channelState.setProperty (id::voiceActive, true, nullptr);
     }
     void noteStopped (bool allowTailOff) override
@@ -96,7 +96,7 @@ public:
             previousPressure = pressure;
         }
 
-        auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel));
+        auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel - 1));
         channelState.setProperty (id::voicePressure, pressure, nullptr);
     }
     void notePitchbendChanged() override {}
@@ -124,7 +124,7 @@ public:
         terrain.setTimbre (timbre);
         trajectory.setTimbre (timbre);
 
-        auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel));
+        auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel - 1));
         channelState.setProperty (id::voiceTimbre, timbre, nullptr);
     }
     void noteKeyStateChanged() override {}
@@ -136,7 +136,7 @@ public:
         if (trajectory.shouldClear())
         {
             auto note = getCurrentlyPlayingNote();
-            auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel));
+            auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel - 1));
             channelState.setProperty (id::voiceActive, false, nullptr);
             clearCurrentNote();
         }
