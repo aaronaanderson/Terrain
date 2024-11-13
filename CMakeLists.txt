@@ -22,7 +22,7 @@ juce_add_plugin(WaveTerrainSynth
     PLUGIN_CODE JEe9                        # A unique four-character plugin id with exactly one upper-case character
                                                 # GarageBand 10.3 requires the first letter to be upper-case, and the remaining letters to be lower-case
     APP_SANDBOX_ENABLED TRUE        # Needed for GarageBand
-    FORMATS Standalone VST3 AU     # The formats to build. Other valid formats are: AAX Unity VST AU AUv3
+    FORMATS Standalone #VST3 AU     # The formats to build. Other valid formats are: AAX Unity VST AU AUv3
     PRODUCT_NAME "Terrain"         # The name of the final executable, which can differ from the target name    
 )    
 
@@ -69,11 +69,14 @@ juce_add_binary_data(BinaryData SOURCES
     Source/Interface/Renderer/Shaders/Terrain.vert
     Source/Interface/Paul-le1V.ttf
 
+    Presets/MPE-Basic.xml
+    Presets/MPE-ButterFly.xml
+    Presets/MPE-Echo.xml
+    Presets/MPE-Fire.xml
+    Presets/MPE-Space.xml
     Presets/Basic.xml
-    Presets/ButterFly.xml
-    Presets/Echo.xml
-    Presets/Fire.xml
-    Presets/Space.xml
+    Presets/PatternRun.xml
+    Presets/Plunky.xml
 )
 
 if(WIN32) 

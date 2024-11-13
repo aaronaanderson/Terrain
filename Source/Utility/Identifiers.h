@@ -51,4 +51,5 @@ namespace id
     static const juce::Identifier voicePressure = "voicePressure";
     static const juce::Identifier voiceTimbre = "voiceTimbre";
     static const juce::Identifier voiceActive = "voiceActive";
+    static const juce::Identifier voiceRMS = "voicesRMS";
 }

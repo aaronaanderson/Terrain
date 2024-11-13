@@ -150,6 +150,14 @@ struct RoutingCurve : public juce::Component,
 
         repaint();
     }
+    void mouseDoubleClick (const juce::MouseEvent& e) override
+    {
+        juce::ignoreUnused (e);
+        preCurve = 4.0f;
+        curve = 1.0f;
+        routingChannel.setProperty (id::curve, curve, nullptr);
+        repaint();
+    }
 private:
     juce::ValueTree routingChannel;
     Handle handleOne, handleTwo;

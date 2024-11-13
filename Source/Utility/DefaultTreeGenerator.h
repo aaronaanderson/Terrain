@@ -113,6 +113,7 @@ private:
         channel.setProperty (id::voicePressure, 0.0f, nullptr);
         channel.setProperty (id::voiceTimbre, 0.0f, nullptr);
         channel.setProperty (id::voiceActive, false, nullptr);
+        channel.setProperty (id::voiceRMS, 0.0f, nullptr);
         return channel;
     }
 };

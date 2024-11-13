@@ -204,7 +204,8 @@ public:
                          juce::Array<float> modB, 
                          juce::Array<float> modC, 
                          juce::Array<float> modD,
-                         juce::Array<float> saturation)
+                         juce::Array<float> saturation, 
+                         juce::Array<float> intensity)
     {
 
         juce::gl::glDisable (juce::gl::GL_DEPTH_TEST); ERROR_CHECK();
@@ -240,7 +241,7 @@ public:
                 uniforms->color->set (color.getRed(), 
                                       color.getGreen(), 
                                       color.getBlue(), 
-                                      static_cast<int> (color.getAlpha() * 0.8f)); ERROR_CHECK();
+                                      static_cast<int> (color.getAlpha() * intensity[i])); ERROR_CHECK();
             }
             if (uniforms->terrainIndex.get() != nullptr)
             {

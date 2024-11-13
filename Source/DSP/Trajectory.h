@@ -438,8 +438,6 @@ public:
         // copy from scratch buffer, adding to incoming content
         for (int i = 0; i < numSamples; i++)
             outputBuffer.getWritePointer (0)[i + startSample] += scratchBuffer.getReadPointer (0)[i];
-        // for (int i = 0; i < numSamples; i++)
-        //     outputBuffer.getWritePointer (0)[i + startSample] += renderBuffer.getReadPointer (0)[i + startSample];
     } 
     void allocate (int maximumSamplesPerBlock) 
     {
@@ -553,10 +551,12 @@ public:
                    Parameters& p, 
                    juce::ValueTree settingsBranch, 
                    MTSClient& mtsc,
-                   juce::AudioProcessorValueTreeState& vts)
+                   juce::AudioProcessorValueTreeState& vts, 
+                   juce::ValueTree voicesStateBranch)
       : Trajectory (t, settingsBranch, mtsc),
         mpeRouting (settingsBranch.getChildWithName (id::MPE_ROUTING)),
-        voiceParameters (p, vts, mpeRouting)
+        voiceParameters (p, vts, mpeRouting),
+        voicesState (voicesStateBranch)
     {
         jassert (mpeRouting.getType() == id::MPE_ROUTING);
         juce::ignoreUnused (p);
@@ -578,10 +578,12 @@ public:
                     float velocity, 
                     float frequencyHz, 
                     float pressure, 
-                    float timbre) 
+                    float timbre, 
+                    int channel) 
     {   
         juce::ignoreUnused (frequencyHz);
         midiNote = midiNoteNumber;
+        midiChannel = channel;
         setPitchWheelIncrementScalar (0.0);
         double freq = MTS_NoteToFrequency (&mtsClient, static_cast<char> (midiNoteNumber), -1);
         setFrequencyImmediate (static_cast<float> (freq));
@@ -659,6 +661,7 @@ public:
             ladderFilter.setResonance (voiceParameters.filterResonance.getNext());
             ladderFilter.process (context);
         }
+        setRMS (scratchBuffer.getRMSLevel (0, 0, numSamples));
         // copy from scratch buffer, adding to incoming content
         for (int i = 0; i < numSamples; i++)
             outputBuffer.getWritePointer (0)[i + startSample] += scratchBuffer.getReadPointer (0)[i];
@@ -680,12 +683,20 @@ public:
         scratchBuffer.setSize (1, maximumSamplesPerBlock);
         renderBuffer.setSize (1, maximumSamplesPerBlock); 
     }
+    void setRMS (float rms)
+    {
+        auto channelState = voicesState.getChild (static_cast<int> (midiChannel - 1));
+        channelState.setProperty (id::voiceRMS, juce::jmap (rms, 0.0f, 0.5f, 0.1f, 0.8f), nullptr);
+    }
 private:
     juce::ValueTree mpeRouting;
     juce::AudioBuffer<float> renderBuffer;
     juce::AudioBuffer<float> scratchBuffer;
     juce::dsp::LadderFilter<float> ladderFilter;
     juce::dsp::ProcessSpec processSpec;
+    
+    juce::ValueTree voicesState;
+    int midiChannel;
     struct VoiceParameters
     {
         VoiceParameters (Parameters& p, 

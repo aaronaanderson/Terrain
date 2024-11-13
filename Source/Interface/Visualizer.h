@@ -153,6 +153,15 @@ struct MPEWatcher : private juce::ValueTree::Listener
         }
         return a;
     }
+    juce::Array<float> getArrayIntensity() const 
+    {
+        juce::Array<float> a;
+        
+        for (int i = 0; i < voicesState.getNumChildren(); i++)
+            a.add ((float)voicesState.getChild (i).getProperty (id::voiceRMS));   
+
+        return a;
+    }
 private:
     juce::ValueTree routingBranch;
     juce::ValueTree voicesState;
@@ -356,7 +365,7 @@ private:
         {
             auto mpef = makeMPEFrame (mpeWatcher, parameterWatcher);
             if (mpef.isMPEControlled)
-                terrain->renderMultiple (camera, color, ubo.index, mpef.a, mpef.b, mpef.c, mpef.d, mpef.saturation);
+                terrain->renderMultiple (camera, color, ubo.index, mpef.a, mpef.b, mpef.c, mpef.d, mpef.saturation, mpef.intensity);
             else
                 terrain->render(camera, color, ubo.index, ubo.a, ubo.b, ubo.c, ubo.d, ubo.saturation);
         }
@@ -377,6 +386,7 @@ private:
         juce::Array<float> c;
         juce::Array<float> d;
         juce::Array<float> saturation;
+        juce::Array<float> intensity;
     };
     
     static MPEFrame makeMPEFrame (const MPEWatcher& mpew, const ParameterWatcher& pw)
@@ -414,6 +424,8 @@ private:
 
         if (!mpew.saturationControlled()) frame.saturation.fill (ubo.saturation);
         else frame.saturation = mpew.getArraySaturation();
+
+        frame.intensity = mpew.getArrayIntensity();
 
         return frame;
     }

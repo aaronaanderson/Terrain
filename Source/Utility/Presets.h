@@ -21,10 +21,15 @@ struct PresetSaver
     	presetFolder = presetFolder.getChildFile("Aaron Anderson").getChildFile("Terrain"); // "Imogen" is the name of my plugin
         auto result = presetFolder.createDirectory();
         
-        saveBinaryToFile (BinaryData::Basic_xml,     BinaryData::Basic_xmlSize,     presetFolder, "Basic");
-        saveBinaryToFile (BinaryData::ButterFly_xml, BinaryData::ButterFly_xmlSize, presetFolder, "ButterFly");
-        saveBinaryToFile (BinaryData::Echo_xml,      BinaryData::Echo_xmlSize,      presetFolder, "Echo");
-        saveBinaryToFile (BinaryData::Fire_xml,      BinaryData::Fire_xmlSize,      presetFolder, "Fire");
-        saveBinaryToFile (BinaryData::Space_xml,     BinaryData::Space_xmlSize,     presetFolder, "Space");
+        saveBinaryToFile (BinaryData::Basic_xml,      BinaryData::Basic_xmlSize,      presetFolder, "Basic");
+        saveBinaryToFile (BinaryData::PatternRun_xml, BinaryData::PatternRun_xmlSize, presetFolder, "Pattern Run");
+        saveBinaryToFile (BinaryData::Plunky_xml,     BinaryData::Plunky_xmlSize,     presetFolder, "Plunky");
+
+
+        saveBinaryToFile (BinaryData::MPEBasic_xml,     BinaryData::MPEBasic_xmlSize,     presetFolder, "MPE-Basic");
+        saveBinaryToFile (BinaryData::MPEButterFly_xml, BinaryData::MPEButterFly_xmlSize, presetFolder, "MPE-ButterFly");
+        saveBinaryToFile (BinaryData::MPEEcho_xml,      BinaryData::MPEEcho_xmlSize,      presetFolder, "MPE-Echo");
+        saveBinaryToFile (BinaryData::MPEFire_xml,      BinaryData::MPEFire_xmlSize,      presetFolder, "MPE-Fire");
+        saveBinaryToFile (BinaryData::MPESpace_xml,     BinaryData::MPESpace_xmlSize,     presetFolder, "MPE-Space");
     }
 };

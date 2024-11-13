@@ -22,11 +22,11 @@ public:
              juce::AudioProcessorValueTreeState& vts, 
              juce::ValueTree voicesStateTree)
       : terrain (p, vts, SettingsBranch.getChildWithName (id::MPE_ROUTING)),
-        trajectory (terrain, p, SettingsBranch, mtsc, vts), 
+        voicesState (voicesStateTree),
+        trajectory (terrain, p, SettingsBranch, mtsc, vts, voicesState), 
         routingBranch (SettingsBranch.getChildWithName (id::MPE_ROUTING)), 
         mpeSettingsBranch (MPESettings), 
         mtsClient (mtsc),
-        voicesState (voicesStateTree),
         releaseSensitivity (mpeSettingsBranch, id::releaseSensitivity, nullptr),
         pitchBendEnabled (mpeSettingsBranch, id::pitchBendEnabled, nullptr),
         divisionOfOctave (mpeSettingsBranch, id::pitchBendDivisionOfOctave, nullptr)
@@ -66,11 +66,13 @@ public:
                               note.noteOnVelocity.asUnsignedFloat(), 
                               static_cast<float> (note.getFrequencyInHertz()), 
                               note.pressure.asUnsignedFloat(), 
-                              note.timbre.asUnsignedFloat());
+                              note.timbre.asUnsignedFloat(), 
+                              note.midiChannel);
         initialNote = note.initialNote;// MTS_NoteToFrequency (&mtsClient, static_cast<char> (note.initialNote), -1);
 
         auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel - 1));
         channelState.setProperty (id::voiceActive, true, nullptr);
+        channelState.setProperty (id::voiceRMS, 0.2f, nullptr);
     }
     void noteStopped (bool allowTailOff) override
     {
@@ -138,6 +140,7 @@ public:
             auto note = getCurrentlyPlayingNote();
             auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel - 1));
             channelState.setProperty (id::voiceActive, false, nullptr);
+            channelState.setProperty (id::voiceRMS, 0.0f, nullptr);
             clearCurrentNote();
         }
     }
@@ -152,12 +155,12 @@ public:
     float getTimbre() { return timbre; }
 private:
     MPETerrain    terrain;
+    juce::ValueTree voicesState;
     MPETrajectory trajectory;
     juce::ValueTree routingBranch;
     juce::ValueTree& mpeSettingsBranch;
     juce::ValueTree settingsBranch;
     MTSClient& mtsClient;
-    juce::ValueTree voicesState;
     float pressure = 0.0f;
     float timbre = 0.0f;
 
