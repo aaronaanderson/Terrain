@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<TERRAIN_SYNTH presetName="MPE-Echo">
+  <PARAM id="Attack" value="13.26602935791016"/>
+  <PARAM id="CompressorRatio" value="8.347999572753906"/>
+  <PARAM id="CompressorThreshold" value="-8.828847885131836"/>
+  <PARAM id="CurrentTerrain" value="2.0"/>
+  <PARAM id="CurrentTrajectory" value="5.0"/>
+  <PARAM id="Decay" value="78.65901947021484"/>
+  <PARAM id="EnvelopeSize" value="1.0"/>
+  <PARAM id="Feedback" value="0.9660671949386597"/>
+  <PARAM id="FeedbackCompression" value="20.0"/>
+  <PARAM id="FeedbackMix" value="0.8514492511749268"/>
+  <PARAM id="FeedbackTime" value="985.535400390625"/>
+  <PARAM id="FilterFrequency" value="2797.29833984375"/>
+  <PARAM id="FilterOnOff" value="1.0"/>
+  <PARAM id="FilterResonance" value="0.239999994635582"/>
+  <PARAM id="MeanderanceScale" value="0.8369565010070801"/>
+  <PARAM id="MeanderanceSpeed" value="0.03260869532823563"/>
+  <PARAM id="OutputLevel" value="0.0"/>
+  <PARAM id="Release" value="2626.6708984375"/>
+  <PARAM id="Rotation" value="2.783716201782227"/>
+  <PARAM id="Size" value="0.2422022819519043"/>
+  <PARAM id="Sustain" value="0.0"/>
+  <PARAM id="TerrainModA" value="0.4708171188831329"/>
+  <PARAM id="TerrainModB" value="0.887159526348114"/>
+  <PARAM id="TerrainModC" value="0.8490327596664429"/>
+  <PARAM id="TerrainModD" value="0.7233216166496277"/>
+  <PARAM id="TerrainSaturation" value="1.000192046165466"/>
+  <PARAM id="TrajectoryModA" value="0.4245050847530365"/>
+  <PARAM id="TrajectoryModB" value="0.2079799622297287"/>
+  <PARAM id="TrajectoryModC" value="0.7546725869178772"/>
+  <PARAM id="TrajectoryModD" value="0.02426132932305336"/>
+  <PARAM id="TranslationX" value="0.07358932495117188"/>
+  <PARAM id="TranslationY" value="0.06521737575531006"/>
+  <PARAM id="Per-VoiceFilterFrequency" value="3.198690414428711"/>
+  <PARAM id="Per-VoiceFilterOnOff" value="1.0"/>
+  <PARAM id="Per-VoiceFilterResonance" value="0.2240000218153"/>
+  <PRESET_SETTINGS presetRandomizationScale="0.1052631578947368" oversampling="1"
+                   pitchBendRange="12.0" noteOnOrContinuous="0" mpeEnabled="1">
+    <MPE_ROUTING>
+      <PRESSURE>
+        <OUTPUT_ONE handleOne="0.2483660131692886" handleTwo="0.7843137383460999"
+                    curve="2.22849440574646" name="Per-VoiceFilterFrequency"/>
+        <OUTPUT_TWO handleOne="0.0" handleTwo="1.0" curve="1.0"/>
+        <OUTPUT_THREE handleOne="0.0" handleTwo="1.0" curve="1.0"/>
+        <OUTPUT_FOUR handleOne="0.0" handleTwo="1.0" curve="1.0"/>
+        <OUTPUT_FIVE handleOne="0.0" handleTwo="1.0" curve="1.0"/>
+        <OUTPUT_SIX handleOne="0.0" handleTwo="1.0" curve="1.0"/>
+      </PRESSURE>
+      <TIMBRE>
+        <OUTPUT_ONE handleOne="0.0" handleTwo="1.0" curve="1.0" name="TrajectoryModA"/>
+        <OUTPUT_TWO handleOne="0.0" handleTwo="1.0" curve="2.158196926116943" name="TerrainModA"/>
+        <OUTPUT_THREE handleOne="0.0" handleTwo="1.0" curve="1.0"/>
+        <OUTPUT_FOUR handleOne="0.0" handleTwo="1.0" curve="1.0"/>
+        <OUTPUT_FIVE handleOne="0.0" handleTwo="1.0" curve="1.0"/>
+        <OUTPUT_SIX handleOne="0.0" handleTwo="1.0" curve="1.0"/>
+      </TIMBRE>
+    </MPE_ROUTING>
+  </PRESET_SETTINGS>
+</TERRAIN_SYNTH>
