@@ -211,6 +211,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout MainProcessor::createParamet
     layout.add (std::make_unique<tp::NormalizedFloatParameter> ("Trajectory Mod C", 0.5f));
     layout.add (std::make_unique<tp::NormalizedFloatParameter> ("Trajectory Mod D", 0.5f));
     
+    layout.add (std::make_unique<tp::NormalizedFloatParameter> ("Amplitude", 1.0f));
     layout.add (std::make_unique<tp::NormalizedFloatParameter> ("Size", 0.5f));
     range = {0.0f, juce::MathConstants<float>::twoPi};
     layout.add (std::make_unique<tp::RangedFloatParameter> ("Rotation", 
@@ -229,6 +230,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout MainProcessor::createParamet
                                                                 0.0f));
 
     layout.add (std::make_unique<juce::AudioParameterBool> (juce::ParameterID {"EnvelopeSize", 1}, "Envelope Size", true));
+    range = juce::NormalisableRange<float> (-48.0f, 0.0f);
+    layout.add (std::make_unique<tp::RangedFloatParameter> ("Velocity", 
+                                                            range, 
+                                                            0.0f));
     range = juce::NormalisableRange<float> (2.0f, 5000.0f); range.setSkewForCentre (500.0f);
     layout.add (std::make_unique<tp::RangedFloatParameter> ("Attack", 
                                                             range, 

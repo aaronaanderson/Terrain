@@ -165,11 +165,13 @@ class TrajectoryVariables : public juce::Component
 public:
     TrajectoryVariables (juce::AudioProcessorValueTreeState& vts, 
                          juce::ValueTree voicesState)
-      : size ("Size", "Size", vts, voicesState),
+      : amplitude ("Amplitude", "Amplitude", vts, voicesState),
+        size ("Size", "Size", vts, voicesState),
         rotation ("Rotation", "Rotation", vts, voicesState),
         translation_x ("Translation X", "TranslationX", vts, voicesState),
         translation_y ("Translation Y", "TranslationY", vts, voicesState)
     {
+        addAndMakeVisible (amplitude);
         addAndMakeVisible (size);
         addAndMakeVisible (rotation);
         addAndMakeVisible (translation_x);
@@ -178,13 +180,15 @@ public:
     void resized() override 
     {
         auto b = getLocalBounds();
-        auto unitHeight = b.getHeight() / static_cast<float> (4);
+        auto unitHeight = b.getHeight() / static_cast<float> (5);
+        amplitude.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
         size.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
         rotation.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
         translation_x.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
         translation_y.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
     }
 private:
+    ParameterSlider amplitude;
     ParameterSlider size;
     ParameterSlider rotation;
     ParameterSlider translation_x;
@@ -240,9 +244,9 @@ public:
     {
         Panel::resized();
         auto b = getAdjustedBounds();
-        auto unitHeight = b.getHeight() / static_cast<float> ((12 + 16 + 10 + 22));
+        auto unitHeight = b.getHeight() / static_cast<float> ((12 + 20 + 10 + 22));
         trajectorySelector.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 12.0f)));
-        trajectoryVariables.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 16.0f)));
+        trajectoryVariables.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 20.0f)));
         meanderancePanel.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 10.0f)));
         feedbackPanel.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 22.0f)));
     }

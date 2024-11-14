@@ -57,7 +57,7 @@ void MainEditor::resized()
 
     header->setBounds (b.removeFromTop (60));
     
-    int controlPanelHeight = b.getHeight() / 5;
+    int controlPanelHeight = static_cast<int> (b.getHeight() / 5.5);
     controlPanel->setBounds (b.removeFromBottom (controlPanelHeight));
 
     int quarterWidth = b.getWidth() / 4;

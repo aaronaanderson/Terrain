@@ -59,4 +59,6 @@
       </TIMBRE>
     </MPE_ROUTING>
   </PRESET_SETTINGS>
+  <PARAM id="Amplitude"/>
+  <PARAM id="Velocity" value="-6.144001007080078"/>
 </TERRAIN_SYNTH>

@@ -152,7 +152,8 @@ public:
         attack ("Attack","Attack", vts, voicesState),
         decay ("Decay","Decay", vts, voicesState),
         sustain ("Sustain","Sustain", vts, voicesState),
-        release ("Release","Release", vts, voicesState)
+        release ("Release","Release", vts, voicesState), 
+        velocity ("Velocity", "Velocity", vts, voicesState)
     {
         label.setText ("Envelope", juce::dontSendNotification);
         label.setJustificationType (juce::Justification::centred);
@@ -162,6 +163,7 @@ public:
         addAndMakeVisible (decay);
         addAndMakeVisible (sustain);
         addAndMakeVisible (release);
+        addAndMakeVisible (velocity);
     }
     void paint (juce::Graphics& g) override 
     {
@@ -173,18 +175,19 @@ public:
     {
         auto b = getLocalBounds();
         label.setBounds (b.removeFromTop (20));
-        auto unitWidth = b.getWidth() / 43.0f;
+        auto unitWidth = b.getWidth() / 53.0f;
         envelopeSize.setBounds (b.removeFromLeft (static_cast<int> (juce::jmax (unitWidth * 3.0f, 22.0f))));
         attack.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 10.0f)));
         decay.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 10.0f)));
         sustain.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 10.0f)));
         release.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 10.0f)));
+        velocity.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 10.0f)));
     }
 
 private:
     juce::Label label;
     ti::ParameterToggle envelopeSize;
-    ti::ParameterSlider attack, decay, sustain, release;
+    ti::ParameterSlider attack, decay, sustain, release, velocity;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Envelope)
 };

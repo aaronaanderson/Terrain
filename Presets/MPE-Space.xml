@@ -36,13 +36,16 @@
   <PARAM id="Per-VoiceFilterFrequency" value="4.570690631866455"/>
   <PARAM id="Per-VoiceFilterOnOff" value="1.0"/>
   <PARAM id="Per-VoiceFilterResonance" value="0.8438031673431396"/>
+  <PARAM id="Amplitude"/>
+  <PARAM id="Velocity"/>
   <PRESET_SETTINGS presetRandomizationScale="0.1052631578947368" oversampling="1"
                    pitchBendRange="12.0" noteOnOrContinuous="0" mpeEnabled="1">
     <MPE_ROUTING>
       <PRESSURE>
-        <OUTPUT_ONE handleOne="0.0" handleTwo="0.6535947322845459" curve="2.090117216110229"
-                    name="Size"/>
-        <OUTPUT_TWO handleOne="0.0" handleTwo="1.0" curve="1.0"/>
+        <OUTPUT_ONE handleOne="0.2745098173618317" handleTwo="0.7385620474815369"
+                    curve="2.090117216110229" name="Size"/>
+        <OUTPUT_TWO handleOne="0.2745098173618317" handleTwo="1.0" curve="2.533339738845825"
+                    name="Amplitude"/>
         <OUTPUT_THREE handleOne="0.0" handleTwo="1.0" curve="1.0"/>
         <OUTPUT_FOUR handleOne="0.0" handleTwo="1.0" curve="1.0"/>
         <OUTPUT_FIVE handleOne="0.0" handleTwo="1.0" curve="1.0"/>

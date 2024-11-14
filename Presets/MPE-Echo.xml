@@ -42,7 +42,8 @@
       <PRESSURE>
         <OUTPUT_ONE handleOne="0.2483660131692886" handleTwo="0.7843137383460999"
                     curve="2.22849440574646" name="Per-VoiceFilterFrequency"/>
-        <OUTPUT_TWO handleOne="0.0" handleTwo="1.0" curve="1.0"/>
+        <OUTPUT_TWO handleOne="0.4901961088180542" handleTwo="1.0" curve="1.724439024925232"
+                    name="Amplitude"/>
         <OUTPUT_THREE handleOne="0.0" handleTwo="1.0" curve="1.0"/>
         <OUTPUT_FOUR handleOne="0.0" handleTwo="1.0" curve="1.0"/>
         <OUTPUT_FIVE handleOne="0.0" handleTwo="1.0" curve="1.0"/>
@@ -58,4 +59,6 @@
       </TIMBRE>
     </MPE_ROUTING>
   </PRESET_SETTINGS>
+  <PARAM id="Amplitude"/>
+  <PARAM id="Velocity"/>
 </TERRAIN_SYNTH>

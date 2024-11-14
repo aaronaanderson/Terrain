@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <TERRAIN_SYNTH presetName="MPE-ButterFly">
-  <PARAM id="Attack" value="1675.107788085938"/>
+  <PARAM id="Attack" value="523.3905639648438"/>
   <PARAM id="CompressorRatio" value="7.64400053024292"/>
   <PARAM id="CompressorThreshold" value="-4.048582077026367"/>
   <PARAM id="CurrentTerrain" value="1.0"/>
   <PARAM id="CurrentTrajectory" value="3.0"/>
-  <PARAM id="Decay" value="39.03110122680664"/>
+  <PARAM id="Decay" value="535.3204345703125"/>
   <PARAM id="EnvelopeSize" value="1.0"/>
   <PARAM id="Feedback" value="0.946872353553772"/>
   <PARAM id="FeedbackCompression" value="4.461175918579102"/>
@@ -18,10 +18,10 @@
   <PARAM id="MeanderanceScale" value="0.5542330741882324"/>
   <PARAM id="MeanderanceSpeed" value="0.1702898591756821"/>
   <PARAM id="OutputLevel" value="0.0"/>
-  <PARAM id="Release" value="5000.0"/>
+  <PARAM id="Release" value="3789.158935546875"/>
   <PARAM id="Rotation" value="3.2262864112854"/>
   <PARAM id="Size" value="0.2422022819519043"/>
-  <PARAM id="Sustain" value="0.0"/>
+  <PARAM id="Sustain" value="-4.2239990234375"/>
   <PARAM id="TerrainModA" value="0.7509727478027344"/>
   <PARAM id="TerrainModB" value="0.5136186480522156"/>
   <PARAM id="TerrainModC" value="0.8911347985267639"/>
@@ -36,21 +36,24 @@
   <PARAM id="Per-VoiceFilterFrequency" value="1.812000274658203"/>
   <PARAM id="Per-VoiceFilterOnOff" value="1.0"/>
   <PARAM id="Per-VoiceFilterResonance" value="0.0"/>
+  <PARAM id="Amplitude"/>
+  <PARAM id="Velocity" value="0.0"/>
   <PRESET_SETTINGS presetRandomizationScale="0.1052631578947368" oversampling="1"
                    pitchBendRange="2.0" noteOnOrContinuous="0" mpeEnabled="1">
     <MPE_ROUTING>
       <PRESSURE>
-        <OUTPUT_ONE handleOne="0.2026143819093704" handleTwo="0.4967319965362549"
-                    curve="2.090117216110229" name="Size"/>
+        <OUTPUT_ONE handleOne="0.1111111119389534" handleTwo="0.5032679438591003"
+                    curve="1.422738313674927" name="Size"/>
         <OUTPUT_TWO handleOne="0.183006539940834" handleTwo="0.7254901528358459"
                     curve="0.3362825512886047" name="MeanderanceSpeed"/>
-        <OUTPUT_THREE handleOne="0.0" handleTwo="1.0" curve="1.0"/>
+        <OUTPUT_THREE handleOne="0.4248366355895996" handleTwo="1.0" curve="2.090117216110229"
+                      name="Amplitude"/>
         <OUTPUT_FOUR handleOne="0.0" handleTwo="1.0" curve="1.0"/>
         <OUTPUT_FIVE handleOne="0.0" handleTwo="1.0" curve="1.0"/>
         <OUTPUT_SIX handleOne="0.0" handleTwo="1.0" curve="1.0"/>
       </PRESSURE>
       <TIMBRE>
-        <OUTPUT_ONE handleOne="0.0" handleTwo="1.0" curve="1.0"/>
+        <OUTPUT_ONE handleOne="0.2091503441333771" handleTwo="1.0" curve="1.0" name="Per-VoiceFilterFrequency"/>
         <OUTPUT_TWO handleOne="0.0" handleTwo="1.0" curve="1.0"/>
         <OUTPUT_THREE handleOne="0.0" handleTwo="1.0" curve="1.0"/>
         <OUTPUT_FOUR handleOne="0.0" handleTwo="1.0" curve="1.0"/>

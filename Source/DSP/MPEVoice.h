@@ -89,12 +89,12 @@ public:
         
         if (pressure <= 0.0f)
         {
-            trajectory.setAmplitude (previousPressure);
+            // trajectory.setAmplitude (previousPressure);
             trajectory.setRelease();
         }
         else
         {
-            trajectory.setAmplitude (pressure);
+            // trajectory.setAmplitude (pressure);
             previousPressure = pressure;
         }
 

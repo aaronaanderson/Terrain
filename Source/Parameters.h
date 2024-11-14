@@ -74,7 +74,8 @@ public:
     NormalizedFloatParameter* trajectoryModB        = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter ("TrajectoryModB"));
     NormalizedFloatParameter* trajectoryModC        = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter ("TrajectoryModC"));
     NormalizedFloatParameter* trajectoryModD        = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter ("TrajectoryModD"));
-
+    
+    NormalizedFloatParameter* trajectoryAmplitude = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter     ("Amplitude")); 
     NormalizedFloatParameter* trajectorySize = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter     ("Size"));       
     RangedFloatParameter*     trajectoryRotation = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter     ("Rotation"));
     RangedFloatParameter*     trajectoryTranslationX = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter ("TranslationX"));
@@ -96,6 +97,7 @@ public:
     RangedFloatParameter* terrainSaturation = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter ("TerrainSaturation"));
 
     juce::AudioParameterBool* envelopeSize = dynamic_cast<juce::AudioParameterBool*> (valueTreeState.getParameter ("EnvelopeSize"));
+    RangedFloatParameter* velocity = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter               ("Velocity"));
     RangedFloatParameter* attack = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter               ("Attack"));
     RangedFloatParameter* decay = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter                ("Decay"));
     RangedFloatParameter* sustain = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter              ("Sustain"));

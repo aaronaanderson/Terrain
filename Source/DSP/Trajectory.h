@@ -189,7 +189,6 @@ public:
         frequency = newFrequency;
         phaseIncrement.setTargetValue ((frequency * juce::MathConstants<float>::twoPi) / sampleRate);
     }
-    void setAmplitude (float newAmplitude) { amplitude.setTargetValue (newAmplitude); }
 protected:
     Terrain& terrain;
     ADSR envelope;
@@ -240,6 +239,7 @@ protected:
         int index;
     }; 
     History history;
+    void setAmplitude (float newAmplitude) { amplitude.setTargetValue (newAmplitude); }
     void setPitchWheelIncrementScalar (int pitchWheelPosition)
     {
         // linear mapping of 0 - 16383 to -1.0 - 1.0 will not work 
@@ -352,7 +352,8 @@ public:
         if (MTS_ShouldFilterNote (&mtsClient, static_cast<char> (midiNote), -1)) 
             readyToClear = true; 
 
-        amplitude.setCurrentAndTargetValue (velocity);
+        float scaledVelocity = velocity * juce::Decibels::decibelsToGain (voiceParameters.velocity.getNext());
+        amplitude.setCurrentAndTargetValue (scaledVelocity);
         envelope.noteOn();
         
         feedbackBuffer.fill (Point(0.0f, 0.0f));
@@ -472,10 +473,12 @@ private:
             decay (p.decay), 
             sustain (p.sustain), 
             release (p.release),
+            velocity (p.velocity),
             filterFrequency (p.perVoiceFilterFrequency),
             filterResonance (p.perVoiceFilterResonance),
             filterBypass (p.perVoiceFilterOnOff)
         {
+            velocity.setTimeMS (0.0f);
             filterFrequency.setTimeMS (0.0f);
             filterResonance.setTimeMS (0.0f);
         }
@@ -499,6 +502,7 @@ private:
             decay.noteOn();
             sustain.noteOn();
             release.noteOn();
+            velocity.noteOn();
             filterFrequency.noteOn();
             filterResonance.noteOn();
         }
@@ -522,6 +526,7 @@ private:
             decay.prepare (newSampleRate);
             sustain.prepare (newSampleRate);
             release.prepare (newSampleRate);
+            velocity.prepare (newSampleRate);
             filterFrequency.prepare (newSampleRate);
             filterResonance.prepare (newSampleRate);
         }
@@ -531,7 +536,7 @@ private:
         SmoothedParameter meanderanceScale, meanderanceSpeed;
         SmoothedParameter feedbackScalar, feedbackTime, feedbackCompression, feedbackMix;
         juce::AudioParameterBool* envelopeSize;
-        SmoothedParameter attack, decay, sustain, release;
+        SmoothedParameter attack, decay, sustain, release, velocity;
         SmoothedParameter filterFrequency, filterResonance;
         juce::AudioParameterBool* filterBypass;
     };
@@ -590,8 +595,9 @@ public:
         readyToClear = false;
         if (MTS_ShouldFilterNote (&mtsClient, static_cast<char> (midiNoteNumber), -1)) 
             readyToClear = true; 
-
-        amplitude.setCurrentAndTargetValue (velocity);
+        
+        float scaledVelocity = velocity * juce::Decibels::decibelsToGain (voiceParameters.velocity.getNext());
+        amplitude.setCurrentAndTargetValue (scaledVelocity);
         envelope.noteOn();
         voiceParameters.noteOn (pressure, timbre);
         feedbackBuffer.fill (Point(0.0f, 0.0f));
@@ -615,7 +621,6 @@ public:
 
             auto point = functions[*voiceParameters.currentTrajectory](static_cast<float> (phase), getModSet());
             
-            float smoothAmplitude = amplitude.getNextValue();
             point = rotate (point, voiceParameters.rotation.getNext());
             point = scale (point, voiceParameters.size.getNext());
             if (*voiceParameters.envelopeSize)
@@ -635,7 +640,8 @@ public:
 
             float outputSample = terrain.sampleAt (point, i);
             history.feedNext (point, outputSample);
-            o[i] = outputSample * static_cast<float> (envelope.calculateNext()) * smoothAmplitude;
+            float smoothAmplitude = amplitude.getNextValue(); // set from scaled velocity
+            o[i] = outputSample * static_cast<float> (envelope.calculateNext()) * smoothAmplitude * voiceParameters.amplitude.getNext();
 
             phase = std::fmod (phase + (phaseIncrement.getNextValue() * pitchWheelIncrementScalar.getNextValue()),
                                juce::MathConstants<double>::twoPi);
@@ -707,6 +713,7 @@ private:
             mod_b (p.trajectoryModB, vts, MPERouting),
             mod_c (p.trajectoryModC, vts, MPERouting),
             mod_d (p.trajectoryModD, vts, MPERouting), 
+            amplitude (p.trajectoryAmplitude, vts, MPERouting),
             size (p.trajectorySize, vts, MPERouting), 
             rotation (p.trajectoryRotation, vts, MPERouting), 
             translationX (p.trajectoryTranslationX, vts, MPERouting), 
@@ -722,10 +729,12 @@ private:
             decay (p.decay, vts, MPERouting), 
             sustain (p.sustain, vts, MPERouting), 
             release (p.release, vts, MPERouting), 
+            velocity (p.velocity, vts, MPERouting),
             filterFrequency (p.perVoiceFilterFrequency, vts, MPERouting), 
             filterResonance (p.perVoiceFilterResonance, vts, MPERouting),
             filterBypass (p.perVoiceFilterOnOff)
         {
+            velocity.setControlSmoothing (0.0);
             filterFrequency.setControlSmoothing (0.0);
             filterResonance.setControlSmoothing (0.0);
         }
@@ -735,6 +744,7 @@ private:
             mod_b.noteOn(timbre, pressure);
             mod_c.noteOn(timbre, pressure);
             mod_d.noteOn(timbre, pressure);
+            amplitude.noteOn (timbre, pressure);
             size.noteOn(timbre, pressure);
             rotation.noteOn(timbre, pressure);
             translationX.noteOn(timbre, pressure);
@@ -749,6 +759,7 @@ private:
             decay.noteOn(timbre, pressure);
             sustain.noteOn(timbre, pressure);
             release.noteOn(timbre, pressure);
+            velocity.noteOn (timbre, pressure);
             filterFrequency.noteOn(timbre, pressure);
             filterResonance.noteOn(timbre, pressure);
         }
@@ -758,6 +769,7 @@ private:
             mod_b.prepare (newSampleRate);
             mod_c.prepare (newSampleRate);
             mod_d.prepare (newSampleRate);
+            amplitude.prepare (newSampleRate);
             size.prepare (newSampleRate);
             rotation.prepare (newSampleRate);
             translationX.prepare (newSampleRate); 
@@ -772,6 +784,7 @@ private:
             decay.prepare (newSampleRate);
             sustain.prepare (newSampleRate);
             release.prepare (newSampleRate);
+            velocity.prepare (newSampleRate);
             filterFrequency.prepare (newSampleRate);
             filterResonance.prepare (newSampleRate);
         }
@@ -781,6 +794,7 @@ private:
             mod_b.setTimbre (newTimbre);
             mod_c.setTimbre (newTimbre);
             mod_d.setTimbre (newTimbre);
+            amplitude.setTimbre (newTimbre);
             size.setTimbre (newTimbre);
             rotation.setTimbre (newTimbre);
             translationX.setTimbre (newTimbre); 
@@ -795,6 +809,7 @@ private:
             decay.setTimbre (newTimbre);
             sustain.setTimbre (newTimbre);
             release.setTimbre (newTimbre);
+            velocity.setTimbre (newTimbre);
             filterFrequency.setTimbre (newTimbre);
             filterResonance.setTimbre (newTimbre);
         }
@@ -804,6 +819,7 @@ private:
             mod_b.setPressure (newPressure);
             mod_c.setPressure (newPressure);
             mod_d.setPressure (newPressure);
+            amplitude.setPressure (newPressure);
             size.setPressure (newPressure);
             rotation.setPressure (newPressure);
             translationX.setPressure (newPressure); 
@@ -818,6 +834,7 @@ private:
             decay.setPressure (newPressure);
             sustain.setPressure (newPressure);
             release.setPressure (newPressure);
+            velocity.setPressure (newPressure);
             filterFrequency.setPressure (newPressure);
             filterResonance.setPressure (newPressure);
         }
@@ -827,6 +844,7 @@ private:
             mod_b.setState (mpeRoutingBranch);
             mod_c.setState (mpeRoutingBranch);
             mod_d.setState (mpeRoutingBranch);
+            amplitude.setState (mpeRoutingBranch);
             size.setState (mpeRoutingBranch);
             rotation.setState (mpeRoutingBranch);
             translationX.setState (mpeRoutingBranch); 
@@ -841,6 +859,7 @@ private:
             decay.setState (mpeRoutingBranch);
             sustain.setState (mpeRoutingBranch);
             release.setState (mpeRoutingBranch);
+            velocity.setState (mpeRoutingBranch);
             filterFrequency.setState (mpeRoutingBranch);
             filterResonance.setState (mpeRoutingBranch);           
         }
@@ -850,6 +869,7 @@ private:
             mod_b.setPressureSmoothing (ms);
             mod_c.setPressureSmoothing (ms);
             mod_d.setPressureSmoothing (ms);
+            amplitude.setPressureSmoothing (ms);
             size.setPressureSmoothing (ms);
             rotation.setPressureSmoothing (ms);
             translationX.setPressureSmoothing (ms); 
@@ -864,6 +884,7 @@ private:
             decay.setPressureSmoothing (ms);
             sustain.setPressureSmoothing (ms);
             release.setPressureSmoothing (ms);
+            velocity.setPressureSmoothing (0.0);
             filterFrequency.setPressureSmoothing (0.0); // no smoothing, 
             filterResonance.setPressureSmoothing (0.0); // called per-buffer
         }
@@ -873,6 +894,7 @@ private:
             mod_b.setTimbreSmoothing (ms);
             mod_c.setTimbreSmoothing (ms);
             mod_d.setTimbreSmoothing (ms);
+            amplitude.setTimbreSmoothing (ms);
             size.setTimbreSmoothing (ms);
             rotation.setTimbreSmoothing (ms);
             translationX.setTimbreSmoothing (ms); 
@@ -886,17 +908,18 @@ private:
             attack.setTimbreSmoothing (ms);
             decay.setTimbreSmoothing (ms);
             sustain.setTimbreSmoothing (ms);
-            release.setTimbreSmoothing (ms);   
+            release.setTimbreSmoothing (ms); 
+            velocity.setTimbreSmoothing (0.0);  
             filterFrequency.setTimbreSmoothing (0.0);   
             filterResonance.setTimbreSmoothing (0.0);   
         }
         tp::ChoiceParameter* currentTrajectory;
         MPESmoothedParameter mod_a, mod_b, mod_c, mod_d;
-        MPESmoothedParameter size, rotation, translationX, translationY;
+        MPESmoothedParameter amplitude, size, rotation, translationX, translationY;
         MPESmoothedParameter meanderanceScale, meanderanceSpeed;
         MPESmoothedParameter feedbackScalar, feedbackTime, feedbackCompression, feedbackMix;
         juce::AudioParameterBool* envelopeSize;
-        MPESmoothedParameter attack, decay, sustain, release;
+        MPESmoothedParameter attack, decay, sustain, release, velocity;
         MPESmoothedParameter filterFrequency, filterResonance;
         juce::AudioParameterBool* filterBypass;
 

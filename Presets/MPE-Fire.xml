@@ -18,7 +18,7 @@
   <PARAM id="MeanderanceScale" value="0.6231883764266968"/>
   <PARAM id="MeanderanceSpeed" value="0.4239130318164825"/>
   <PARAM id="OutputLevel" value="0.0"/>
-  <PARAM id="Release" value="181.6031951904297"/>
+  <PARAM id="Release" value="513.3790893554688"/>
   <PARAM id="Rotation" value="2.783716201782227"/>
   <PARAM id="Size" value="0.2422022819519043"/>
   <PARAM id="Sustain" value="0.0"/>
@@ -40,7 +40,8 @@
                    pitchBendRange="12.0" noteOnOrContinuous="0" mpeEnabled="1">
     <MPE_ROUTING>
       <PRESSURE>
-        <OUTPUT_ONE handleOne="0.0" handleTwo="1.0" curve="3.070549488067627" name="Size"/>
+        <OUTPUT_ONE handleOne="0.3267973959445953" handleTwo="1.0" curve="3.070549488067627"
+                    name="Size"/>
         <OUTPUT_TWO handleOne="0.2549019753932953" handleTwo="1.0" curve="0.4633497297763824"
                     name="TerrainSaturation"/>
         <OUTPUT_THREE handleOne="0.3921568691730499" handleTwo="1.0" curve="0.5267332792282104"
@@ -60,4 +61,6 @@
       </TIMBRE>
     </MPE_ROUTING>
   </PRESET_SETTINGS>
+  <PARAM id="Amplitude"/>
+  <PARAM id="Velocity" value="0.0"/>
 </TERRAIN_SYNTH>
