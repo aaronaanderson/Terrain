@@ -64,7 +64,7 @@ struct MPEWatcher : private juce::ValueTree::Listener
         checkIfControlled();
         valueTreeState.state.addListener (this);
     }
-    ~MPEWatcher() { valueTreeState.state.removeListener (this); }
+    ~MPEWatcher() override { valueTreeState.state.removeListener (this); }
 
     bool aControlled() const { return channelsData[0].isControlled; }
     bool bControlled() const { return channelsData[1].isControlled; }
@@ -257,7 +257,7 @@ public:
     Visualizer (tp::WaveTerrainSynthesizerStandard& wts, 
                 tp::WaveTerrainSynthesizerMPE& wtsmpe, 
                 tp::Parameters parameters, 
-                juce::ValueTree settings, 
+                juce::ValueTree Settings, 
                 juce::ValueTree voicesStateBranch, 
                 juce::AudioProcessorValueTreeState& apvts)
       : camera (mutex), 
@@ -265,10 +265,10 @@ public:
         mpeWatcher (voicesStateBranch, apvts),
         waveTerrainSynthesizerStandard (wts), 
         waveTerrainSynthesizerMPE (wtsmpe), 
-        useMPE (settings, id::mpeEnabled, nullptr), 
-        voicesState (voicesStateBranch)
+        voicesState (voicesStateBranch),
+        useMPE (Settings, id::mpeEnabled, nullptr)
     {
-        mpeRouting = settings.getChildWithName (id::MPE_ROUTING);
+        mpeRouting = Settings.getChildWithName (id::MPE_ROUTING);
 
 #ifdef JUCE_MAC
         glContext.setOpenGLVersionRequired (juce::OpenGLContext::OpenGLVersion::openGL4_1);
