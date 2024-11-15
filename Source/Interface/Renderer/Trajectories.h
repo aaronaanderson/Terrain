@@ -101,7 +101,7 @@ private:
         
         ~VertexBuffer()
         {
-            juce::gl::glDeleteBuffers (1, &glVertexBuffer);
+            juce::gl::glDeleteBuffers (1, &glVertexBuffer); ERROR_CHECK();
         }
         void bind()
         {
@@ -145,12 +145,12 @@ struct TrajectoryMesh : PointsMesh // must be constructed on GL Initialize
         if (!voice->isVoiceCurrentlyActive())
             return; 
             
-        juce::gl::glEnable (juce::gl::GL_BLEND);
-        juce::gl::glEnable (juce::gl::GL_DEPTH_TEST);
-        juce::gl::glDepthMask (juce::gl::GL_FALSE);
+        juce::gl::glEnable (juce::gl::GL_BLEND); ERROR_CHECK();
+        juce::gl::glEnable (juce::gl::GL_DEPTH_TEST); ERROR_CHECK();
+        juce::gl::glDepthMask (juce::gl::GL_FALSE); ERROR_CHECK();
         // juce::gl::glBlendFunc (juce::gl::GL_SRC_ALPHA, juce::gl::GL_ONE_MINUS_SRC_ALPHA);
-        juce::gl::glBlendFunc (juce::gl::GL_SRC_ALPHA, juce::gl::GL_ONE);
-        juce::gl::glEnable (juce::gl::GL_POINT_SPRITE);
+        juce::gl::glBlendFunc (juce::gl::GL_SRC_ALPHA, juce::gl::GL_ONE); ERROR_CHECK();
+        juce::gl::glEnable (juce::gl::GL_POINT_SPRITE); ERROR_CHECK();
         
         if(shaders.get() == nullptr)
             return;
@@ -164,8 +164,8 @@ struct TrajectoryMesh : PointsMesh // must be constructed on GL Initialize
             uniforms->color->set (color.getRed(), color.getGreen(), color.getBlue());
 
         PointsMesh::draw (*attributes.get());
-        juce::gl::glBindBuffer (juce::gl::GL_ARRAY_BUFFER, 0);
-        juce::gl::glDepthMask (juce::gl::GL_TRUE);
+        juce::gl::glBindBuffer (juce::gl::GL_ARRAY_BUFFER, 0); ERROR_CHECK();
+        juce::gl::glDepthMask (juce::gl::GL_TRUE); ERROR_CHECK();
     }
 private:
     juce::OpenGLContext& glContext;

@@ -6,8 +6,8 @@ find_package(OpenGL REQUIRED)
 add_subdirectory(JUCE)                    # If you've put JUCE in a subdirectory called JUCE
 add_subdirectory(clap-juce-extensions EXCLUDE_FROM_ALL)
 
-set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
-set(CMAKE_OSX_DEPLOYMENT_TARGET "10.14" CACHE STRING "Minimum OS X deployment target" FORCE)
+# set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64")
+# set(CMAKE_OSX_DEPLOYMENT_TARGET "10.14" CACHE STRING "Minimum OS X deployment target" FORCE)
 
 juce_add_plugin(WaveTerrainSynth
     VERSION "1.2.2"                               # Set this if the plugin version is different to the project version
@@ -29,14 +29,14 @@ juce_add_plugin(WaveTerrainSynth
     PRODUCT_NAME "Terrain"         # The name of the final executable, which can differ from the target name    
 )    
 
-if (APPLE)
-   target_link_options(WaveTerrainSynth PUBLIC -Wl -ld_classic)
-endif()
-
 clap_juce_extensions_plugin(TARGET WaveTerrainSynth
     CLAP_ID "com.AaronAnderson.WaveTerrainSynth"
     CLAP_FEATURES instrument synthesizer
 )
+
+# if (APPLE)
+#    target_link_options(WaveTerrainSynth PUBLIC -Wl -ld_classic)
+# endif()
 
 set_target_properties(WaveTerrainSynth PROPERTIES 
     CXX_STANDARD 17

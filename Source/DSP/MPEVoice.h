@@ -72,6 +72,8 @@ public:
 
         auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel - 2));
         channelState.setProperty (id::voiceActive, true, nullptr);
+        channelState.setProperty (id::voicePressure, note.pressure.asUnsignedFloat(), nullptr);
+        channelState.setProperty (id::voiceTimbre, note.timbre.asUnsignedFloat(), nullptr);
     }
     void noteStopped (bool allowTailOff) override
     {
