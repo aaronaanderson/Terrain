@@ -75,7 +75,7 @@ juce_add_binary_data(BinaryData SOURCES
     Presets/MPE-Fire.xml
     Presets/MPE-Space.xml
     Presets/Basic.xml
-    Presets/Pattern-Run.xml
+    Presets/PatternRun.xml
     Presets/Plunky.xml
 )
 
