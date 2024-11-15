@@ -560,8 +560,8 @@ public:
                    juce::ValueTree voicesStateBranch)
       : Trajectory (t, settingsBranch, mtsc),
         mpeRouting (settingsBranch.getChildWithName (id::MPE_ROUTING)),
-        voiceParameters (p, vts, mpeRouting),
-        voicesState (voicesStateBranch)
+        voicesState (voicesStateBranch),
+        voiceParameters (p, vts, mpeRouting)
     {
         jassert (mpeRouting.getType() == id::MPE_ROUTING);
         juce::ignoreUnused (p);
