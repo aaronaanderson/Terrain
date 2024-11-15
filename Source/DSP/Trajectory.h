@@ -581,7 +581,7 @@ public:
     }
     void startNote (int midiNoteNumber,
                     float velocity, 
-                    float frequencyHz, 
+                    float frequencyHz,
                     float pressure, 
                     float timbre, 
                     int channel) 

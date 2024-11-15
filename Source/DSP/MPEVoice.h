@@ -73,11 +73,18 @@ public:
         auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel - 1));
         channelState.setProperty (id::voiceActive, true, nullptr);
         channelState.setProperty (id::voiceRMS, 0.2f, nullptr);
+        std::cout << "Note On: "  << note.midiChannel - 1 << std::endl;
     }
     void noteStopped (bool allowTailOff) override
     {
         if (!allowTailOff) clearCurrentNote();
         trajectory.stopNote(); 
+
+        auto note = getCurrentlyPlayingNote();
+        auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel - 1));
+        std::cout << "Note Off: " << note.midiChannel - 1 << std::endl;
+        channelState.setProperty (id::voiceActive, false, nullptr);
+        channelState.setProperty (id::voiceRMS, 0.0f, nullptr);
     }
     
     void notePressureChanged() override 
@@ -137,10 +144,7 @@ public:
         trajectory.renderNextBlock (outputBuffer, startSample, numSamples);
         if (trajectory.shouldClear())
         {
-            auto note = getCurrentlyPlayingNote();
-            auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel - 1));
-            channelState.setProperty (id::voiceActive, false, nullptr);
-            channelState.setProperty (id::voiceRMS, 0.0f, nullptr);
+            
             clearCurrentNote();
         }
     }
@@ -201,5 +205,20 @@ private:
         double octaveDivision = static_cast<double> (divisionOfOctave.get());
         return std::pow (2, semitones / octaveDivision); 
     }
+
+    // this became necessary because JUCE sends new note's onto the 
+    // same channel as currently-playing notes.
+    struct VoiceWatcher
+    {
+        VoiceWatcher (juce::ValueTree voicesStateBranch)
+          : voicesState (voicesStateBranch)
+        {}
+        void findNewSlot (int voiceID)
+        {
+            juce::ignoreUnused (voiceID);
+        }
+    private:
+        juce::ValueTree voicesState;
+    };
 };
 }
