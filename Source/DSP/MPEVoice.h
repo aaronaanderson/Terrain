@@ -70,10 +70,8 @@ public:
                               note.midiChannel);
         initialNote = note.initialNote;// MTS_NoteToFrequency (&mtsClient, static_cast<char> (note.initialNote), -1);
 
-        auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel - 1));
+        auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel - 2));
         channelState.setProperty (id::voiceActive, true, nullptr);
-        channelState.setProperty (id::voiceRMS, 0.2f, nullptr);
-        std::cout << "Note On: "  << note.midiChannel - 1 << std::endl;
     }
     void noteStopped (bool allowTailOff) override
     {
@@ -81,10 +79,9 @@ public:
         trajectory.stopNote(); 
 
         auto note = getCurrentlyPlayingNote();
-        auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel - 1));
-        std::cout << "Note Off: " << note.midiChannel - 1 << std::endl;
-        channelState.setProperty (id::voiceActive, false, nullptr);
+        auto channelState = voicesState.getChild (static_cast<int> (juce::jlimit (0, 15, note.midiChannel - 2)));
         channelState.setProperty (id::voiceRMS, 0.0f, nullptr);
+        channelState.setProperty (id::voiceActive, false, nullptr);
     }
     
     void notePressureChanged() override 
@@ -105,7 +102,7 @@ public:
             previousPressure = pressure;
         }
 
-        auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel - 1));
+        auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel - 2));
         channelState.setProperty (id::voicePressure, pressure, nullptr);
     }
     void notePitchbendChanged() override {}
@@ -133,7 +130,7 @@ public:
         terrain.setTimbre (timbre);
         trajectory.setTimbre (timbre);
 
-        auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel - 1));
+        auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel - 2));
         channelState.setProperty (id::voiceTimbre, timbre, nullptr);
     }
     void noteKeyStateChanged() override {}
@@ -205,20 +202,5 @@ private:
         double octaveDivision = static_cast<double> (divisionOfOctave.get());
         return std::pow (2, semitones / octaveDivision); 
     }
-
-    // this became necessary because JUCE sends new note's onto the 
-    // same channel as currently-playing notes.
-    struct VoiceWatcher
-    {
-        VoiceWatcher (juce::ValueTree voicesStateBranch)
-          : voicesState (voicesStateBranch)
-        {}
-        void findNewSlot (int voiceID)
-        {
-            juce::ignoreUnused (voiceID);
-        }
-    private:
-        juce::ValueTree voicesState;
-    };
 };
 }

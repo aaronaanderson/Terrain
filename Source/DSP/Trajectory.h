@@ -578,6 +578,7 @@ public:
         ladderFilter.prepare (processSpec);
         ladderFilter.setCutoffFrequencyHz (400.0f);
         ladderFilter.setResonance (0.7f);
+        smoothRMS.reset (4);
     }
     void startNote (int midiNoteNumber,
                     float velocity, 
@@ -691,8 +692,10 @@ public:
     }
     void setRMS (float rms)
     {
-        auto channelState = voicesState.getChild (static_cast<int> (midiChannel - 1));
-        channelState.setProperty (id::voiceRMS, juce::jmap (rms, 0.0f, 0.5f, 0.1f, 0.8f), nullptr);
+        auto channelState = voicesState.getChild (static_cast<int> (midiChannel - 2));
+        smoothRMS.setTargetValue (rms);
+        auto adjustedRMS = juce::jlimit (0.0f, 1.0f, juce::jmap (smoothRMS.getNextValue(), 0.0f, 0.5f, 0.0f, 2.0f));
+        channelState.setProperty (id::voiceRMS, adjustedRMS, nullptr);
     }
 private:
     juce::ValueTree mpeRouting;
@@ -701,6 +704,8 @@ private:
     juce::dsp::LadderFilter<float> ladderFilter;
     juce::dsp::ProcessSpec processSpec;
     
+    juce::SmoothedValue<float> smoothRMS {0.0f};
+
     juce::ValueTree voicesState;
     int midiChannel;
     struct VoiceParameters
