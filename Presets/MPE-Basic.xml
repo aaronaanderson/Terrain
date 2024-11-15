@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <TERRAIN_SYNTH presetName="MPE-Basic">
-  <PARAM id="Attack" value="1358.340698242188"/>
+  <PARAM id="Attack" value="423.9357604980469"/>
   <PARAM id="CompressorRatio" value="10.94400024414062"/>
   <PARAM id="CompressorThreshold" value="-7.984580993652344"/>
   <PARAM id="CurrentTerrain" value="0.0"/>
@@ -18,10 +18,10 @@
   <PARAM id="MeanderanceScale" value="0.5542330741882324"/>
   <PARAM id="MeanderanceSpeed" value="0.5542330741882324"/>
   <PARAM id="OutputLevel" value="0.0"/>
-  <PARAM id="Release" value="3627.285888671875"/>
+  <PARAM id="Release" value="1110.847412109375"/>
   <PARAM id="Rotation" value="3.482349157333374"/>
   <PARAM id="Size" value="0.2265763282775879"/>
-  <PARAM id="Sustain" value="0.0"/>
+  <PARAM id="Sustain" value="-3.647998809814453"/>
   <PARAM id="TerrainModA" value="0.5"/>
   <PARAM id="TerrainModB" value="0.5"/>
   <PARAM id="TerrainModC" value="0.8911347985267639"/>
@@ -40,17 +40,18 @@
                    pitchBendRange="2.0" noteOnOrContinuous="0" mpeEnabled="1">
     <MPE_ROUTING>
       <PRESSURE>
-        <OUTPUT_ONE handleOne="0.5424836874008179" handleTwo="1.0" curve="1.617360949516296"
+        <OUTPUT_ONE handleOne="0.1633987128734589" handleTwo="1.0" curve="1.617360949516296"
                     name="Size"/>
-        <OUTPUT_TWO handleOne="0.0" handleTwo="1.0" curve="0.5798987150192261" name=""/>
+        <OUTPUT_TWO handleOne="0.516339898109436" handleTwo="1.0" curve="1.670042037963867"
+                    name="Amplitude"/>
         <OUTPUT_THREE handleOne="0.0" handleTwo="1.0" curve="0.5987873673439026" name=""/>
         <OUTPUT_FOUR handleOne="0.0" handleTwo="1.0" curve="1.0"/>
         <OUTPUT_FIVE handleOne="0.0" handleTwo="1.0" curve="1.0"/>
         <OUTPUT_SIX handleOne="0.0" handleTwo="1.0" curve="1.0"/>
       </PRESSURE>
       <TIMBRE>
-        <OUTPUT_ONE handleOne="0.2810457646846771" handleTwo="1.0" curve="0.5616059899330139"
-                    name="MeanderanceScale"/>
+        <OUTPUT_ONE handleOne="0.2091503441333771" handleTwo="0.6928104162216187"
+                    curve="0.5616059899330139" name="MeanderanceScale"/>
         <OUTPUT_TWO handleOne="0.0" handleTwo="1.0" curve="2.090117216110229" name="MeanderanceSpeed"/>
         <OUTPUT_THREE handleOne="0.0" handleTwo="1.0" curve="1.0"/>
         <OUTPUT_FOUR handleOne="0.0" handleTwo="1.0" curve="1.0"/>
@@ -59,4 +60,6 @@
       </TIMBRE>
     </MPE_ROUTING>
   </PRESET_SETTINGS>
+  <PARAM id="Amplitude"/>
+  <PARAM id="Velocity" value="0.0"/>
 </TERRAIN_SYNTH>
