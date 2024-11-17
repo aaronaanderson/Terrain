@@ -150,7 +150,7 @@ struct TrajectoryMesh : PointsMesh // must be constructed on GL Initialize
         juce::gl::glDepthMask (juce::gl::GL_FALSE); ERROR_CHECK();
         // juce::gl::glBlendFunc (juce::gl::GL_SRC_ALPHA, juce::gl::GL_ONE_MINUS_SRC_ALPHA);
         juce::gl::glBlendFunc (juce::gl::GL_SRC_ALPHA, juce::gl::GL_ONE); ERROR_CHECK();
-        juce::gl::glEnable (juce::gl::GL_POINT_SPRITE); ERROR_CHECK();
+        // juce::gl::glEnable (juce::gl::GL_POINT_SPRITE); ERROR_CHECK(); // This caused an error on mac
         
         if(shaders.get() == nullptr)
             return;
