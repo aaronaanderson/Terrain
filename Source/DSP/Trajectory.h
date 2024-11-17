@@ -443,7 +443,9 @@ public:
     void allocate (int maximumSamplesPerBlock) 
     {
         scratchBuffer.setSize (1, maximumSamplesPerBlock);
+        scratchBuffer.clear();
         renderBuffer.setSize (1, maximumSamplesPerBlock); 
+        renderBuffer.clear();
     }
 private:
     juce::AudioBuffer<float> renderBuffer;
@@ -571,6 +573,7 @@ public:
         Trajectory::prepareToPlay (newRate, blockSize);
         voiceParameters.resetSampleRate (newRate);
         renderBuffer.setSize (1, blockSize, false, false, true);
+        renderBuffer.clear (0, blockSize);
 
         processSpec.maximumBlockSize = static_cast<juce::uint32> (blockSize);
         processSpec.numChannels = 1;
@@ -688,7 +691,9 @@ public:
     void allocate (int maximumSamplesPerBlock) 
     {
         scratchBuffer.setSize (1, maximumSamplesPerBlock);
+        scratchBuffer.clear (0, maximumSamplesPerBlock);
         renderBuffer.setSize (1, maximumSamplesPerBlock); 
+        renderBuffer.clear (0, maximumSamplesPerBlock);
     }
     void setRMS (float rms)
     {
