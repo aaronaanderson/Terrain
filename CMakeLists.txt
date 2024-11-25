@@ -38,9 +38,12 @@ clap_juce_extensions_plugin(TARGET WaveTerrainSynth
 #    target_link_options(WaveTerrainSynth PUBLIC -Wl -ld_classic)
 # endif()
 
+# target_compile_options(WaveTerrainSynth PRIVATE -fsanitize=thread)
+# target_link_options(WaveTerrainSynth PRIVATE -fsanitize=thread)
+
 set_target_properties(WaveTerrainSynth PROPERTIES 
     CXX_STANDARD 17
-    COMPILE_WARNING_AS_ERROR ON
+    # COMPILE_WARNING_AS_ERROR ON
 )
 
 juce_add_module(glm_module)
