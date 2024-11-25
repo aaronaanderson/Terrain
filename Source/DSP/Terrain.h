@@ -139,16 +139,16 @@ private:
 
     const ModSet getModSet (int index) override
     {
+        jassert (index < modA.getBufferSize());
         return ModSet (modA.getAt (index), modB.getAt (index), 
                        modC.getAt (index), modD.getAt (index));
     }
     float saturate (float signal, int bufferIndex) override
     {
+        jassert (bufferIndex < saturation.getBufferSize());
         auto scale = saturation.getAt (bufferIndex);
         return juce::dsp::FastMathApproximations::tanh<float> (signal * scale * 1.31303528551f);
     }   
-    // distance from center
-    inline float dfc (Point p) { return std::sqrt (p.x * p.x + p.y * p.y); }
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (StandardTerrain)
 };
 
@@ -241,11 +241,13 @@ private:
     BufferedMPESmoothParameter modA, modB, modC, modD, saturation;
     const ModSet getModSet (int index) override
     {
+        jassert (index < modA.getBufferSize());
         return ModSet (modA.getAt (index), modB.getAt (index), 
                        modC.getAt (index), modD.getAt (index));
     }
     float saturate (float signal, int bufferIndex) override
     {
+        jassert (bufferIndex < saturation.getBufferSize());
         auto scale = saturation.getAt (bufferIndex);
         return juce::dsp::FastMathApproximations::tanh<float> (signal * scale * 1.31303528551f);
     }

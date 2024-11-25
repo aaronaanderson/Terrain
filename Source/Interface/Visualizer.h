@@ -262,10 +262,10 @@ public:
                 juce::AudioProcessorValueTreeState& apvts)
       : camera (mutex), 
         parameterWatcher (parameters), 
-        mpeWatcher (voicesStateBranch, apvts),
         waveTerrainSynthesizerStandard (wts), 
         waveTerrainSynthesizerMPE (wtsmpe), 
         voicesState (voicesStateBranch),
+        mpeWatcher (voicesStateBranch, apvts),
         useMPE (Settings, id::mpeEnabled, nullptr)
     {
         mpeRouting = Settings.getChildWithName (id::MPE_ROUTING);
@@ -284,6 +284,7 @@ public:
         glContext.setComponentPaintingEnabled (false);
 
         glContext.attachTo (*this);
+        useMPE.forceUpdateOfCachedValue();
         startTimerHz (60);
     }
     ~Visualizer() override 
@@ -321,13 +322,13 @@ private:
     Camera camera;
     std::unique_ptr<Terrain> terrain;
     ParameterWatcher parameterWatcher;
-    MPEWatcher mpeWatcher;
     std::unique_ptr<Trajectories> trajectories;
     tp::WaveTerrainSynthesizerStandard& waveTerrainSynthesizerStandard;
     tp::WaveTerrainSynthesizerMPE& waveTerrainSynthesizerMPE;
 
     juce::ValueTree settings;
     juce::ValueTree voicesState;
+    MPEWatcher mpeWatcher;
     juce::ValueTree mpeRouting;
     juce::CachedValue<bool> useMPE;
 

@@ -39,14 +39,13 @@ struct PerlinVector
     }
     void setSampleRate (double newSampleRate)
     {
-        juce::ignoreUnused (newSampleRate);
         // sampleInterval = static_cast<int> (newSampleRate * (48000.0 / 512.0));
         inverseSampleRate = 1.0 / newSampleRate;
     }
     private:
     siv::BasicPerlinNoise<float> noiseX, noiseY;
     juce::SmoothedValue<float> smoothX, smoothY;
-    double inverseSampleRate;
+    double inverseSampleRate = 1.0 / 48000.0;
     double phase, phaseIncrement;
     int sampleInterval, sampleIndex;
 
@@ -130,6 +129,7 @@ public:
     }
     float getAt (int bufferIndex) { return buffer.getReadPointer (0)[bufferIndex]; }
     void allocate (int numSamples) { buffer.setSize (1, numSamples); }
+    int getBufferSize() { return buffer.getNumSamples(); }
 private:
     SmoothedParameter smoothedParameter;
     juce::AudioBuffer<float> buffer;
@@ -360,6 +360,7 @@ public:
     void setState (juce::ValueTree routingBranch) { smoothedParameter.setState (routingBranch); }
     void setPressureSmoothing (float pressureSmoothing) { smoothedParameter.setPressureSmoothing (pressureSmoothing); }
     void setTimbreSmoothing (float timbreSmoothing) { smoothedParameter.setTimbreSmoothing (timbreSmoothing); }
+    int getBufferSize() { return buffer.getNumSamples(); }
 private:
     MPESmoothedParameter smoothedParameter;
     juce::AudioBuffer<float> buffer;

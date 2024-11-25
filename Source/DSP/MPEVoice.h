@@ -70,10 +70,13 @@ public:
                               note.midiChannel);
         initialNote = note.initialNote;// MTS_NoteToFrequency (&mtsClient, static_cast<char> (note.initialNote), -1);
 
-        auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel - 2));
-        channelState.setProperty (id::voiceActive, true, nullptr);
-        channelState.setProperty (id::voicePressure, note.pressure.asUnsignedFloat(), nullptr);
-        channelState.setProperty (id::voiceTimbre, note.timbre.asUnsignedFloat(), nullptr);
+        juce::MessageManager::callAsync([this, note]() 
+            {
+                auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel - 2));
+                channelState.setProperty (id::voiceActive, true, nullptr);
+                channelState.setProperty (id::voicePressure, note.pressure.asUnsignedFloat(), nullptr);
+                channelState.setProperty (id::voiceTimbre, note.timbre.asUnsignedFloat(), nullptr);
+            });
     }
     void noteStopped (bool allowTailOff) override
     {
@@ -82,8 +85,14 @@ public:
 
         auto note = getCurrentlyPlayingNote();
         auto channelState = voicesState.getChild (static_cast<int> (juce::jlimit (0, 15, note.midiChannel - 2)));
-        channelState.setProperty (id::voiceRMS, 0.0f, nullptr);
-        channelState.setProperty (id::voiceActive, false, nullptr);
+
+        juce::MessageManager::callAsync([this, note]() 
+            {
+                auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel - 2));
+                if (!channelState.isValid()) return;
+                channelState.setProperty (id::voiceRMS, 0.0f, nullptr);
+                channelState.setProperty (id::voiceActive, false, nullptr);
+            });
     }
     
     void notePressureChanged() override 
@@ -104,8 +113,11 @@ public:
             previousPressure = pressure;
         }
 
-        auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel - 2));
-        channelState.setProperty (id::voicePressure, pressure, nullptr);
+        juce::MessageManager::callAsync([this, note]() 
+            {
+                auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel - 2));
+                channelState.setProperty (id::voicePressure, pressure, nullptr);
+            });
     }
     void notePitchbendChanged() override {}
     void setPitchWheel (float pitchWheel)
@@ -132,8 +144,11 @@ public:
         terrain.setTimbre (timbre);
         trajectory.setTimbre (timbre);
 
-        auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel - 2));
-        channelState.setProperty (id::voiceTimbre, timbre, nullptr);
+        juce::MessageManager::callAsync([this, note]() 
+            {
+                auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel - 2));
+                channelState.setProperty (id::voiceTimbre, timbre, nullptr);
+            });
     }
     void noteKeyStateChanged() override {}
     void renderNextBlock (juce::AudioBuffer<float>& outputBuffer,

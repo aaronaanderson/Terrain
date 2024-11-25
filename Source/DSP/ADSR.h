@@ -14,8 +14,12 @@ public:
       : EXP_N4_95 (std::exp (-4.95f)), 
         LOG_EXP_N4_95 (-std::log((1.0f + std::exp (-4.95f)) / std::exp (-4.95f))),
         EXP_N1_5 (std::exp (-1.5f)),
-        LOG_EXP_N1_5 (-std::log((1.0f + std::exp (-1.5f)) / std::exp (-1.5f)))
-    {}
+        LOG_EXP_N1_5 (-std::log((1.0f + std::exp (-1.5f)) / std::exp (-1.5f))),
+        sampleRate (48000.0)
+    {
+        setParameters (Parameters());
+        calculateCoefficients();
+    }
     void prepare (double sr)
     {
         sampleRate = sr;

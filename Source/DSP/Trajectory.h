@@ -144,7 +144,7 @@ public:
             }
         };
     }
-    void stopNote () { envelope.noteOff(); }
+    virtual void stopNote () { envelope.noteOff(); }
     void pitchWheelMoved (int newPitchWheelValue) { setPitchWheelIncrementScalar (newPitchWheelValue); }
     void controllerMoved () {}
     void renderNextBlock (juce::AudioBuffer<double>& ob, int ss, int nums) { juce::ignoreUnused (ob, ss, nums); }
@@ -198,7 +198,7 @@ protected:
     float frequency = 440.0f;
     juce::SmoothedValue<float> amplitude;
     double phase = 0.0;
-    int midiNote;
+    int midiNote = 0;
     juce::CachedValue<bool> smoothFrequencyEnabled;
     juce::SmoothedValue<double, juce::ValueSmoothingTypes::Multiplicative> phaseIncrement;
     juce::SmoothedValue<double, juce::ValueSmoothingTypes::Multiplicative> pitchWheelIncrementScalar {1.0};
@@ -207,12 +207,12 @@ protected:
     MTSClient& mtsClient;
     juce::Array<Point> feedbackBuffer;
     int feedbackWriteIndex = 0;
-    int feedbackReadIndex;
+    int feedbackReadIndex = 0;
     bool readyToClear = false;
     class History
     {
     public:
-        History (int size = 4096) 
+        explicit History (int size = 4096)
         {
             bufferSize = size * 3;
             buffer.allocate (bufferSize, false);
@@ -222,10 +222,10 @@ protected:
     
         void feedNext (Point p, float o)
         {   
-            buffer[index++] = p.x;
-            buffer[index++] = p.y;
-            buffer[index++] = o;
-            index = index % bufferSize;
+            buffer[index] = p.x;
+            buffer[(index + 1) % bufferSize] = p.y;
+            buffer[(index + 2) % bufferSize] = o;
+            index = (index + 3) % bufferSize;
         }
         int size() { return bufferSize; }
         const float* getRawData() const { return buffer.getData(); }
@@ -251,7 +251,7 @@ protected:
         else
             normalizedBend = (pitchWheelPosition - 8191) / 8192.0f;
         
-        float bendRangeSemitones = pitchBendRange.get(); // this will be a variable later; for now a constant bend range of a whole step
+        float bendRangeSemitones = pitchBendRange.get();
         float semitoneBend = normalizedBend * bendRangeSemitones;
         pitchWheelIncrementScalar.setTargetValue (std::pow (2.0, semitoneBend / 12.0));
     }
@@ -282,7 +282,9 @@ protected:
     }
     Point feedback (Point input, float feedbackTime, float feedback, float mix, float threshold, float ratio)
     {
-        feedbackReadIndex = feedbackWriteIndex - static_cast<int> ((feedbackTime * 0.001f) * sampleRate);
+        auto delayInSamples = static_cast<int>((feedbackTime * 0.001f) * sampleRate);
+        delayInSamples = std::min(delayInSamples, feedbackBuffer.size() - 1);
+        feedbackReadIndex = feedbackWriteIndex - delayInSamples;
         if (feedbackReadIndex < 0) feedbackReadIndex += feedbackBuffer.size();
         auto scaledHistory = feedbackBuffer[feedbackReadIndex] * feedback;
         feedbackBuffer.set (feedbackWriteIndex, input + scaledHistory);
@@ -605,6 +607,14 @@ public:
         envelope.noteOn();
         voiceParameters.noteOn (pressure, timbre);
         feedbackBuffer.fill (Point(0.0f, 0.0f));
+        rmsUpdater = std::make_unique<RMSUpdater> (voicesState, midiChannel, currentRMS);
+        rmsUpdater->startTimerHz (24);
+    }
+    void stopNote() override
+    {
+        if (rmsUpdater.get() != nullptr)
+            rmsUpdater->stopTimer();
+        Trajectory::stopNote();
     }
     void renderNextBlock (juce::AudioBuffer<float>& outputBuffer, 
                           int startSample, int numSamples) override
@@ -671,7 +681,7 @@ public:
             ladderFilter.setResonance (voiceParameters.filterResonance.getNext());
             ladderFilter.process (context);
         }
-        setRMS (scratchBuffer.getRMSLevel (0, 0, numSamples));
+        setRMS (scratchBuffer.getRMSLevel (0, 0, scratchBuffer.getNumSamples()));
         // copy from scratch buffer, adding to incoming content
         for (int i = 0; i < numSamples; i++)
             outputBuffer.getWritePointer (0)[i + startSample] += scratchBuffer.getReadPointer (0)[i];
@@ -695,13 +705,7 @@ public:
         renderBuffer.setSize (1, maximumSamplesPerBlock); 
         renderBuffer.clear (0, maximumSamplesPerBlock);
     }
-    void setRMS (float rms)
-    {
-        auto channelState = voicesState.getChild (static_cast<int> (midiChannel - 2));
-        smoothRMS.setTargetValue (rms);
-        auto adjustedRMS = juce::jlimit (0.0f, 1.0f, juce::jmap (smoothRMS.getNextValue(), 0.0f, 0.5f, 0.0f, 2.0f));
-        channelState.setProperty (id::voiceRMS, adjustedRMS, nullptr);
-    }
+
 private:
     juce::ValueTree mpeRouting;
     juce::AudioBuffer<float> renderBuffer;
@@ -940,6 +944,35 @@ private:
          return ModSet (voiceParameters.mod_a.getNext(), voiceParameters.mod_b.getNext(), 
                         voiceParameters.mod_c.getNext(), voiceParameters.mod_d.getNext());
     }
+    std::atomic<float> currentRMS{0.0f};
+    void setRMS (float newRMS) { currentRMS.store (newRMS); }
+    class RMSUpdater : public juce::Timer
+    {
+    public:
+        RMSUpdater (juce::ValueTree& tree, int channel, std::atomic<float>& rms)
+          : voicesState (tree), midiChannel (channel), currentRMS (rms)
+        {
+            smoothRMS.reset (50);
+        }
+        void timerCallback() override
+        {
+            if (voicesState.getChild (midiChannel - 2).isValid())
+            {
+                auto channelState = voicesState.getChild (midiChannel - 2);
+                smoothRMS.setTargetValue (currentRMS.load());
+                float adjustedRMS = juce::jlimit(0.0f, 1.0f, 
+                    juce::jmap(smoothRMS.getNextValue(), 0.0f, 0.5f, 0.0f, 2.0f));
+                channelState.setProperty(id::voiceRMS, adjustedRMS, nullptr);
+            }
+        }
+    private:
+        juce::ValueTree voicesState;
+        int midiChannel;
+        std::atomic<float>& currentRMS;
+        juce::SmoothedValue<float> smoothRMS {0.0f};
+    };
+    std::unique_ptr<RMSUpdater> rmsUpdater;
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MPETrajectory)
 };
 } // end namespace tp
