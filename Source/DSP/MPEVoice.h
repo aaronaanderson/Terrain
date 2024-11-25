@@ -41,7 +41,7 @@ public:
         terrain.setTimbreSmoothing (mpeSettingsBranch.getProperty (id::timbreSmoothing));
         trajectory.setTimbreSmoothing (mpeSettingsBranch.getProperty (id::timbreSmoothing));
     }
-    ~MPEVoice() override { mpeSettingsBranch.removeListener (this); }
+    ~MPEVoice() override { /*mpeSettingsBranch.removeListener (this);*/ }
     // Voice Interface ===================================================
     const float* getRawData() const override { return trajectory.getRawData(); }
     void prepareToPlay (double newRate, int blockSize) override 
