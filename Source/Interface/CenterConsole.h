@@ -40,7 +40,11 @@ public:
         addTab ("Visualizer", c, &visualizer, false);
         addTab ("Settings", c, &settingsComponent, false);
     }
-    void setState (juce::ValueTree settingsBranch) { settingsComponent.setState (settingsBranch); }
+    void setState (juce::ValueTree settingsBranch) 
+    { 
+        settingsComponent.setState (settingsBranch); 
+        visualizer.setState (settingsBranch);
+    }
 private:
     Visualizer visualizer;
     SettingsComponent settingsComponent;

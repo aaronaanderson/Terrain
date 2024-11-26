@@ -4,24 +4,14 @@
 #include "Utility/DefaultTreeGenerator.h"
 #include "Utility/VersionType.h"
 
-static void crashHandleFunction (void* args)
-{
-    juce::String errorMessage = "init";
 
-    if (const auto signalDescription = strsignal (int ((juce::pointer_sized_int) args))) {
-        errorMessage = juce::String {signalDescription};
-    } else {
-        errorMessage = "Unknown error type";
-    }
+static void crashHandleFunction (void*)
+{   
     juce::String stacktrace = juce::SystemStats::getStackBacktrace();
-    // juce::File crash_dir = TheVST::get_plugin_user_data_dir().getChildFile( "crashlogs" );
-    // crash_dir.createDirectory();
-    // juce::File cl = crash_dir.getChildFile( "crashlog_" + juce::Time::getCurrentTime().toString( true, true, true, true).replace( ":", "-" ) + ".txt" );
-    // cl.appendText( "Terrain crashed: " + errorMessage + "\n" );
-    // cl.appendText( stacktrace );
     auto* l = juce::Logger::getCurrentLogger();
     l->writeToLog (stacktrace);
 }
+
 //==============================================================================
 MainProcessor::MainProcessor()
      : AudioProcessor (BusesProperties().withOutput ("Output", juce::AudioChannelSet::stereo(), true)),

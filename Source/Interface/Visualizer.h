@@ -257,18 +257,22 @@ public:
     Visualizer (tp::WaveTerrainSynthesizerStandard& wts, 
                 tp::WaveTerrainSynthesizerMPE& wtsmpe, 
                 tp::Parameters parameters, 
-                juce::ValueTree Settings, 
+                juce::ValueTree settingsBranch, 
                 juce::ValueTree voicesStateBranch, 
                 juce::AudioProcessorValueTreeState& apvts)
       : camera (mutex), 
         parameterWatcher (parameters), 
         waveTerrainSynthesizerStandard (wts), 
         waveTerrainSynthesizerMPE (wtsmpe), 
+        settings (settingsBranch),
         voicesState (voicesStateBranch),
         mpeWatcher (voicesStateBranch, apvts),
-        useMPE (Settings, id::mpeEnabled, nullptr)
+        useMPE (settings, id::mpeEnabled, nullptr)
     {
-        mpeRouting = Settings.getChildWithName (id::MPE_ROUTING);
+        jassert (settings.isValid());
+        std::cout << settings.toXmlString() << std::endl;
+        jassert (settings.hasType (id::mpeEnabled));
+        mpeRouting = settings.getChildWithName (id::MPE_ROUTING);
 
 #ifdef JUCE_MAC
         glContext.setOpenGLVersionRequired (juce::OpenGLContext::OpenGLVersion::openGL4_1);
@@ -284,7 +288,6 @@ public:
         glContext.setComponentPaintingEnabled (false);
 
         glContext.attachTo (*this);
-        useMPE.forceUpdateOfCachedValue();
         startTimerHz (60);
     }
     ~Visualizer() override 
@@ -314,6 +317,11 @@ public:
         setMouseCursor (juce::MouseCursor::NormalCursor);
         juce::Point<int> b = this->getScreenPosition() + bounds.getCentre();
         juce::Desktop::setMousePosition (juce::Point<int>(b));
+    }
+    void setState (juce::ValueTree presetSettingsState)
+    {
+        settings = presetSettingsState;
+        useMPE.referTo (settings, id::mpeEnabled, nullptr);
     }
 private:
     juce::OpenGLContext glContext;
