@@ -354,7 +354,7 @@ public:
         if (MTS_ShouldFilterNote (&mtsClient, static_cast<char> (midiNote), -1)) 
             readyToClear = true; 
 
-        float scaledVelocity = velocity * juce::Decibels::decibelsToGain (voiceParameters.velocity.getNext());
+        float scaledVelocity = juce::jmap (velocity, 0.0f, 1.0f, juce::Decibels::decibelsToGain (-voiceParameters.sensitivity.getNext()), 1.0f);
         amplitude.setCurrentAndTargetValue (scaledVelocity);
         envelope.noteOn();
         
@@ -477,12 +477,12 @@ private:
             decay (p.decay), 
             sustain (p.sustain), 
             release (p.release),
-            velocity (p.velocity),
+            sensitivity (p.sensitivity),
             filterFrequency (p.perVoiceFilterFrequency),
             filterResonance (p.perVoiceFilterResonance),
             filterBypass (p.perVoiceFilterOnOff)
         {
-            velocity.setTimeMS (0.0f);
+            sensitivity.setTimeMS (0.0f);
             filterFrequency.setTimeMS (0.0f);
             filterResonance.setTimeMS (0.0f);
         }
@@ -506,7 +506,7 @@ private:
             decay.noteOn();
             sustain.noteOn();
             release.noteOn();
-            velocity.noteOn();
+            sensitivity.noteOn();
             filterFrequency.noteOn();
             filterResonance.noteOn();
         }
@@ -530,7 +530,7 @@ private:
             decay.prepare (newSampleRate);
             sustain.prepare (newSampleRate);
             release.prepare (newSampleRate);
-            velocity.prepare (newSampleRate);
+            sensitivity.prepare (newSampleRate);
             filterFrequency.prepare (newSampleRate);
             filterResonance.prepare (newSampleRate);
         }
@@ -540,7 +540,7 @@ private:
         SmoothedParameter meanderanceScale, meanderanceSpeed;
         SmoothedParameter feedbackScalar, feedbackTime, feedbackCompression, feedbackMix;
         juce::AudioParameterBool* envelopeSize;
-        SmoothedParameter attack, decay, sustain, release, velocity;
+        SmoothedParameter attack, decay, sustain, release, sensitivity;
         SmoothedParameter filterFrequency, filterResonance;
         juce::AudioParameterBool* filterBypass;
     };
@@ -602,7 +602,7 @@ public:
         if (MTS_ShouldFilterNote (&mtsClient, static_cast<char> (midiNoteNumber), -1)) 
             readyToClear = true; 
         
-        float scaledVelocity = velocity * juce::Decibels::decibelsToGain (voiceParameters.velocity.getNext());
+        float scaledVelocity = juce::jmap (velocity, 0.0f, 1.0f, juce::Decibels::decibelsToGain (-voiceParameters.sensitivity.getNext()), 1.0f);
         amplitude.setCurrentAndTargetValue (scaledVelocity);
         envelope.noteOn();
         voiceParameters.noteOn (pressure, timbre);
@@ -743,12 +743,12 @@ private:
             decay (p.decay, vts, MPERouting), 
             sustain (p.sustain, vts, MPERouting), 
             release (p.release, vts, MPERouting), 
-            velocity (p.velocity, vts, MPERouting),
+            sensitivity (p.sensitivity, vts, MPERouting),
             filterFrequency (p.perVoiceFilterFrequency, vts, MPERouting), 
             filterResonance (p.perVoiceFilterResonance, vts, MPERouting),
             filterBypass (p.perVoiceFilterOnOff)
         {
-            velocity.setControlSmoothing (0.0);
+            sensitivity.setControlSmoothing (0.0);
             filterFrequency.setControlSmoothing (0.0);
             filterResonance.setControlSmoothing (0.0);
         }
@@ -773,7 +773,7 @@ private:
             decay.noteOn(timbre, pressure);
             sustain.noteOn(timbre, pressure);
             release.noteOn(timbre, pressure);
-            velocity.noteOn (timbre, pressure);
+            sensitivity.noteOn (timbre, pressure);
             filterFrequency.noteOn(timbre, pressure);
             filterResonance.noteOn(timbre, pressure);
         }
@@ -798,7 +798,7 @@ private:
             decay.prepare (newSampleRate);
             sustain.prepare (newSampleRate);
             release.prepare (newSampleRate);
-            velocity.prepare (newSampleRate);
+            sensitivity.prepare (newSampleRate);
             filterFrequency.prepare (newSampleRate);
             filterResonance.prepare (newSampleRate);
         }
@@ -823,7 +823,7 @@ private:
             decay.setTimbre (newTimbre);
             sustain.setTimbre (newTimbre);
             release.setTimbre (newTimbre);
-            velocity.setTimbre (newTimbre);
+            sensitivity.setTimbre (newTimbre);
             filterFrequency.setTimbre (newTimbre);
             filterResonance.setTimbre (newTimbre);
         }
@@ -848,7 +848,7 @@ private:
             decay.setPressure (newPressure);
             sustain.setPressure (newPressure);
             release.setPressure (newPressure);
-            velocity.setPressure (newPressure);
+            sensitivity.setPressure (newPressure);
             filterFrequency.setPressure (newPressure);
             filterResonance.setPressure (newPressure);
         }
@@ -873,7 +873,7 @@ private:
             decay.setState (mpeRoutingBranch);
             sustain.setState (mpeRoutingBranch);
             release.setState (mpeRoutingBranch);
-            velocity.setState (mpeRoutingBranch);
+            sensitivity.setState (mpeRoutingBranch);
             filterFrequency.setState (mpeRoutingBranch);
             filterResonance.setState (mpeRoutingBranch);           
         }
@@ -898,7 +898,7 @@ private:
             decay.setPressureSmoothing (ms);
             sustain.setPressureSmoothing (ms);
             release.setPressureSmoothing (ms);
-            velocity.setPressureSmoothing (0.0);
+            sensitivity.setPressureSmoothing (0.0);
             filterFrequency.setPressureSmoothing (0.0); // no smoothing, 
             filterResonance.setPressureSmoothing (0.0); // called per-buffer
         }
@@ -923,7 +923,7 @@ private:
             decay.setTimbreSmoothing (ms);
             sustain.setTimbreSmoothing (ms);
             release.setTimbreSmoothing (ms); 
-            velocity.setTimbreSmoothing (0.0);  
+            sensitivity.setTimbreSmoothing (0.0);  
             filterFrequency.setTimbreSmoothing (0.0);   
             filterResonance.setTimbreSmoothing (0.0);   
         }
@@ -933,7 +933,7 @@ private:
         MPESmoothedParameter meanderanceScale, meanderanceSpeed;
         MPESmoothedParameter feedbackScalar, feedbackTime, feedbackCompression, feedbackMix;
         juce::AudioParameterBool* envelopeSize;
-        MPESmoothedParameter attack, decay, sustain, release, velocity;
+        MPESmoothedParameter attack, decay, sustain, release, sensitivity;
         MPESmoothedParameter filterFrequency, filterResonance;
         juce::AudioParameterBool* filterBypass;
 

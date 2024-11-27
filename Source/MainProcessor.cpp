@@ -240,10 +240,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout MainProcessor::createParamet
                                                                 0.0f));
 
     layout.add (std::make_unique<juce::AudioParameterBool> (juce::ParameterID {"EnvelopeSize", 1}, "Envelope Size", true));
-    range = juce::NormalisableRange<float> (-48.0f, 0.0f);
-    layout.add (std::make_unique<tp::RangedFloatParameter> ("Velocity", 
+    range = juce::NormalisableRange<float> (0.0f, 60.0f);
+    layout.add (std::make_unique<tp::RangedFloatParameter> ("Sensitivity", 
                                                             range, 
-                                                            0.0f));
+                                                            60.0f));
     range = juce::NormalisableRange<float> (2.0f, 5000.0f); range.setSkewForCentre (500.0f);
     layout.add (std::make_unique<tp::RangedFloatParameter> ("Attack", 
                                                             range, 

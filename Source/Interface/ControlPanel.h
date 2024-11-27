@@ -153,7 +153,7 @@ public:
         decay ("Decay","Decay", vts, voicesState),
         sustain ("Sustain","Sustain", vts, voicesState),
         release ("Release","Release", vts, voicesState), 
-        velocity ("Velocity", "Velocity", vts, voicesState)
+        sensitivity ("Sensitivity", "Sensitivity", vts, voicesState)
     {
         label.setText ("Envelope", juce::dontSendNotification);
         label.setJustificationType (juce::Justification::centred);
@@ -163,7 +163,7 @@ public:
         addAndMakeVisible (decay);
         addAndMakeVisible (sustain);
         addAndMakeVisible (release);
-        addAndMakeVisible (velocity);
+        addAndMakeVisible (sensitivity);
     }
     void paint (juce::Graphics& g) override 
     {
@@ -181,13 +181,13 @@ public:
         decay.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 10.0f)));
         sustain.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 10.0f)));
         release.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 10.0f)));
-        velocity.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 10.0f)));
+        sensitivity.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 10.0f)));
     }
 
 private:
     juce::Label label;
     ti::ParameterToggle envelopeSize;
-    ti::ParameterSlider attack, decay, sustain, release, velocity;
+    ti::ParameterSlider attack, decay, sustain, release, sensitivity;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Envelope)
 };

@@ -97,7 +97,7 @@ public:
     RangedFloatParameter* terrainSaturation = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter ("TerrainSaturation"));
 
     juce::AudioParameterBool* envelopeSize = dynamic_cast<juce::AudioParameterBool*> (valueTreeState.getParameter ("EnvelopeSize"));
-    RangedFloatParameter* velocity = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter               ("Velocity"));
+    RangedFloatParameter* sensitivity = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter               ("Sensitivity"));
     RangedFloatParameter* attack = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter               ("Attack"));
     RangedFloatParameter* decay = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter                ("Decay"));
     RangedFloatParameter* sustain = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter              ("Sustain"));

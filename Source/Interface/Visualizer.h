@@ -270,8 +270,6 @@ public:
         useMPE (settings, id::mpeEnabled, nullptr)
     {
         jassert (settings.isValid());
-        std::cout << settings.toXmlString() << std::endl;
-        jassert (settings.hasType (id::mpeEnabled));
         mpeRouting = settings.getChildWithName (id::MPE_ROUTING);
 
 #ifdef JUCE_MAC
