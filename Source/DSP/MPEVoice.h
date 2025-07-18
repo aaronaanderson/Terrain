@@ -88,10 +88,10 @@ public:
 
         juce::MessageManager::callAsync([this, note]() 
             {
-                auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel - 2));
-                if (!channelState.isValid()) return;
-                channelState.setProperty (id::voiceRMS, 0.0f, nullptr);
-                channelState.setProperty (id::voiceActive, false, nullptr);
+                auto chState = voicesState.getChild (static_cast<int> (note.midiChannel - 2));
+                if (!chState.isValid()) return;
+                chState.setProperty (id::voiceRMS, 0.0f, nullptr);
+                chState.setProperty (id::voiceActive, false, nullptr);
             });
     }
     
