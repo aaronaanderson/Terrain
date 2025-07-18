@@ -8,8 +8,7 @@
 * Create morphlib
   * This will hold code that can be applicable to projects that are not Terrain.
   * Synthesiser and Voice, for example.
-  * morphlib will be modulare
-    * ex: morph_core, morph_
+  * morphlib would be a static lib for other users ( users that don't intend to modify morphlib )
 * Write wrapper library for value tree
   * Use assertions to always verify requests stay on message thread
 * Write a class to store an object accessible on either the message thread or the audio thread
