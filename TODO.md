@@ -12,4 +12,4 @@
     * ex: morph_core, morph_
 * Write wrapper library for value tree
   * Use assertions to always verify requests stay on message thread
-* Write RealTimePtr from scratch
+* Write a class to store an object accessible on either the message thread or the audio thread
