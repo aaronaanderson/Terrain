@@ -213,6 +213,7 @@ public:
         // juce::gl::glEnable (juce::gl::GL_ALPHA_TEST); ERROR_CHECK();
         // juce::gl::glBlendFunc(juce::gl::GL_SRC_ALPHA, juce::gl::GL_ONE_MINUS_SRC_ALPHA); ERROR_CHECK();
         juce::gl::glBlendFunc (juce::gl::GL_SRC_ALPHA, juce::gl::GL_ONE);
+        juce::gl::glBlendFuncSeparate( juce::gl::GL_SRC_ALPHA, juce::gl::GL_ONE_MINUS_SRC_ALPHA, juce::gl::GL_ONE, juce::gl::GL_ONE ); ERROR_CHECK();
         juce::gl::glPolygonMode (juce::gl::GL_FRONT_AND_BACK, juce::gl::GL_FILL); ERROR_CHECK();
         
         if(shaders.get() == nullptr)

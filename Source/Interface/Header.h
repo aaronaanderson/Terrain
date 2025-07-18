@@ -415,34 +415,34 @@ private:
         }
     }
 };
-class MPEComponent : public Panel
-{
-public:
-    MPEComponent (juce::ValueTree settingsBranch)
-      : Panel ("MPE"),
-        settings (settingsBranch)
-    {
-        mpeEnableToggle.onStateChange = [&]()
-            {
-                settings.setProperty (id::mpeEnabled, 
-                                      mpeEnableToggle.getToggleState(), 
-                                      nullptr);
-            };
-        mpeEnableToggle.setToggleState (settings.getProperty (id::mpeEnabled), 
-                                        juce::sendNotification);
-        addAndMakeVisible (mpeEnableToggle);
-    }
-    void resized() override
-    {
-        Panel::resized();
-        auto b = getAdjustedBounds();
-        juce::Rectangle<int> r = {0, 0, 22, 80};
-        mpeEnableToggle.setBounds (r.withCentre (b.getCentre()));
-    }
-private:
-    juce::ValueTree settings;
-    juce::ToggleButton mpeEnableToggle;
-};
+// class MPEComponent : public Panel
+// {
+// public:
+//     MPEComponent (juce::ValueTree settingsBranch)
+//       : Panel ("MPE"),
+//         settings (settingsBranch)
+//     {
+//         mpeEnableToggle.onStateChange = [&]()
+//             {
+//                 settings.setProperty (id::mpeEnabled, 
+//                                       mpeEnableToggle.getToggleState(), 
+//                                       nullptr);
+//             };
+//         mpeEnableToggle.setToggleState (settings.getProperty (id::mpeEnabled), 
+//                                         juce::sendNotification);
+//         addAndMakeVisible (mpeEnableToggle);
+//     }
+//     void resized() override
+//     {
+//         Panel::resized();
+//         auto b = getAdjustedBounds();
+//         juce::Rectangle<int> r = {0, 0, 22, 80};
+//         mpeEnableToggle.setBounds (r.withCentre (b.getCentre()));
+//     }
+// private:
+//     juce::ValueTree settings;
+//     juce::ToggleButton mpeEnableToggle;
+// };
 class Header : public juce::Component
 {
 public:
@@ -451,12 +451,12 @@ public:
             juce::ValueTree ephemeralState)
       : mtsComponent (settingsBranch, ephemeralState),
         presetComponent (pm, settingsBranch), 
-        mpeComponent (settingsBranch),
+        // mpeComponent (settingsBranch),
         pitchBendComponent (settingsBranch)
     {
         addAndMakeVisible (mtsComponent);
         addAndMakeVisible (presetComponent);
-        addAndMakeVisible (mpeComponent);
+        // addAndMakeVisible (mpeComponent);
         addAndMakeVisible (pitchBendComponent);
     }
     void resized() override
@@ -467,14 +467,14 @@ public:
         mtsComponent.setBounds (b.removeFromLeft (oneThird));
         presetComponent.setBounds (b.removeFromLeft (oneThird));
 
-        auto remainingThird = oneThird / 3;
-        mpeComponent.setBounds (b.removeFromLeft (remainingThird));
+        auto remainingThird = oneThird / 3; b.removeFromLeft (remainingThird);
+        // mpeComponent.setBounds (b.removeFromLeft (remainingThird));
         pitchBendComponent.setBounds (b);                                                 
     }
 private:
     MTSComponent mtsComponent;
     PresetComponent presetComponent;
-    MPEComponent mpeComponent;
+    // MPEComponent mpeComponent;
     PitchBendComponent pitchBendComponent;
 };
 } // end namespace ti

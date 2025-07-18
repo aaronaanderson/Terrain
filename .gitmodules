@@ -13,3 +13,6 @@
 [submodule "MTS-ESP"]
 	path = MTS-ESP
 	url = https://github.com/ODDSound/MTS-ESP.git
+[submodule "morphlib"]
+	path = morphlib
+	url = https://github.com/aaronaanderson/morphlib.git

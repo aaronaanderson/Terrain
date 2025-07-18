@@ -96,6 +96,8 @@ if(WIN32)
     )
 endif()
 
+add_subdirectory(morphlib)
+
 target_link_libraries(WaveTerrainSynth
     PRIVATE
         BinaryData
@@ -104,6 +106,7 @@ target_link_libraries(WaveTerrainSynth
         juce::juce_dsp
         juce::juce_opengl
         MTS-ESP
+        morphlib
     PUBLIC
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
