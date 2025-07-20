@@ -332,7 +332,7 @@ void MainProcessor::allocateMaxSamplesPerBlock (int maxSamples)
     auto settingsTree = valueTreeState.state.getChildWithName (id::PRESET_SETTINGS);
     auto overSamplingFactor = static_cast<int> (settingsTree.getProperty (id::oversampling));
     // synthesizer->allocate (maxSamples * static_cast<int> (std::pow (2, overSamplingFactor)));
-    standardSynthesizer->allocate (maxSamples * static_cast<int> (std::pow (2, overSamplingFactor)));
+    standardSynthesizer->allocateERASE (maxSamples * static_cast<int> (std::pow (2, overSamplingFactor)));
     mpeSynthesizer->allocate (maxSamples * static_cast<int> (std::pow (2, overSamplingFactor)));
     overSampler = std::make_unique<juce::dsp::Oversampling<float>> (1, 
                                                                     overSamplingFactor, 
@@ -349,14 +349,14 @@ void MainProcessor::prepareOversampling (int bufferSize)
     //===The situation only arises if oversampling factor has changed
     if (overSamplingFactor != storedFactor)
     {
-        standardSynthesizer->allocate (maxSamplesPerBlock * static_cast<int> (std::pow (2, overSamplingFactor)));
+        standardSynthesizer->allocateERASE (maxSamplesPerBlock * static_cast<int> (std::pow (2, overSamplingFactor)));
         mpeSynthesizer->allocate (maxSamplesPerBlock * static_cast<int> (std::pow (2, overSamplingFactor)));
         overSampler = std::make_unique<juce::dsp::Oversampling<float>> (1, 
                                                                         overSamplingFactor, 
                                                                         juce::dsp::Oversampling<float>::FilterType::filterHalfBandPolyphaseIIR);
         overSampler->initProcessing (static_cast<size_t> (maxSamplesPerBlock));
         
-        standardSynthesizer->prepareToPlay (sampleRate * std::pow (2, overSamplingFactor), 
+        standardSynthesizer->prepareToPlayERASE (sampleRate * std::pow (2, overSamplingFactor), 
                                     bufferSize * static_cast<int> (std::pow (2, overSamplingFactor)));
         mpeSynthesizer->prepareToPlay (sampleRate * std::pow (2, overSamplingFactor), 
                                        bufferSize * static_cast<int> (std::pow (2, overSamplingFactor)));
@@ -369,7 +369,7 @@ void MainProcessor::prepareOversampling (int bufferSize)
     
     if (bufferSize != storedBufferSize)
     {
-        standardSynthesizer->prepareToPlay (sampleRate * std::pow (2, overSamplingFactor), 
+        standardSynthesizer->prepareToPlayERASE (sampleRate * std::pow (2, overSamplingFactor), 
                                            bufferSize * static_cast<int> (std::pow (2, overSamplingFactor)));
         mpeSynthesizer->prepareToPlay (sampleRate * std::pow (2, overSamplingFactor), 
                                        bufferSize * static_cast<int> (std::pow (2, overSamplingFactor)));

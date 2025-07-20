@@ -104,16 +104,16 @@ public:
         terrain.setPressure (pressure);
         trajectory.setPressure (pressure);
         
-        if (pressure <= 0.0f)
-        {
-            // trajectory.setAmplitude (previousPressure);
-            trajectory.setRelease();
-        }
-        else
-        {
+        // if (pressure <= 0.0f)
+        // {
+        //     // trajectory.setAmplitude (previousPressure);
+        //     trajectory.setRelease();
+        // }
+        // else
+        // {
             // trajectory.setAmplitude (pressure);
             previousPressure = pressure;
-        }
+        // }
 
         juce::MessageManager::callAsync([this, note]() 
             {

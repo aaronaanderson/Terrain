@@ -14,8 +14,8 @@ public:
       : mtsClient (mtsc)
     {}
     virtual ~WaveTerrainSynthesizer(){}
-    virtual void prepareToPlay (double sampleRate, int blockSize) = 0;
-    virtual void allocate (int maxBlockSize) = 0;
+    virtual void prepareToPlayERASE (double sampleRate, int blockSize) = 0;
+    virtual void allocateERASE (int maxBlockSize) = 0;
     virtual void updateTerrain() = 0;
     virtual juce::Array<VoiceInterface*> getVoices() = 0;
     virtual void setState (juce::ValueTree settingsBranch) = 0;

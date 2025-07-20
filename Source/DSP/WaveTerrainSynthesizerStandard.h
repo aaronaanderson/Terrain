@@ -18,7 +18,7 @@ public:
         setPolyphony (24, p, settingsBranch, mtsClient);
     }
     ~WaveTerrainSynthesizerStandard() override {}
-    void prepareToPlay (double sr, int blockSize) override
+    void prepareToPlayERASE (double sr, int blockSize) override
     {
         for (int i = 0; i < getNumVoices(); i++)
         {
@@ -31,7 +31,7 @@ public:
         
         terrain.prepareToPlay (sr, blockSize);
     }
-    void allocate (int maxNumSamples) override
+    void allocateERASE (int maxNumSamples) override
     { 
         for (int i = 0; i < getNumVoices(); i++)
         {
