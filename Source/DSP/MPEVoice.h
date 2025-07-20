@@ -8,10 +8,13 @@
 #include "Terrain.h"
 #include "../Utility/Identifiers.h"
 
+#include "morphlib/Voice.h"
+#include "morphlib/Synthesizer.h"
 namespace tp
 {
 class MPEVoice : public VoiceInterface, 
-                 public juce::MPESynthesiserVoice, 
+                 //public juce::MPESynthesiserVoice, 
+                 public morph::Voice,
                  private juce::ValueTree::Listener
 {
 public:
@@ -57,7 +60,7 @@ public:
     } 
     bool isVoiceCurrentlyActive() const override { return isActive(); }
     // MPESynthesiser Voice ===============================================
-    void noteStarted() override 
+    void onNoteStart() override 
     {
         auto note = getCurrentlyPlayingNote();
         terrain.noteOn (note.pressure.asUnsignedFloat(), 
@@ -68,7 +71,6 @@ public:
                               note.pressure.asUnsignedFloat(), 
                               note.timbre.asUnsignedFloat(), 
                               note.midiChannel);
-        initialNote = note.initialNote;// MTS_NoteToFrequency (&mtsClient, static_cast<char> (note.initialNote), -1);
 
         juce::MessageManager::callAsync([this, note]() 
             {
@@ -78,7 +80,7 @@ public:
                 channelState.setProperty (id::voiceTimbre, note.timbre.asUnsignedFloat(), nullptr);
             });
     }
-    void noteStopped (bool allowTailOff) override
+    void onNoteStop (bool allowTailOff) override
     {
         if (!allowTailOff) clearCurrentNote();
         trajectory.stopNote(); 
@@ -95,7 +97,7 @@ public:
             });
     }
     
-    void notePressureChanged() override 
+    void onNotePressureChanged() override 
     {
         auto note = getCurrentlyPlayingNote();
         pressure = note.pressure.asUnsignedFloat();
@@ -119,15 +121,9 @@ public:
                 channelState.setProperty (id::voicePressure, pressure, nullptr);
             });
     }
-    void notePitchbendChanged() override {}
-    void setPitchWheel (float pitchWheel)
+    void onNotePitchbendChanged() override {}
+    void onPitchWheelChanged() override
     {
-        if (!pitchBendEnabled.get()) return;
-        jassert (pitchWheel >= -1.0f && pitchWheel <= 1.0f);
-        currentPitchWheel = pitchWheel;
-        auto tunedBaseFrequency = MTS_NoteToFrequency (&mtsClient, static_cast<char> (initialNote), -1);
-        auto semitones = getPitchBendToSemitones (pitchWheel);
-        auto adjustedFrequency = tunedBaseFrequency * semitonesToScalar (semitones + globalPitchBendSemitones);
         trajectory.setFrequencySmooth (static_cast<float> (adjustedFrequency));
     }
     void setGlobalPitchWheel (float pitchWheelNormalized)
@@ -137,7 +133,7 @@ public:
         globalPitchBendSemitones = getGlobalPitchBendSemitones (pitchWheelNormalized);
         setPitchWheel (currentPitchWheel);
     }
-    void noteTimbreChanged() override
+    void onNoteTimbreChanged() override
     {
         auto note = getCurrentlyPlayingNote();
         timbre = note.timbre.asUnsignedFloat();
@@ -150,7 +146,7 @@ public:
                 channelState.setProperty (id::voiceTimbre, timbre, nullptr);
             });
     }
-    void noteKeyStateChanged() override {}
+    void onNoteKeyStateChanged() override {}
     void renderNextBlock (juce::AudioBuffer<float>& outputBuffer,
                           int startSample,
                           int numSamples) override
