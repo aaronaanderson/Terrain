@@ -73,7 +73,7 @@ private:
                 for(int y = 0; y < h; y++)
                 {
                     float yNorm = juce::jmap<float>((float)y, 0, (float)h, -1.0f, 1.0f);
-                    int index = x * w + y;
+                    int index = y * w + x;
                     initialVertexData.set(3 * index + 0, xNorm); // x
                     initialVertexData.set(3 * index + 1, yNorm); // y
                     initialVertexData.set(3 * index + 2, 0.0f);  // Z
@@ -131,7 +131,7 @@ class Terrain
 public:
     Terrain (juce::OpenGLContext& c)
       : glContext (c), 
-        mesh (128, 128)
+        mesh (256, 256)
     {
         if (loadShaders())
         {
@@ -208,13 +208,12 @@ public:
                          juce::Array<float> intensity)
     {
 
-        juce::gl::glDisable (juce::gl::GL_DEPTH_TEST); ERROR_CHECK();
         juce::gl::glEnable (juce::gl::GL_BLEND); ERROR_CHECK();
-        // juce::gl::glEnable (juce::gl::GL_ALPHA_TEST); ERROR_CHECK();
-        // juce::gl::glBlendFunc(juce::gl::GL_SRC_ALPHA, juce::gl::GL_ONE_MINUS_SRC_ALPHA); ERROR_CHECK();
-        juce::gl::glBlendFunc (juce::gl::GL_SRC_ALPHA, juce::gl::GL_ONE);
-        juce::gl::glBlendFuncSeparate( juce::gl::GL_SRC_ALPHA, juce::gl::GL_ONE_MINUS_SRC_ALPHA, juce::gl::GL_ONE, juce::gl::GL_ONE ); ERROR_CHECK();
+        juce::gl::glDisable (juce::gl::GL_DEPTH_TEST); ERROR_CHECK();
         juce::gl::glPolygonMode (juce::gl::GL_FRONT_AND_BACK, juce::gl::GL_FILL); ERROR_CHECK();
+
+        juce::gl::glDepthMask(juce::gl::GL_FALSE);
+        juce::gl::glBlendFuncSeparate( juce::gl::GL_SRC_ALPHA, juce::gl::GL_ONE_MINUS_SRC_ALPHA, juce::gl::GL_ONE, juce::gl::GL_ONE ); ERROR_CHECK();
         
         if(shaders.get() == nullptr)
             return;
@@ -243,7 +242,7 @@ public:
                 uniforms->color->set (color.getRed(), 
                                       color.getGreen(), 
                                       color.getBlue(), 
-                                      static_cast<int> (color.getAlpha() * intensity[i])); ERROR_CHECK();
+                                      static_cast<int> (color.getAlpha() * intensity[i] * 0.2)); ERROR_CHECK();
             }
             if (uniforms->terrainIndex.get() != nullptr)
             {
@@ -272,6 +271,7 @@ public:
     
             mesh.draw (*attributes.get());
         }
+        juce::gl::glDepthMask (juce::gl::GL_TRUE);
     }
 private:
     juce::OpenGLContext& glContext;

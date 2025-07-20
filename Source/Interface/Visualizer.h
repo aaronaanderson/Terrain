@@ -7,7 +7,6 @@
 #include "Renderer/Terrain.h"
 #include "Renderer/Trajectories.h"
 #include "../Parameters.h"
-#include "../DSP/WaveTerrainSynthesizer.h"
 struct UBO
 {
     int index;
@@ -254,7 +253,7 @@ class Visualizer : public juce::Component,
                    private juce::Timer
 {
 public:
-    Visualizer (tp::WaveTerrainSynthesizerStandard& wts, 
+    Visualizer (/*tp::WaveTerrainSynthesizerStandard& wts, */
                 tp::WaveTerrainSynthesizerMPE& wtsmpe, 
                 tp::Parameters parameters, 
                 juce::ValueTree settingsBranch, 
@@ -262,7 +261,7 @@ public:
                 juce::AudioProcessorValueTreeState& apvts)
       : camera (mutex), 
         parameterWatcher (parameters), 
-        waveTerrainSynthesizerStandard (wts), 
+        //waveTerrainSynthesizerStandard (wts), 
         waveTerrainSynthesizerMPE (wtsmpe), 
         settings (settingsBranch),
         voicesState (voicesStateBranch),
@@ -283,7 +282,7 @@ public:
         pf.multisamplingLevel = 4;
         glContext.setPixelFormat (pf);
         glContext.setMultisamplingEnabled (true);
-        glContext.setComponentPaintingEnabled (false);
+        glContext.setComponentPaintingEnabled (true);
 
         glContext.attachTo (*this);
         startTimerHz (60);
@@ -329,7 +328,6 @@ private:
     std::unique_ptr<Terrain> terrain;
     ParameterWatcher parameterWatcher;
     std::unique_ptr<Trajectories> trajectories;
-    tp::WaveTerrainSynthesizerStandard& waveTerrainSynthesizerStandard;
     tp::WaveTerrainSynthesizerMPE& waveTerrainSynthesizerMPE;
 
     juce::ValueTree settings;
@@ -346,7 +344,6 @@ private:
     {
         terrain = std::make_unique<Terrain> (glContext);
         trajectories = std::make_unique<Trajectories> (glContext, 
-                                                       waveTerrainSynthesizerStandard,
                                                        waveTerrainSynthesizerMPE);
     }
     void renderOpenGL() override 
@@ -354,10 +351,9 @@ private:
         const juce::ScopedLock lock (mutex);
         auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
         juce::OpenGLHelpers::clear(laf->getBackgroundDark());
-        juce::gl::glClear (juce::gl::GL_COLOR_BUFFER_BIT | juce::gl::GL_DEPTH_BUFFER_BIT);
         auto desktopScale = static_cast<float>(glContext.getRenderingScale());
-        juce::gl::glDepthFunc (juce::gl::GL_LESS);
-        juce::gl::glEnable (juce::gl::GL_MULTISAMPLE);
+        //juce::gl::glDepthFunc (juce::gl::GL_LESS);
+//        juce::gl::glEnable (juce::gl::GL_MULTISAMPLE);
         
         juce::gl::glViewport (0, 0, 
                               juce::roundToInt(desktopScale * static_cast<float>(bounds.getWidth())), 

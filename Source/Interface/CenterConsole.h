@@ -24,7 +24,7 @@ public:
 class CenterConsole : public juce::TabbedComponent
 {
 public:
-    CenterConsole (tp::WaveTerrainSynthesizerStandard& wts, 
+    CenterConsole (//tp::WaveTerrainSynthesizerStandard& wts, 
                    tp::WaveTerrainSynthesizerMPE& wtsmpe,
                    const tp::Parameters& p, 
                    juce::ValueTree settingsBranch, 
@@ -32,7 +32,7 @@ public:
                    juce::ValueTree& mpeSettings, 
                    juce::ValueTree voicesState)
       :  juce::TabbedComponent (juce::TabbedButtonBar::Orientation::TabsAtTop),
-         visualizer (wts, wtsmpe, p, settingsBranch, voicesState, apvts),
+         visualizer (wtsmpe, p, settingsBranch, voicesState, apvts),
          settingsComponent (settingsBranch, apvts, mpeSettings)
     { 
         auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());

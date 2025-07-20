@@ -14,8 +14,7 @@ MainEditor::MainEditor (MainProcessor& p)
                                                        processorRef.getMPEWaveTerrainSynthesizer().getVoicesState()); 
     controlPanel = std::make_unique<ti::ControlPanel> (processorRef.getValueTreeState(), 
                                                        processorRef.getMPEWaveTerrainSynthesizer().getVoicesState());
-    centerConsole = std::make_unique<ti::CenterConsole> (processorRef.getStandardWaveTerrainSynthesizer(),
-                                                         processorRef.getMPEWaveTerrainSynthesizer(), 
+    centerConsole = std::make_unique<ti::CenterConsole> (processorRef.getMPEWaveTerrainSynthesizer(), 
                                                          processorRef.getCastedParameters(), 
                                                          processorRef.getState().getChildWithName (id::PRESET_SETTINGS), 
                                                          processorRef.getAudioProcessorValueTreeState(), 

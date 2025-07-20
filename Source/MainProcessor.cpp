@@ -34,7 +34,7 @@ MainProcessor::MainProcessor()
     valueTreeState.state.addChild (SettingsTree::create(), -1, nullptr);
     presetManager = std::make_unique<PresetManager> (this, valueTreeState.state);
 
-    standardSynthesizer = std::make_unique<tp::WaveTerrainSynthesizerStandard> (parameters, *mtsClient, valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
+    //standardSynthesizer = std::make_unique<tp::WaveTerrainSynthesizerStandard> (parameters, *mtsClient, valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
     mpeSynthesizer = std::make_unique<tp::WaveTerrainSynthesizerMPE> (parameters, 
                                                                       *mtsClient, 
                                                                       valueTreeState.state.getChildWithName (id::PRESET_SETTINGS),
@@ -123,16 +123,9 @@ void MainProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                                                           static_cast<int> (overSamplingBlock.getNumChannels()), 
                                                           static_cast<int> (overSamplingBlock.getNumSamples()));
     prepareOversampling (buffer.getNumSamples());
-    if (mpeOn.load())
-    {
-        mpeSynthesizer->updateTerrain();
-        mpeSynthesizer->renderNextBlock (overSamplingBufferReference, midiMessages, 0, overSamplingBufferReference.getNumSamples());
-    }
-    else
-    {
-        standardSynthesizer->updateTerrain();
-        standardSynthesizer->renderNextBlock (overSamplingBufferReference, midiMessages, 0, overSamplingBufferReference.getNumSamples());
-    }
+
+    mpeSynthesizer->updateTerrain();
+    mpeSynthesizer->renderNextBlock (overSamplingBufferReference, midiMessages, 0, overSamplingBufferReference.getNumSamples());
 
     auto outputBlock = juce::dsp::AudioBlock<float> (renderBuffer);
     overSampler->processSamplesDown (outputBlock);
@@ -189,7 +182,7 @@ void MainProcessor::setStateInformation (const void* data, int sizeInBytes)
             newState.addChild (verifiedSettingsBranch, -1, nullptr);
             valueTreeState.replaceState (newState);
             presetManager->setState (valueTreeState.state);
-            standardSynthesizer->setState (valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
+            //standardSynthesizer->setState (valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
             mpeSynthesizer->setState (valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
         }
     }
@@ -332,7 +325,6 @@ void MainProcessor::allocateMaxSamplesPerBlock (int maxSamples)
     auto settingsTree = valueTreeState.state.getChildWithName (id::PRESET_SETTINGS);
     auto overSamplingFactor = static_cast<int> (settingsTree.getProperty (id::oversampling));
     // synthesizer->allocate (maxSamples * static_cast<int> (std::pow (2, overSamplingFactor)));
-    standardSynthesizer->allocateERASE (maxSamples * static_cast<int> (std::pow (2, overSamplingFactor)));
     mpeSynthesizer->allocate (maxSamples * static_cast<int> (std::pow (2, overSamplingFactor)));
     overSampler = std::make_unique<juce::dsp::Oversampling<float>> (1, 
                                                                     overSamplingFactor, 
@@ -349,15 +341,12 @@ void MainProcessor::prepareOversampling (int bufferSize)
     //===The situation only arises if oversampling factor has changed
     if (overSamplingFactor != storedFactor)
     {
-        standardSynthesizer->allocateERASE (maxSamplesPerBlock * static_cast<int> (std::pow (2, overSamplingFactor)));
         mpeSynthesizer->allocate (maxSamplesPerBlock * static_cast<int> (std::pow (2, overSamplingFactor)));
         overSampler = std::make_unique<juce::dsp::Oversampling<float>> (1, 
                                                                         overSamplingFactor, 
                                                                         juce::dsp::Oversampling<float>::FilterType::filterHalfBandPolyphaseIIR);
         overSampler->initProcessing (static_cast<size_t> (maxSamplesPerBlock));
         
-        standardSynthesizer->prepareToPlayERASE (sampleRate * std::pow (2, overSamplingFactor), 
-                                    bufferSize * static_cast<int> (std::pow (2, overSamplingFactor)));
         mpeSynthesizer->prepareToPlay (sampleRate * std::pow (2, overSamplingFactor), 
                                        bufferSize * static_cast<int> (std::pow (2, overSamplingFactor)));
         renderBuffer.setSize (1, bufferSize, false, false, true); // Don't re-allocate; maxBufferSize is set in prepareToPlay
@@ -369,8 +358,6 @@ void MainProcessor::prepareOversampling (int bufferSize)
     
     if (bufferSize != storedBufferSize)
     {
-        standardSynthesizer->prepareToPlayERASE (sampleRate * std::pow (2, overSamplingFactor), 
-                                           bufferSize * static_cast<int> (std::pow (2, overSamplingFactor)));
         mpeSynthesizer->prepareToPlay (sampleRate * std::pow (2, overSamplingFactor), 
                                        bufferSize * static_cast<int> (std::pow (2, overSamplingFactor)));
         renderBuffer.setSize (1, bufferSize, false, false, true); // Don't re-allocate; maxBufferSize is set in prepareToPlay

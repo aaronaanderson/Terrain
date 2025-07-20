@@ -3,7 +3,6 @@
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_data_structures/juce_data_structures.h>
 #include <MTS-ESP/Client/libMTSClient.h>
-#include "VoiceInterface.h"
 #include "Trajectory.h"
 #include "Terrain.h"
 #include "../Utility/Identifiers.h"
@@ -12,9 +11,7 @@
 #include "morphlib/Synthesizer.h"
 namespace tp
 {
-class MPEVoice : public VoiceInterface, 
-                 //public juce::MPESynthesiserVoice, 
-                 public morph::Voice,
+class MPEVoice : public morph::Voice,
                  private juce::ValueTree::Listener
 {
 public:
@@ -46,19 +43,19 @@ public:
     }
     ~MPEVoice() override { /*mpeSettingsBranch.removeListener (this);*/ }
     // Voice Interface ===================================================
-    const float* getRawData() const override { return trajectory.getRawData(); }
+    const float* getRawData() const { return trajectory.getRawData(); }
     void prepareToPlay (double newRate, int blockSize) override 
     { 
         terrain.prepareToPlay (newRate, blockSize);
         trajectory.prepareToPlay (newRate, blockSize); 
     }
-    void setState (juce::ValueTree SettingsBranch) override 
+    void setState (juce::ValueTree SettingsBranch) 
     { 
         terrain.setState (SettingsBranch.getChildWithName (id::MPE_ROUTING));
         trajectory.setState (SettingsBranch); 
         settingsBranch = SettingsBranch;
     } 
-    bool isVoiceCurrentlyActive() const override { return isActive(); }
+    bool isVoiceCurrentlyActive() const { return isActive(); }
     // MPESynthesiser Voice ===============================================
     void onNoteStart() override 
     {
@@ -103,17 +100,7 @@ public:
         pressure = note.pressure.asUnsignedFloat();
         terrain.setPressure (pressure);
         trajectory.setPressure (pressure);
-        
-        // if (pressure <= 0.0f)
-        // {
-        //     // trajectory.setAmplitude (previousPressure);
-        //     trajectory.setRelease();
-        // }
-        // else
-        // {
-            // trajectory.setAmplitude (pressure);
-            previousPressure = pressure;
-        // }
+        previousPressure = pressure;
 
         juce::MessageManager::callAsync([this, note]() 
             {

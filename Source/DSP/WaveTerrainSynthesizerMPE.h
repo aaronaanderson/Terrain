@@ -1,13 +1,12 @@
 #pragma once 
 
-#include "WaveTerrainSynthesizer.h"
+#include "MPEVoice.h"
 #include "../Utility/DefaultTreeGenerator.h"
 #include "morphlib/Synthesizer.h"
+
 namespace tp
 {
-class WaveTerrainSynthesizerMPE : public WaveTerrainSynthesizer,
-                                  //public juce::MPESynthesiser
-                                  public morph::Synthesizer
+class WaveTerrainSynthesizerMPE : public morph::Synthesizer
 {
 public:
     // ERASE THIS
@@ -19,13 +18,12 @@ public:
                                juce::ValueTree settings, 
                                juce::ValueTree& MPESettings,
                                juce::AudioProcessorValueTreeState& vts)
-      : WaveTerrainSynthesizer (mtsc)
     {
-        setPolyphony (15, p, settings, MPESettings, mtsClient, vts);
+        setPolyphony (15, p, settings, MPESettings, mtsc, vts);
     }
     ~WaveTerrainSynthesizerMPE() override {}
 
-    void updateTerrain() override 
+    void updateTerrain() 
     {   
         for (int i = 0; i < getNumVoices(); i++)
         {
@@ -35,18 +33,8 @@ public:
                 trajectory->updateParameterBuffers();
         } 
     }
-    juce::Array<VoiceInterface*> getVoices() override // TODO: delete this function
-    {
-        juce::Array<VoiceInterface*> v;
-        for(int i = 0; i < getNumVoices(); i++)
-        {
-            auto* vi = dynamic_cast<VoiceInterface*> (getVoice (i));
-            v.add (vi);
-        }
 
-        return v;        
-    }
-    void setState (juce::ValueTree settings) override
+    void setState (juce::ValueTree settings)
     {
         jassert (settings.getType() == id::PRESET_SETTINGS);
         for (int i = 0; i < getNumVoices(); i++)
@@ -71,17 +59,13 @@ private:
     {
         jassert (numVoices > 0);
         clearVoices();
-        juce::Array<VoiceInterface*> v;
         for (int i = 0; i < numVoices; i++)
         {
             MPEVoice* voice = new MPEVoice (p, settingsBranch, MPESettings, mtsc, vts, voicesState);
             addVoice (voice);
-            VoiceInterface* interface = dynamic_cast<VoiceInterface*> (voice);
-            v.add (interface);
         }
 
-        if (voiceListener != nullptr)
-            voiceListener->addVoices (v);        
+               
     }
 };
 }
