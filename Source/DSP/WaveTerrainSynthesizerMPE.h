@@ -50,8 +50,15 @@ public:
 
     void updateVoiceData()
     {
-        for (int i = 0; i < getNumVoices(); i++)
+        for (int i = 0; i < voiceData.getSizeAT(); i++)
         {
+            if( i >= getNumVoices() )
+            {
+                tp::ChannelData cd {0.0f, 0.0f, false, 0.0f};
+                voiceData.setChannelDataAT ( cd, i);
+                continue;
+            }
+
             auto voice = dynamic_cast<MPEVoice*> (getVoice (i));
             if (voice->isActive())
             {

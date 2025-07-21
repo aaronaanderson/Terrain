@@ -138,6 +138,8 @@ public:
             uniforms = std::make_unique<TerrainUniforms> (*shaders.get());
             attributes = std::make_unique<Attributes> (*shaders.get());
         }
+        transparency.setCurrentAndTargetValue (0.7f);
+        transparency.reset (30);
     }
     void render (const Camera& camera, juce::Colour color, int index, float modA, float modB, float modC, float modD, float saturation)
     {
@@ -160,7 +162,7 @@ public:
         if (uniforms->lightPosition.get() != nullptr)
         {
             phase = phase + 0.005f;
-            uniforms->lightPosition->set (std::sin (phase) * 8, std::cos (phase) * 8, 2.0f); ERROR_CHECK();
+            uniforms->lightPosition->set (std::sin (phase) * 16, std::cos (phase) * 16, 16.0f); ERROR_CHECK();
         }
         //juce::ignoreUnused (color);
         if (uniforms->color.get() != nullptr)
@@ -205,7 +207,8 @@ public:
                          juce::Array<float> modC, 
                          juce::Array<float> modD,
                          juce::Array<float> saturation, 
-                         juce::Array<float> intensity)
+                         juce::Array<float> intensity, 
+                         int numVoices)
     {
 
         juce::gl::glEnable (juce::gl::GL_BLEND); ERROR_CHECK();
@@ -222,7 +225,12 @@ public:
         
         phase = phase + 0.005f;
         juce::Point<float> lightLocation {std::sin (phase) * 8.0f, std::cos (phase) * 8.0f};
-        for (int i = 0; i < 15; i++) 
+        
+        float transparencyNormal {0.7f};
+        if (numVoices > 0) { transparencyNormal = 0.7f / static_cast<float> (numVoices); }
+        transparency.setTargetValue (transparencyNormal);
+        float frameTransparency = transparency.getNextValue();
+        for (int i = 0; i < numVoices; i++) 
         {
             if (uniforms->projectionMatrix.get() != nullptr)
             {
@@ -234,7 +242,7 @@ public:
             }
             if (uniforms->lightPosition.get() != nullptr)
             {
-                uniforms->lightPosition->set (lightLocation.x, lightLocation.y, 2.0f); ERROR_CHECK();
+                uniforms->lightPosition->set (lightLocation.x, lightLocation.y, 16.0f); ERROR_CHECK();
             }
             //juce::ignoreUnused (color);
             if (uniforms->color.get() != nullptr)
@@ -242,7 +250,7 @@ public:
                 uniforms->color->set (color.getRed(), 
                                       color.getGreen(), 
                                       color.getBlue(), 
-                                      static_cast<int> (color.getAlpha() * intensity[i] * 0.2)); ERROR_CHECK();
+                                      static_cast<int> (color.getAlpha() * intensity[i] * frameTransparency)); ERROR_CHECK();
             }
             if (uniforms->terrainIndex.get() != nullptr)
             {
@@ -280,7 +288,7 @@ private:
     std::unique_ptr<Attributes>                attributes;
     PlaneMesh                                  mesh;
     float phase = 0.0f;
-
+    juce::SmoothedValue<float> transparency;
     bool loadShaders()
     {
         auto vert = juce::String(BinaryData::Terrain_vert);

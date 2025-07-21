@@ -70,6 +70,16 @@ struct MPEWatcher : private juce::ValueTree::Listener
     bool cControlled() const { return channelsData[2].isControlled; }
     bool dControlled() const { return channelsData[3].isControlled; }
     bool saturationControlled() const { return channelsData[4].isControlled; }
+    int getNumActiveVoices() const
+    {
+        auto voicesData = voiceData.getVoiceDataMT();
+        int numActiveVoices {0};
+        for (int i = 0; i < voicesData.size(); i++)
+            if(voicesData[i].voiceActive)
+                numActiveVoices++;
+        
+        return numActiveVoices;
+    }
     juce::Array<float> getArrayA() const
     {
         juce::Array<float> a;
@@ -373,7 +383,7 @@ private:
         {
             auto mpef = makeMPEFrame (mpeWatcher, parameterWatcher);
             if (mpef.isMPEControlled)
-                terrain->renderMultiple (camera, color, ubo.index, mpef.a, mpef.b, mpef.c, mpef.d, mpef.saturation, mpef.intensity);
+                terrain->renderMultiple (camera, color, ubo.index, mpef.a, mpef.b, mpef.c, mpef.d, mpef.saturation, mpef.intensity, mpef.numActiveVoices);
             else
                 terrain->render(camera, color, ubo.index, ubo.a, ubo.b, ubo.c, ubo.d, ubo.saturation);
         }
@@ -395,6 +405,7 @@ private:
         juce::Array<float> d;
         juce::Array<float> saturation;
         juce::Array<float> intensity;
+        int numActiveVoices {0};
     };
     
     static MPEFrame makeMPEFrame (const MPEWatcher& mpew, const ParameterWatcher& pw)
@@ -412,11 +423,13 @@ private:
         
         auto ubo = pw.getUBO();
 
-        frame.a.resize (15);
-        frame.b.resize (15);
-        frame.c.resize (15);
-        frame.d.resize (15);
-        frame.saturation.resize (15);
+        int numActiveVoices = mpew.getNumActiveVoices();
+        frame.numActiveVoices = numActiveVoices;
+        frame.a.resize (numActiveVoices);
+        frame.b.resize (numActiveVoices);
+        frame.c.resize (numActiveVoices);
+        frame.d.resize (numActiveVoices);
+        frame.saturation.resize (numActiveVoices);
  
         if (!mpew.aControlled()) frame.a.fill (ubo.a);
         else frame.a = mpew.getArrayA();

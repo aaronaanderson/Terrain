@@ -657,7 +657,9 @@ public:
             float outputSample = terrain.sampleAt (point, i);
             history.feedNext (point, outputSample);
             float smoothAmplitude = amplitude.getNextValue(); // set from scaled velocity
-            o[i] = outputSample * static_cast<float> (envelope.calculateNext()) * smoothAmplitude * voiceParameters.amplitude.getNext();
+            float env = static_cast<float> (envelope.calculateNext());
+            setRMS (env);
+            o[i] = outputSample * env * smoothAmplitude * voiceParameters.amplitude.getNext();
 
             phase = std::fmod (phase + (phaseIncrement.getNextValue() * pitchWheelIncrementScalar.getNextValue()),
                                juce::MathConstants<double>::twoPi);
@@ -683,7 +685,7 @@ public:
             ladderFilter.setResonance (voiceParameters.filterResonance.getNext());
             ladderFilter.process (context);
         }
-        setRMS (scratchBuffer.getRMSLevel (0, 0, scratchBuffer.getNumSamples()));
+        //setRMS (scratchBuffer.getRMSLevel (0, 0, scratchBuffer.getNumSamples()));
         // copy from scratch buffer, adding to incoming content
         for (int i = 0; i < numSamples; i++)
             outputBuffer.getWritePointer (0)[i + startSample] += scratchBuffer.getReadPointer (0)[i];

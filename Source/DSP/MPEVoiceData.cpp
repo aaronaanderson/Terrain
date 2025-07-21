@@ -51,6 +51,12 @@ void MPEVoiceData::publishAT()
     writeIndex.store(newWrite, std::memory_order_relaxed);
 }
 
+int MPEVoiceData::getSizeAT() const
+{
+    const int writeIdx = writeIndex.load(std::memory_order_relaxed);
+    return channelData[writeIdx].size();
+}
+
 juce::Array<ChannelData> MPEVoiceData::getVoiceDataMT()
 {
     const juce::ScopedLock lock(copyLock); // Not RT-safe

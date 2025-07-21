@@ -23,6 +23,7 @@ public:
     void setRMSAT (float rms, int channel);
     void setChannelDataAT (ChannelData cd, int channel);
     void publishAT(); // call this to update the message thread read data, at the end of the process block
+    int getSizeAT() const;
     // MESSAGE THREAD!!
     juce::Array<ChannelData> getVoiceDataMT();
 
