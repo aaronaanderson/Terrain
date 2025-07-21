@@ -87,6 +87,8 @@ struct MPEWatcher : private juce::ValueTree::Listener
         int index = 0;
         for (int i = 0; i < voicesData.size(); i++)
         {
+            if (!voicesData[i].voiceActive) { continue; }
+
             float x = 0;
             if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesData[i].pressure;
             if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesData[i].timbre;
@@ -104,6 +106,8 @@ struct MPEWatcher : private juce::ValueTree::Listener
         int index = 1;
         for (int i = 0; i < voicesData.size(); i++)
         {
+            if (!voicesData[i].voiceActive) { continue; }
+
             float x = 0;
             if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesData[i].pressure;
             if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesData[i].timbre;
@@ -121,7 +125,9 @@ struct MPEWatcher : private juce::ValueTree::Listener
         int index = 2;
         for (int i = 0; i < voicesData.size(); i++)
         {
-            float x = 0;
+            if (!voicesData[i].voiceActive) { continue; }
+         
+            float x = 0;   
             if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesData[i].pressure;
             if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesData[i].timbre;
             a.add (curveValue (x,
@@ -138,6 +144,8 @@ struct MPEWatcher : private juce::ValueTree::Listener
         int index = 3;
         for (int i = 0; i < voicesData.size(); i++)
         {
+            if (!voicesData[i].voiceActive) { continue; }
+
             float x = 0;
             if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesData[i].pressure;
             if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesData[i].timbre;
@@ -155,6 +163,8 @@ struct MPEWatcher : private juce::ValueTree::Listener
         int index = 4;
         for (int i = 0; i < voicesData.size(); i++)
         {
+            if (!voicesData[i].voiceActive) { continue; }
+            
             float x = 0;
             if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesData[i].pressure;
             if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesData[i].timbre;
@@ -172,7 +182,10 @@ struct MPEWatcher : private juce::ValueTree::Listener
         juce::Array<float> a;
         auto voicesData = voiceData.getVoiceDataMT();
         for (int i = 0; i < voicesData.size(); i++)
+        {
+            if (!voicesData[i].voiceActive) { continue; }
             a.add (voicesData[i].rms);   
+        }
 
         return a;
     }
