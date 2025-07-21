@@ -22,7 +22,8 @@ MainEditor::MainEditor (MainProcessor& p)
                                                          processorRef.getMPEWaveTerrainSynthesizer().getVoicesState());
     header = std::make_unique<ti::Header> (processorRef.getPresetManager(), 
                                            processorRef.getState().getChildWithName (id::PRESET_SETTINGS), 
-                                           ephemeralState.getState());
+                                           ephemeralState.getState(), 
+                                           processorRef.getMPEWaveTerrainSynthesizer());
 
     addAndMakeVisible (trajectoryPanel.get());
     addAndMakeVisible (terrainPanel.get());
@@ -100,7 +101,8 @@ void MainEditor::resetInterface()
                                                        processorRef.getMPEWaveTerrainSynthesizer().getVoicesState());
     header = std::make_unique<ti::Header> (processorRef.getPresetManager(), 
                                            processorRef.getState().getChildWithName (id::PRESET_SETTINGS), 
-                                           ephemeralState.getState());
+                                           ephemeralState.getState(), 
+                                           processorRef.getMPEWaveTerrainSynthesizer());
     centerConsole->setState (processorRef.getState().getChildWithName (id::PRESET_SETTINGS));
 
     addAndMakeVisible (trajectoryPanel.get());

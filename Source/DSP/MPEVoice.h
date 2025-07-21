@@ -42,7 +42,7 @@ public:
         trajectory.setTimbreSmoothing (mpeSettingsBranch.getProperty (id::timbreSmoothing));
     }
     ~MPEVoice() override { /*mpeSettingsBranch.removeListener (this);*/ }
-    // Voice Interface ===================================================
+
     const float* getRawData() const { return trajectory.getRawData(); }
     void prepareToPlay (double newRate, int blockSize) override 
     { 
@@ -56,7 +56,8 @@ public:
         settingsBranch = SettingsBranch;
     } 
     bool isVoiceCurrentlyActive() const { return isActive(); }
-    // MPESynthesiser Voice ===============================================
+
+    //Voice ===============================================
     void onNoteStart() override 
     {
         auto note = getCurrentlyPlayingNote();
@@ -73,38 +74,47 @@ public:
             {
                 auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel - 2));
                 channelState.setProperty (id::voiceActive, true, nullptr);
-                channelState.setProperty (id::voicePressure, note.pressure.asUnsignedFloat(), nullptr);
+                // channelState.setProperty (id::voicePressure, note.pressure.asUnsignedFloat(), nullptr);
                 channelState.setProperty (id::voiceTimbre, note.timbre.asUnsignedFloat(), nullptr);
             });
     }
     void onNoteStop (bool allowTailOff) override
     {
-        if (!allowTailOff) clearCurrentNote();
+        if (!allowTailOff) {
+            // TODO: IMMEDIATELY: remove the following from this thread. 
+            auto note = getCurrentlyPlayingNote();
+            auto channelState = voicesState.getChild (static_cast<int> (juce::jlimit (0, 15, note.midiChannel - 2)));
+            if (!channelState.isValid()) return;
+            //onNotePressureChanged();
+            channelState.setProperty (id::voicePressure, 0.0f, nullptr);
+            channelState.setProperty (id::voiceRMS, 0.0f, nullptr);
+            channelState.setProperty (id::voiceActive, false, nullptr);
+            clearCurrentNote();
+        } 
+
         trajectory.stopNote(); 
 
+        // TODO: IMMEDIATELY: remove the following from this thread. 
         auto note = getCurrentlyPlayingNote();
         auto channelState = voicesState.getChild (static_cast<int> (juce::jlimit (0, 15, note.midiChannel - 2)));
-
-        juce::MessageManager::callAsync([this, note]() 
-            {
-                auto chState = voicesState.getChild (static_cast<int> (note.midiChannel - 2));
-                if (!chState.isValid()) return;
-                chState.setProperty (id::voiceRMS, 0.0f, nullptr);
-                chState.setProperty (id::voiceActive, false, nullptr);
-            });
+        if (!channelState.isValid()) return;
+        channelState.setProperty (id::voiceRMS, 0.0f, nullptr);
+        channelState.setProperty (id::voiceActive, false, nullptr);
+        
     }
     
     void onNotePressureChanged() override 
     {
-        auto note = getCurrentlyPlayingNote();
+        auto note = getCurrentlyPlayingNote(); 
         pressure = note.pressure.asUnsignedFloat();
         terrain.setPressure (pressure);
         trajectory.setPressure (pressure);
         previousPressure = pressure;
-
-        juce::MessageManager::callAsync([this, note]() 
+        auto stateCopy = voicesState.createCopy();
+        juce::MessageManager::callAsync([this, note, stateCopy]() 
             {
                 auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel - 2));
+                if( !channelState.isValid()) { return; }
                 channelState.setProperty (id::voicePressure, pressure, nullptr);
             });
     }
@@ -129,11 +139,18 @@ public:
 
         juce::MessageManager::callAsync([this, note]() 
             {
-                auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel - 2));
+                auto channelState = voicesState.getChild (static_cast<int> ( juce::jlimit (0, 15, note.midiChannel - 2)));
                 channelState.setProperty (id::voiceTimbre, timbre, nullptr);
             });
     }
     void onNoteKeyStateChanged() override {}
+    void onAllocation (int maxBlockSize) override
+    { 
+        trajectory.allocate (maxBlockSize);
+        terrain.allocate (maxBlockSize); 
+    }
+    void panic() override { onNoteStop (false); }
+    
     void renderNextBlock (juce::AudioBuffer<float>& outputBuffer,
                           int startSample,
                           int numSamples) override
@@ -146,11 +163,7 @@ public:
         }
     }
     void setCurrentSampleRate (double newRate) override { trajectory.setCurrentPlaybackSampleRate (newRate); }
-    void allocate (int maxBlockSize) 
-    { 
-        trajectory.allocate (maxBlockSize);
-        terrain.allocate (maxBlockSize); 
-    }
+
     void updateParameterBuffers() { terrain.updateParameterBuffers(); }
     float getPressure() { return pressure; }
     float getTimbre() { return timbre; }

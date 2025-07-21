@@ -6,6 +6,7 @@
 #include "Panel.h"
 #include "../Utility/Identifiers.h"
 #include "../Utility/PresetManager.h"
+#include "../DSP/WaveTerrainSynthesizerMPE.h"
 
 namespace ti{
 class PresetComponent : public Panel
@@ -415,48 +416,45 @@ private:
         }
     }
 };
-// class MPEComponent : public Panel
-// {
-// public:
-//     MPEComponent (juce::ValueTree settingsBranch)
-//       : Panel ("MPE"),
-//         settings (settingsBranch)
-//     {
-//         mpeEnableToggle.onStateChange = [&]()
-//             {
-//                 settings.setProperty (id::mpeEnabled, 
-//                                       mpeEnableToggle.getToggleState(), 
-//                                       nullptr);
-//             };
-//         mpeEnableToggle.setToggleState (settings.getProperty (id::mpeEnabled), 
-//                                         juce::sendNotification);
-//         addAndMakeVisible (mpeEnableToggle);
-//     }
-//     void resized() override
-//     {
-//         Panel::resized();
-//         auto b = getAdjustedBounds();
-//         juce::Rectangle<int> r = {0, 0, 22, 80};
-//         mpeEnableToggle.setBounds (r.withCentre (b.getCentre()));
-//     }
-// private:
-//     juce::ValueTree settings;
-//     juce::ToggleButton mpeEnableToggle;
-// };
+class PanicComponent : public Panel
+{
+public:
+    PanicComponent (juce::ValueTree settingsBranch, tp::WaveTerrainSynthesizerMPE& synth)
+      : Panel ("PANIC!"),
+        settings (settingsBranch)
+    {
+        panicButton.onClick = [&]()
+            {
+                synth.panic();
+            };
+        addAndMakeVisible (panicButton);
+    }
+    void resized() override
+    {
+        Panel::resized();
+        auto b = getAdjustedBounds();
+        juce::Rectangle<int> r = {0, 0, 80, 22};
+        panicButton.setBounds (r.withCentre (b.getCentre()));
+    }
+private:
+    juce::ValueTree settings;
+    juce::TextButton panicButton {"Panic!", "PANIC!"};
+};
 class Header : public juce::Component
 {
 public:
     Header (PresetManager& pm, 
             juce::ValueTree settingsBranch,
-            juce::ValueTree ephemeralState)
+            juce::ValueTree ephemeralState,
+            tp::WaveTerrainSynthesizerMPE& synth)
       : mtsComponent (settingsBranch, ephemeralState),
         presetComponent (pm, settingsBranch), 
-        // mpeComponent (settingsBranch),
+        panicComponent (settingsBranch, synth),
         pitchBendComponent (settingsBranch)
     {
         addAndMakeVisible (mtsComponent);
         addAndMakeVisible (presetComponent);
-        // addAndMakeVisible (mpeComponent);
+        addAndMakeVisible (panicComponent);
         addAndMakeVisible (pitchBendComponent);
     }
     void resized() override
@@ -467,14 +465,14 @@ public:
         mtsComponent.setBounds (b.removeFromLeft (oneThird));
         presetComponent.setBounds (b.removeFromLeft (oneThird));
 
-        auto remainingThird = oneThird / 3; b.removeFromLeft (remainingThird);
-        // mpeComponent.setBounds (b.removeFromLeft (remainingThird));
+        auto remainingThird = oneThird / 3;
+        panicComponent.setBounds (b.removeFromLeft (remainingThird));
         pitchBendComponent.setBounds (b);                                                 
     }
 private:
     MTSComponent mtsComponent;
     PresetComponent presetComponent;
-    // MPEComponent mpeComponent;
+    PanicComponent panicComponent;
     PitchBendComponent pitchBendComponent;
 };
 } // end namespace ti
