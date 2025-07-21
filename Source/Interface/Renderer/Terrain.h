@@ -232,7 +232,6 @@ public:
         float frameTransparency = transparency.getNextValue();
         for (int i = 0; i < numVoices; i++) 
         {
-            if(i==0){std::cout<<(juce::String(intensity[i]))<<std::endl;}
             if (uniforms->projectionMatrix.get() != nullptr)
             {
                 uniforms->projectionMatrix->setMatrix4 (&camera.getProjectionMatrix()[0][0], 1, false); ERROR_CHECK();
