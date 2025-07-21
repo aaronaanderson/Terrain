@@ -158,3 +158,5 @@ Thank you to my professors John Thompson and Karl Yerkes for their endless patie
 Thank you to Rodney DuPlessis for helping me with the Linux build and for being an all-around good friend: [rodneyduplessis.com](https://rodneyduplessis.com/)
 
 Thank you to Jacky Ligon for testing the MTS-ESP build and encouraging me with their great music: [jackyligon.com](https://jackyligon.com/)
+
+Special thanks to the [Dawesome Village Discord](https://discord.com/invite/7t84hnqJxc). Visit this site to stay up to day on exciting Dawsome news, and to have conversations about Terrain!
