@@ -279,7 +279,6 @@ public:
         //waveTerrainSynthesizerStandard (wts), 
         waveTerrainSynthesizerMPE (wtsmpe), 
         settings (settingsBranch),
-        voiceData (vd),
         mpeWatcher (vd, apvts),
         useMPE (settings, id::mpeEnabled, nullptr)
     {
@@ -346,7 +345,6 @@ private:
     tp::WaveTerrainSynthesizerMPE& waveTerrainSynthesizerMPE;
 
     juce::ValueTree settings;
-    tp::MPEVoiceData& voiceData;
     MPEWatcher mpeWatcher;
     juce::ValueTree mpeRouting;
     juce::CachedValue<bool> useMPE;

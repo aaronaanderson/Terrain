@@ -22,13 +22,12 @@ public:
              juce::ValueTree& MPESettings,
              MTSClient& mtsc, 
              juce::AudioProcessorValueTreeState& vts, 
-             MPEVoiceData& voiceData)
+             MPEVoiceData& vd)
       : terrain (p, vts, SettingsBranch.getChildWithName (id::MPE_ROUTING)),
-        voiceData (voiceData),
-        trajectory (terrain, p, SettingsBranch, mtsc, vts, voiceData), 
+        trajectory (terrain, p, SettingsBranch, mtsc, vts, vd), 
         routingBranch (SettingsBranch.getChildWithName (id::MPE_ROUTING)), 
         mpeSettingsBranch (MPESettings), 
-        mtsClient (mtsc),
+        voiceData (vd),
         releaseSensitivity (mpeSettingsBranch, id::releaseSensitivity, nullptr),
         pitchBendEnabled (mpeSettingsBranch, id::pitchBendEnabled, nullptr),
         divisionOfOctave (mpeSettingsBranch, id::pitchBendDivisionOfOctave, nullptr)
@@ -124,12 +123,12 @@ public:
         voiceData.setTimbreAT( timbre, note.midiChannel);
     }
     void onNoteKeyStateChanged() override {}
-    void onAllocation (int maxBlockSize) override
+    void onAllocation (int maxBlockSize)
     { 
         trajectory.allocate (maxBlockSize);
         terrain.allocate (maxBlockSize); 
     }
-    void panic() override { onNoteStop (false); }
+    void panic() { onNoteStop (false); }
     
     void renderNextBlock (juce::AudioBuffer<float>& outputBuffer,
                           int startSample,
@@ -156,18 +155,18 @@ private:
     juce::ValueTree& mpeSettingsBranch;
     MPEVoiceData& voiceData;
     juce::ValueTree settingsBranch;
-    MTSClient& mtsClient;
-    float pressure {0.0f};
-    float timbre {0.0f};
-    float rms {0.0f};
+    // MTSClient& mtsClient;
+    // float pressure {0.0f};
+    // float timbre {0.0f};
+    // float rms {0.0f};
     juce::CachedValue<float> releaseSensitivity;
     juce::CachedValue<bool> pitchBendEnabled;
     juce::CachedValue<int> divisionOfOctave;
     float previousPressure = 0.0f;
-    double initialNote;
+    // double initialNote;
 
-    float currentPitchWheel = 0.0f;
-    double globalPitchBendSemitones = 0.0f;
+    // float currentPitchWheel = 0.0f;
+    // double globalPitchBendSemitones = 0.0f;
     void valueTreePropertyChanged (juce::ValueTree& tree,
                                    const juce::Identifier& property) override
     {
