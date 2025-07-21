@@ -17,9 +17,11 @@ public:
                                MTSClient& mtsc, 
                                juce::ValueTree settings, 
                                juce::ValueTree& MPESettings,
-                               juce::AudioProcessorValueTreeState& vts)
+                               juce::AudioProcessorValueTreeState& vts, 
+                               MPEVoiceData& vd)
+        : voiceData (vd)
     {
-        setPolyphony (15, p, settings, MPESettings, mtsc, vts);
+        setPolyphony (15, p, settings, MPESettings, mtsc, vts, vd);
     }
     ~WaveTerrainSynthesizerMPE() override {}
 
@@ -46,22 +48,37 @@ public:
         }        
     }
 
-    juce::ValueTree getVoicesState() { return voicesState; }
+    void updateVoiceData()
+    {
+        for (int i = 0; i < getNumVoices(); i++)
+        {
+            auto voice = dynamic_cast<MPEVoice*> (getVoice (i));
+            if (voice->isActive())
+            {
+                tp::ChannelData cd {voice->getPressure(), voice->getTimbre(), true, voice->getRMS()};
+                voiceData.setChannelDataAT ( cd, i);
+            } else {
+                tp::ChannelData cd {0.0f, 0.0f, false, 0.0f};
+                voiceData.setChannelDataAT ( cd, i);
+            }
+        }
+    }
 
 private:
-    juce::ValueTree voicesState = VoicesStateTree::create();
+    tp::MPEVoiceData& voiceData;
     void setPolyphony (int numVoices, 
                        Parameters& p, 
                        juce::ValueTree settingsBranch, 
                        juce::ValueTree& MPESettings,
                        MTSClient& mtsc, 
-                       juce::AudioProcessorValueTreeState& vts)
+                       juce::AudioProcessorValueTreeState& vts, 
+                       MPEVoiceData& vd)
     {
         jassert (numVoices > 0);
         clearVoices();
         for (int i = 0; i < numVoices; i++)
         {
-            MPEVoice* voice = new MPEVoice (p, settingsBranch, MPESettings, mtsc, vts, voicesState);
+            MPEVoice* voice = new MPEVoice (p, settingsBranch, MPESettings, mtsc, vts, vd);
             addVoice (voice);
         }
 

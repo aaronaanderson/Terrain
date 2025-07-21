@@ -9,6 +9,8 @@
 
 #include "morphlib/Voice.h"
 #include "morphlib/Synthesizer.h"
+
+#include "MPEVoiceData.h"
 namespace tp
 {
 class MPEVoice : public morph::Voice,
@@ -20,10 +22,10 @@ public:
              juce::ValueTree& MPESettings,
              MTSClient& mtsc, 
              juce::AudioProcessorValueTreeState& vts, 
-             juce::ValueTree voicesStateTree)
+             MPEVoiceData& voiceData)
       : terrain (p, vts, SettingsBranch.getChildWithName (id::MPE_ROUTING)),
-        voicesState (voicesStateTree),
-        trajectory (terrain, p, SettingsBranch, mtsc, vts, voicesState), 
+        voiceData (voiceData),
+        trajectory (terrain, p, SettingsBranch, mtsc, vts, voiceData), 
         routingBranch (SettingsBranch.getChildWithName (id::MPE_ROUTING)), 
         mpeSettingsBranch (MPESettings), 
         mtsClient (mtsc),
@@ -70,37 +72,25 @@ public:
                               note.timbre.asUnsignedFloat(), 
                               note.midiChannel);
 
-        juce::MessageManager::callAsync([this, note]() 
-            {
-                auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel - 2));
-                channelState.setProperty (id::voiceActive, true, nullptr);
-                // channelState.setProperty (id::voicePressure, note.pressure.asUnsignedFloat(), nullptr);
-                channelState.setProperty (id::voiceTimbre, note.timbre.asUnsignedFloat(), nullptr);
-            });
+        voiceData.setVoiceActiveAT (true, note.midiChannel);
+        voiceData.setPressureAT (note.pressure.asUnsignedFloat(), note.midiChannel);
+        voiceData.setTimbreAT (note.timbre.asUnsignedFloat(), note.midiChannel);
     }
     void onNoteStop (bool allowTailOff) override
     {
         if (!allowTailOff) {
-            // TODO: IMMEDIATELY: remove the following from this thread. 
             auto note = getCurrentlyPlayingNote();
-            auto channelState = voicesState.getChild (static_cast<int> (juce::jlimit (0, 15, note.midiChannel - 2)));
-            if (!channelState.isValid()) return;
-            //onNotePressureChanged();
-            channelState.setProperty (id::voicePressure, 0.0f, nullptr);
-            channelState.setProperty (id::voiceRMS, 0.0f, nullptr);
-            channelState.setProperty (id::voiceActive, false, nullptr);
+            voiceData.setPressureAT (0.0f, note.midiChannel);
+            voiceData.setRMSAT (0.0f, note.midiChannel);
+            voiceData.setVoiceActiveAT (false, note.midiChannel);
             clearCurrentNote();
         } 
 
         trajectory.stopNote(); 
 
-        // TODO: IMMEDIATELY: remove the following from this thread. 
         auto note = getCurrentlyPlayingNote();
-        auto channelState = voicesState.getChild (static_cast<int> (juce::jlimit (0, 15, note.midiChannel - 2)));
-        if (!channelState.isValid()) return;
-        channelState.setProperty (id::voiceRMS, 0.0f, nullptr);
-        channelState.setProperty (id::voiceActive, false, nullptr);
-        
+        voiceData.setVoiceActiveAT (false, note.midiChannel);
+        voiceData.setRMSAT( 0.0f, note.midiChannel );
     }
     
     void onNotePressureChanged() override 
@@ -110,13 +100,7 @@ public:
         terrain.setPressure (pressure);
         trajectory.setPressure (pressure);
         previousPressure = pressure;
-        auto stateCopy = voicesState.createCopy();
-        juce::MessageManager::callAsync([this, note, stateCopy]() 
-            {
-                auto channelState = voicesState.getChild (static_cast<int> (note.midiChannel - 2));
-                if( !channelState.isValid()) { return; }
-                channelState.setProperty (id::voicePressure, pressure, nullptr);
-            });
+        voiceData.setPressureAT( pressure, note.midiChannel);
     }
     void onNotePitchbendChanged() override {}
     void onPitchWheelChanged() override
@@ -137,11 +121,7 @@ public:
         terrain.setTimbre (timbre);
         trajectory.setTimbre (timbre);
 
-        juce::MessageManager::callAsync([this, note]() 
-            {
-                auto channelState = voicesState.getChild (static_cast<int> ( juce::jlimit (0, 15, note.midiChannel - 2)));
-                channelState.setProperty (id::voiceTimbre, timbre, nullptr);
-            });
+        voiceData.setTimbreAT( timbre, note.midiChannel);
     }
     void onNoteKeyStateChanged() override {}
     void onAllocation (int maxBlockSize) override
@@ -167,17 +147,19 @@ public:
     void updateParameterBuffers() { terrain.updateParameterBuffers(); }
     float getPressure() { return pressure; }
     float getTimbre() { return timbre; }
+    float getRMS() { return trajectory.getRMS(); }
 private:
     MPETerrain    terrain;
-    juce::ValueTree voicesState;
+    // juce::ValueTree voicesState;
     MPETrajectory trajectory;
     juce::ValueTree routingBranch;
     juce::ValueTree& mpeSettingsBranch;
+    MPEVoiceData& voiceData;
     juce::ValueTree settingsBranch;
     MTSClient& mtsClient;
-    float pressure = 0.0f;
-    float timbre = 0.0f;
-
+    float pressure {0.0f};
+    float timbre {0.0f};
+    float rms {0.0f};
     juce::CachedValue<float> releaseSensitivity;
     juce::CachedValue<bool> pitchBendEnabled;
     juce::CachedValue<int> divisionOfOctave;

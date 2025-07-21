@@ -34,12 +34,12 @@ MainProcessor::MainProcessor()
     valueTreeState.state.addChild (SettingsTree::create(), -1, nullptr);
     presetManager = std::make_unique<PresetManager> (this, valueTreeState.state);
 
-    //standardSynthesizer = std::make_unique<tp::WaveTerrainSynthesizerStandard> (parameters, *mtsClient, valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
     mpeSynthesizer = std::make_unique<tp::WaveTerrainSynthesizerMPE> (parameters, 
                                                                       *mtsClient, 
                                                                       valueTreeState.state.getChildWithName (id::PRESET_SETTINGS),
                                                                       mpeSettings,
-                                                                      valueTreeState);
+                                                                      valueTreeState, 
+                                                                      voiceData);
     outputChain.reset();
     
     mpeOn.store (valueTreeState.state.getChildWithName (id::PRESET_SETTINGS).getProperty (id::mpeEnabled));
@@ -149,6 +149,9 @@ void MainProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         buffer.copyFrom (c, 0, renderBuffer.getReadPointer (0), buffer.getNumSamples());
     
     renderBuffer.clear();
+
+    mpeSynthesizer->updateVoiceData();
+    voiceData.publishAT();
 }
 //==============================================================================
 bool MainProcessor::hasEditor() const { return true; }

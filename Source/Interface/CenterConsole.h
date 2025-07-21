@@ -5,6 +5,8 @@
 #include "../Parameters.h"
 #include "LookAndFeel.h"
 #include "../Utility/Identifiers.h"
+
+#include "../DSP/MPEVoiceData.h"
 namespace ti
 {
 class SpecialTabComponent : public juce::TabbedComponent
@@ -30,9 +32,9 @@ public:
                    juce::ValueTree settingsBranch, 
                    juce::AudioProcessorValueTreeState& apvts, 
                    juce::ValueTree& mpeSettings, 
-                   juce::ValueTree voicesState)
+                   tp::MPEVoiceData& vd)
       :  juce::TabbedComponent (juce::TabbedButtonBar::Orientation::TabsAtTop),
-         visualizer (wtsmpe, p, settingsBranch, voicesState, apvts),
+         visualizer (wtsmpe, p, settingsBranch, vd, apvts),
          settingsComponent (settingsBranch, apvts, mpeSettings)
     { 
         auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());

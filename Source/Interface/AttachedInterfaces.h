@@ -7,6 +7,8 @@
 #include "SettingsComponent.h"
 #include "VoicesMeter.h"
 
+#include "../DSP/MPEVoiceData.h"
+
 typedef juce::AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
 typedef juce::AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
 typedef juce::AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
@@ -73,8 +75,8 @@ struct ParameterSlider : public juce::Component,
     ParameterSlider (juce::String labelText, 
                      const juce::String pID, 
                      juce::AudioProcessorValueTreeState& vts,
-                     juce::ValueTree voicesState = juce::ValueTree())
-      : voicesMeter (voicesState, vts.state.getChildWithName (id::PRESET_SETTINGS).getChildWithName (id::MPE_ROUTING)),
+                     tp::MPEVoiceData& voiceData)
+      : voicesMeter (voiceData, vts.state.getChildWithName (id::PRESET_SETTINGS).getChildWithName (id::MPE_ROUTING)),
         paramID (pID), 
         valueTreeState (vts)
     {

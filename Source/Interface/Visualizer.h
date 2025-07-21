@@ -55,9 +55,9 @@ private:
 };
 struct MPEWatcher : private juce::ValueTree::Listener
 {
-    MPEWatcher (juce::ValueTree mpeVoices, 
+    MPEWatcher (tp::MPEVoiceData& vd, 
                 juce::AudioProcessorValueTreeState& apvts)
-      : voicesState (mpeVoices), 
+      : voiceData (vd), 
         valueTreeState (apvts)
     {
         checkIfControlled();
@@ -73,12 +73,13 @@ struct MPEWatcher : private juce::ValueTree::Listener
     juce::Array<float> getArrayA() const
     {
         juce::Array<float> a;
+        auto voicesData = voiceData.getVoiceDataMT();
         int index = 0;
-        for (int i = 0; i < voicesState.getNumChildren(); i++)
+        for (int i = 0; i < voicesData.size(); i++)
         {
             float x = 0;
-            if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesState.getChild (i).getProperty (id::voicePressure);
-            if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesState.getChild (i).getProperty (id::voiceTimbre);
+            if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesData[i].pressure;
+            if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesData[i].timbre;
             a.add (curveValue (x,
                                (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::curve),
                                (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::handleOne),
@@ -89,12 +90,13 @@ struct MPEWatcher : private juce::ValueTree::Listener
     juce::Array<float> getArrayB() const
     {
         juce::Array<float> a;
+        auto voicesData = voiceData.getVoiceDataMT();
         int index = 1;
-        for (int i = 0; i < voicesState.getNumChildren(); i++)
+        for (int i = 0; i < voicesData.size(); i++)
         {
             float x = 0;
-            if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesState.getChild (i).getProperty (id::voicePressure);
-            if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesState.getChild (i).getProperty (id::voiceTimbre);
+            if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesData[i].pressure;
+            if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesData[i].timbre;
             a.add (curveValue (x,
                                (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::curve),
                                (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::handleOne),
@@ -105,12 +107,13 @@ struct MPEWatcher : private juce::ValueTree::Listener
     juce::Array<float> getArrayC() const
     {
         juce::Array<float> a;
+        auto voicesData = voiceData.getVoiceDataMT();
         int index = 2;
-        for (int i = 0; i < voicesState.getNumChildren(); i++)
+        for (int i = 0; i < voicesData.size(); i++)
         {
             float x = 0;
-            if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesState.getChild (i).getProperty (id::voicePressure);
-            if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesState.getChild (i).getProperty (id::voiceTimbre);
+            if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesData[i].pressure;
+            if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesData[i].timbre;
             a.add (curveValue (x,
                                (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::curve),
                                (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::handleOne),
@@ -121,12 +124,13 @@ struct MPEWatcher : private juce::ValueTree::Listener
     juce::Array<float> getArrayD() const
     {
         juce::Array<float> a;
+        auto voicesData = voiceData.getVoiceDataMT();
         int index = 3;
-        for (int i = 0; i < voicesState.getNumChildren(); i++)
+        for (int i = 0; i < voicesData.size(); i++)
         {
             float x = 0;
-            if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesState.getChild (i).getProperty (id::voicePressure);
-            if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesState.getChild (i).getProperty (id::voiceTimbre);
+            if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesData[i].pressure;
+            if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesData[i].timbre;
             a.add (curveValue (x,
                                (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::curve),
                                (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::handleOne),
@@ -137,12 +141,13 @@ struct MPEWatcher : private juce::ValueTree::Listener
     juce::Array<float> getArraySaturation() const
     {
         juce::Array<float> a;
+        auto voicesData = voiceData.getVoiceDataMT();
         int index = 4;
-        for (int i = 0; i < voicesState.getNumChildren(); i++)
+        for (int i = 0; i < voicesData.size(); i++)
         {
             float x = 0;
-            if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesState.getChild (i).getProperty (id::voicePressure);
-            if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesState.getChild (i).getProperty (id::voiceTimbre);
+            if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesData[i].pressure;
+            if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesData[i].timbre;
             auto cv = curveValue (x,
                                (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::curve),
                                (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::handleOne),
@@ -155,15 +160,15 @@ struct MPEWatcher : private juce::ValueTree::Listener
     juce::Array<float> getArrayIntensity() const 
     {
         juce::Array<float> a;
-        
-        for (int i = 0; i < voicesState.getNumChildren(); i++)
-            a.add ((float)voicesState.getChild (i).getProperty (id::voiceRMS));   
+        auto voicesData = voiceData.getVoiceDataMT();
+        for (int i = 0; i < voicesData.size(); i++)
+            a.add (voicesData[i].rms);   
 
         return a;
     }
 private:
     juce::ValueTree routingBranch;
-    juce::ValueTree voicesState;
+    tp::MPEVoiceData& voiceData;
     juce::AudioProcessorValueTreeState& valueTreeState;
 
     struct ChannelData
@@ -257,15 +262,15 @@ public:
                 tp::WaveTerrainSynthesizerMPE& wtsmpe, 
                 tp::Parameters parameters, 
                 juce::ValueTree settingsBranch, 
-                juce::ValueTree voicesStateBranch, 
+                tp::MPEVoiceData& vd, 
                 juce::AudioProcessorValueTreeState& apvts)
       : camera (mutex), 
         parameterWatcher (parameters), 
         //waveTerrainSynthesizerStandard (wts), 
         waveTerrainSynthesizerMPE (wtsmpe), 
         settings (settingsBranch),
-        voicesState (voicesStateBranch),
-        mpeWatcher (voicesStateBranch, apvts),
+        voiceData (vd),
+        mpeWatcher (vd, apvts),
         useMPE (settings, id::mpeEnabled, nullptr)
     {
         jassert (settings.isValid());
@@ -331,7 +336,7 @@ private:
     tp::WaveTerrainSynthesizerMPE& waveTerrainSynthesizerMPE;
 
     juce::ValueTree settings;
-    juce::ValueTree voicesState;
+    tp::MPEVoiceData& voiceData;
     MPEWatcher mpeWatcher;
     juce::ValueTree mpeRouting;
     juce::CachedValue<bool> useMPE;

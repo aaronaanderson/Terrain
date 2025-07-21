@@ -9,6 +9,7 @@
 #include "Utility/Presets.h"
 
 #include "DSP/WaveTerrainSynthesizerMPE.h"
+#include "DSP/MPEVoiceData.h"
 //==============================================================================
 class MainProcessor  : public juce::AudioProcessor, 
                        private juce::ValueTree::Listener
@@ -55,6 +56,7 @@ public:
     bool getMTSConnectionStatus() { return MTS_HasMaster (mtsClient); }
     juce::String getTuningSystemName() { return MTS_GetScaleName (mtsClient); }
     juce::ValueTree& getMPESettings() { return mpeSettings; }
+    tp::MPEVoiceData& getVoiceData() { return voiceData; }
 private:
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     juce::AudioProcessorValueTreeState valueTreeState;
@@ -78,6 +80,7 @@ private:
     void prepareOversampling (int bufferSize);
     juce::ValueTree verifiedSettings (juce::ValueTree);
     juce::ValueTree mpeSettings;
+    tp::MPEVoiceData voiceData;
     void loadMPESettings();
     void saveMPESettings();
     void valueTreePropertyChanged (juce::ValueTree& tree, 

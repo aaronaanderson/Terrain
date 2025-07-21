@@ -55,7 +55,8 @@ set_target_properties(glm_module PROPERTIES
 target_sources(WaveTerrainSynth
     PRIVATE
         Source/MainEditor.cpp
-        Source/MainProcessor.cpp)
+        Source/MainProcessor.cpp
+        Source/DSP/MPEVoiceData.cpp)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON) #necessary for GCC linking
 add_library(MTS-ESP STATIC MTS-ESP/Client/libMTSClient.cpp)

@@ -8,6 +8,7 @@
 #include "ADSR.h"
 #include "Terrain.h"
 
+#include "MPEVoiceData.h"
 namespace tp{
 static float distance (const Point a, const Point b)
 {
@@ -561,10 +562,10 @@ public:
                    juce::ValueTree settingsBranch, 
                    MTSClient& mtsc,
                    juce::AudioProcessorValueTreeState& vts, 
-                   juce::ValueTree voicesStateBranch)
+                   MPEVoiceData& vd)
       : Trajectory (t, settingsBranch, mtsc),
         mpeRouting (settingsBranch.getChildWithName (id::MPE_ROUTING)),
-        voicesState (voicesStateBranch),
+        voiceData (vd),
         voiceParameters (p, vts, mpeRouting)
     {
         jassert (mpeRouting.getType() == id::MPE_ROUTING);
@@ -607,7 +608,7 @@ public:
         envelope.noteOn();
         voiceParameters.noteOn (pressure, timbre);
         feedbackBuffer.fill (Point(0.0f, 0.0f));
-        rmsUpdater = std::make_unique<RMSUpdater> (voicesState, midiChannel, currentRMS);
+        rmsUpdater = std::make_unique<RMSUpdater> (voiceData, midiChannel, currentRMS);
         rmsUpdater->startTimerHz (24);
     }
     void stopNote() override
@@ -616,6 +617,7 @@ public:
             rmsUpdater->stopTimer();
         Trajectory::stopNote();
     }
+
     void renderNextBlock (juce::AudioBuffer<float>& outputBuffer, 
                           int startSample, int numSamples) override
     {
@@ -705,6 +707,7 @@ public:
         renderBuffer.setSize (1, maximumSamplesPerBlock); 
         renderBuffer.clear (0, maximumSamplesPerBlock);
     }
+    float getRMS() { return currentRMS; }
 
 private:
     juce::ValueTree mpeRouting;
@@ -715,7 +718,7 @@ private:
     
     juce::SmoothedValue<float> smoothRMS {0.0f};
 
-    juce::ValueTree voicesState;
+    MPEVoiceData& voiceData;
     int midiChannel;
     struct VoiceParameters
     {
@@ -949,24 +952,29 @@ private:
     class RMSUpdater : public juce::Timer
     {
     public:
-        RMSUpdater (juce::ValueTree& tree, int channel, std::atomic<float>& rms)
-          : voicesState (tree), midiChannel (channel), currentRMS (rms)
+        RMSUpdater (MPEVoiceData& vd, int channel, std::atomic<float>& rms)
+          : voiceData (vd), midiChannel (channel), currentRMS (rms)
         {
-            smoothRMS.reset (50);
+            smoothRMS.reset (20);
         }
         void timerCallback() override
         {
-            if (voicesState.getChild (midiChannel - 2).isValid())
-            {
-                auto channelState = voicesState.getChild (midiChannel - 2);
-                smoothRMS.setTargetValue (currentRMS.load());
-                float adjustedRMS = juce::jlimit(0.0f, 1.0f, 
-                    juce::jmap(smoothRMS.getNextValue(), 0.0f, 0.5f, 0.0f, 2.0f));
-                channelState.setProperty(id::voiceRMS, adjustedRMS, nullptr);
-            }
+            float adjustedRMS = juce::jlimit(0.0f, 1.0f, 
+                juce::jmap(smoothRMS.getNextValue(), 0.0f, 0.5f, 0.0f, 2.0f));
+            smoothRMS.setTargetValue (currentRMS.load());
+            voiceData.setRMSAT (adjustedRMS, midiChannel - 2);
+            // if (voicesState.getChild (midiChannel - 2).isValid())
+            // {
+            //     auto channelState = voicesState.getChild (midiChannel - 2);
+            //     smoothRMS.setTargetValue (currentRMS.load());
+            //     float adjustedRMS = juce::jlimit(0.0f, 1.0f, 
+            //         juce::jmap(smoothRMS.getNextValue(), 0.0f, 0.5f, 0.0f, 2.0f));
+            //     channelState.setProperty(id::voiceRMS, adjustedRMS, nullptr);
+            // }
         }
     private:
-        juce::ValueTree voicesState;
+        // juce::ValueTree voicesState;
+        MPEVoiceData& voiceData;
         int midiChannel;
         std::atomic<float>& currentRMS;
         juce::SmoothedValue<float> smoothRMS {0.0f};
