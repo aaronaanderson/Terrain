@@ -7,7 +7,6 @@
 #include "Renderer/Terrain.h"
 #include "Renderer/Trajectories.h"
 #include "../Parameters.h"
-#include "../DSP/WaveTerrainSynthesizer.h"
 struct UBO
 {
     int index;
@@ -56,9 +55,9 @@ private:
 };
 struct MPEWatcher : private juce::ValueTree::Listener
 {
-    MPEWatcher (juce::ValueTree mpeVoices, 
+    MPEWatcher (tp::MPEVoiceData& vd, 
                 juce::AudioProcessorValueTreeState& apvts)
-      : voicesState (mpeVoices), 
+      : voiceData (vd), 
         valueTreeState (apvts)
     {
         checkIfControlled();
@@ -71,15 +70,26 @@ struct MPEWatcher : private juce::ValueTree::Listener
     bool cControlled() const { return channelsData[2].isControlled; }
     bool dControlled() const { return channelsData[3].isControlled; }
     bool saturationControlled() const { return channelsData[4].isControlled; }
+    int getNumActiveVoices() const
+    {
+        auto voicesData = voiceData.getVoiceDataMT();
+        int numActiveVoices {0};
+        for (int i = 0; i < voicesData.size(); i++)
+            if(voicesData[i].voiceActive)
+                numActiveVoices++;
+        
+        return numActiveVoices;
+    }
     juce::Array<float> getArrayA() const
     {
         juce::Array<float> a;
+        auto voicesData = voiceData.getVoiceDataMT();
         int index = 0;
-        for (int i = 0; i < voicesState.getNumChildren(); i++)
+        for (int i = 0; i < voicesData.size(); i++)
         {
             float x = 0;
-            if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesState.getChild (i).getProperty (id::voicePressure);
-            if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesState.getChild (i).getProperty (id::voiceTimbre);
+            if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesData[i].pressure;
+            if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesData[i].timbre;
             a.add (curveValue (x,
                                (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::curve),
                                (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::handleOne),
@@ -90,12 +100,13 @@ struct MPEWatcher : private juce::ValueTree::Listener
     juce::Array<float> getArrayB() const
     {
         juce::Array<float> a;
+        auto voicesData = voiceData.getVoiceDataMT();
         int index = 1;
-        for (int i = 0; i < voicesState.getNumChildren(); i++)
+        for (int i = 0; i < voicesData.size(); i++)
         {
             float x = 0;
-            if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesState.getChild (i).getProperty (id::voicePressure);
-            if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesState.getChild (i).getProperty (id::voiceTimbre);
+            if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesData[i].pressure;
+            if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesData[i].timbre;
             a.add (curveValue (x,
                                (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::curve),
                                (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::handleOne),
@@ -106,12 +117,13 @@ struct MPEWatcher : private juce::ValueTree::Listener
     juce::Array<float> getArrayC() const
     {
         juce::Array<float> a;
+        auto voicesData = voiceData.getVoiceDataMT();
         int index = 2;
-        for (int i = 0; i < voicesState.getNumChildren(); i++)
+        for (int i = 0; i < voicesData.size(); i++)
         {
             float x = 0;
-            if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesState.getChild (i).getProperty (id::voicePressure);
-            if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesState.getChild (i).getProperty (id::voiceTimbre);
+            if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesData[i].pressure;
+            if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesData[i].timbre;
             a.add (curveValue (x,
                                (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::curve),
                                (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::handleOne),
@@ -122,12 +134,13 @@ struct MPEWatcher : private juce::ValueTree::Listener
     juce::Array<float> getArrayD() const
     {
         juce::Array<float> a;
+        auto voicesData = voiceData.getVoiceDataMT();
         int index = 3;
-        for (int i = 0; i < voicesState.getNumChildren(); i++)
+        for (int i = 0; i < voicesData.size(); i++)
         {
             float x = 0;
-            if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesState.getChild (i).getProperty (id::voicePressure);
-            if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesState.getChild (i).getProperty (id::voiceTimbre);
+            if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesData[i].pressure;
+            if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesData[i].timbre;
             a.add (curveValue (x,
                                (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::curve),
                                (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::handleOne),
@@ -138,12 +151,13 @@ struct MPEWatcher : private juce::ValueTree::Listener
     juce::Array<float> getArraySaturation() const
     {
         juce::Array<float> a;
+        auto voicesData = voiceData.getVoiceDataMT();
         int index = 4;
-        for (int i = 0; i < voicesState.getNumChildren(); i++)
+        for (int i = 0; i < voicesData.size(); i++)
         {
             float x = 0;
-            if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesState.getChild (i).getProperty (id::voicePressure);
-            if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesState.getChild (i).getProperty (id::voiceTimbre);
+            if (channelsData[index].voiceChannel == id::PRESSURE) x = voicesData[i].pressure;
+            if (channelsData[index].voiceChannel == id::TIMBRE) x = voicesData[i].timbre;
             auto cv = curveValue (x,
                                (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::curve),
                                (float)routingBranch.getChildWithName (channelsData[index].voiceChannel).getChildWithName (channelsData[index].outputID).getProperty (id::handleOne),
@@ -156,15 +170,15 @@ struct MPEWatcher : private juce::ValueTree::Listener
     juce::Array<float> getArrayIntensity() const 
     {
         juce::Array<float> a;
-        
-        for (int i = 0; i < voicesState.getNumChildren(); i++)
-            a.add ((float)voicesState.getChild (i).getProperty (id::voiceRMS));   
+        auto voicesData = voiceData.getVoiceDataMT();
+        for (int i = 0; i < voicesData.size(); i++)
+            a.add (voicesData[i].rms);   
 
         return a;
     }
 private:
     juce::ValueTree routingBranch;
-    juce::ValueTree voicesState;
+    tp::MPEVoiceData& voiceData;
     juce::AudioProcessorValueTreeState& valueTreeState;
 
     struct ChannelData
@@ -254,19 +268,19 @@ class Visualizer : public juce::Component,
                    private juce::Timer
 {
 public:
-    Visualizer (tp::WaveTerrainSynthesizerStandard& wts, 
+    Visualizer (/*tp::WaveTerrainSynthesizerStandard& wts, */
                 tp::WaveTerrainSynthesizerMPE& wtsmpe, 
                 tp::Parameters parameters, 
                 juce::ValueTree settingsBranch, 
-                juce::ValueTree voicesStateBranch, 
+                tp::MPEVoiceData& vd, 
                 juce::AudioProcessorValueTreeState& apvts)
       : camera (mutex), 
         parameterWatcher (parameters), 
-        waveTerrainSynthesizerStandard (wts), 
+        //waveTerrainSynthesizerStandard (wts), 
         waveTerrainSynthesizerMPE (wtsmpe), 
         settings (settingsBranch),
-        voicesState (voicesStateBranch),
-        mpeWatcher (voicesStateBranch, apvts),
+        voiceData (vd),
+        mpeWatcher (vd, apvts),
         useMPE (settings, id::mpeEnabled, nullptr)
     {
         jassert (settings.isValid());
@@ -283,7 +297,7 @@ public:
         pf.multisamplingLevel = 4;
         glContext.setPixelFormat (pf);
         glContext.setMultisamplingEnabled (true);
-        glContext.setComponentPaintingEnabled (false);
+        glContext.setComponentPaintingEnabled (true);
 
         glContext.attachTo (*this);
         startTimerHz (60);
@@ -329,11 +343,10 @@ private:
     std::unique_ptr<Terrain> terrain;
     ParameterWatcher parameterWatcher;
     std::unique_ptr<Trajectories> trajectories;
-    tp::WaveTerrainSynthesizerStandard& waveTerrainSynthesizerStandard;
     tp::WaveTerrainSynthesizerMPE& waveTerrainSynthesizerMPE;
 
     juce::ValueTree settings;
-    juce::ValueTree voicesState;
+    tp::MPEVoiceData& voiceData;
     MPEWatcher mpeWatcher;
     juce::ValueTree mpeRouting;
     juce::CachedValue<bool> useMPE;
@@ -346,7 +359,6 @@ private:
     {
         terrain = std::make_unique<Terrain> (glContext);
         trajectories = std::make_unique<Trajectories> (glContext, 
-                                                       waveTerrainSynthesizerStandard,
                                                        waveTerrainSynthesizerMPE);
     }
     void renderOpenGL() override 
@@ -354,10 +366,9 @@ private:
         const juce::ScopedLock lock (mutex);
         auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
         juce::OpenGLHelpers::clear(laf->getBackgroundDark());
-        juce::gl::glClear (juce::gl::GL_COLOR_BUFFER_BIT | juce::gl::GL_DEPTH_BUFFER_BIT);
         auto desktopScale = static_cast<float>(glContext.getRenderingScale());
-        juce::gl::glDepthFunc (juce::gl::GL_LESS);
-        juce::gl::glEnable (juce::gl::GL_MULTISAMPLE);
+        //juce::gl::glDepthFunc (juce::gl::GL_LESS);
+//        juce::gl::glEnable (juce::gl::GL_MULTISAMPLE);
         
         juce::gl::glViewport (0, 0, 
                               juce::roundToInt(desktopScale * static_cast<float>(bounds.getWidth())), 
@@ -372,7 +383,7 @@ private:
         {
             auto mpef = makeMPEFrame (mpeWatcher, parameterWatcher);
             if (mpef.isMPEControlled)
-                terrain->renderMultiple (camera, color, ubo.index, mpef.a, mpef.b, mpef.c, mpef.d, mpef.saturation, mpef.intensity);
+                terrain->renderMultiple (camera, color, ubo.index, mpef.a, mpef.b, mpef.c, mpef.d, mpef.saturation, mpef.intensity, mpef.numActiveVoices);
             else
                 terrain->render(camera, color, ubo.index, ubo.a, ubo.b, ubo.c, ubo.d, ubo.saturation);
         }
@@ -394,6 +405,7 @@ private:
         juce::Array<float> d;
         juce::Array<float> saturation;
         juce::Array<float> intensity;
+        int numActiveVoices {0};
     };
     
     static MPEFrame makeMPEFrame (const MPEWatcher& mpew, const ParameterWatcher& pw)
@@ -411,11 +423,13 @@ private:
         
         auto ubo = pw.getUBO();
 
-        frame.a.resize (15);
-        frame.b.resize (15);
-        frame.c.resize (15);
-        frame.d.resize (15);
-        frame.saturation.resize (15);
+        int numActiveVoices = mpew.getNumActiveVoices();
+        frame.numActiveVoices = numActiveVoices;
+        frame.a.resize (numActiveVoices);
+        frame.b.resize (numActiveVoices);
+        frame.c.resize (numActiveVoices);
+        frame.d.resize (numActiveVoices);
+        frame.saturation.resize (numActiveVoices);
  
         if (!mpew.aControlled()) frame.a.fill (ubo.a);
         else frame.a = mpew.getArrayA();

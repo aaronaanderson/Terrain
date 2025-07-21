@@ -9,21 +9,21 @@ MainEditor::MainEditor (MainProcessor& p)
     jassert (state.getType() == id::TERRAIN_SYNTH);
 
     trajectoryPanel = std::make_unique<ti::TrajectoryPanel> (processorRef.getValueTreeState(), 
-                                                             processorRef.getMPEWaveTerrainSynthesizer().getVoicesState()); 
+                                                             processorRef.getVoiceData()); 
     terrainPanel = std::make_unique<ti::TerrainPanel> (processorRef.getValueTreeState(), 
-                                                       processorRef.getMPEWaveTerrainSynthesizer().getVoicesState()); 
+                                                       processorRef.getVoiceData()); 
     controlPanel = std::make_unique<ti::ControlPanel> (processorRef.getValueTreeState(), 
-                                                       processorRef.getMPEWaveTerrainSynthesizer().getVoicesState());
-    centerConsole = std::make_unique<ti::CenterConsole> (processorRef.getStandardWaveTerrainSynthesizer(),
-                                                         processorRef.getMPEWaveTerrainSynthesizer(), 
+                                                       processorRef.getVoiceData());
+    centerConsole = std::make_unique<ti::CenterConsole> (processorRef.getMPEWaveTerrainSynthesizer(), 
                                                          processorRef.getCastedParameters(), 
                                                          processorRef.getState().getChildWithName (id::PRESET_SETTINGS), 
                                                          processorRef.getAudioProcessorValueTreeState(), 
                                                          processorRef.getMPESettings(), 
-                                                         processorRef.getMPEWaveTerrainSynthesizer().getVoicesState());
+                                                         processorRef.getVoiceData());
     header = std::make_unique<ti::Header> (processorRef.getPresetManager(), 
                                            processorRef.getState().getChildWithName (id::PRESET_SETTINGS), 
-                                           ephemeralState.getState());
+                                           ephemeralState.getState(), 
+                                           processorRef.getMPEWaveTerrainSynthesizer());
 
     addAndMakeVisible (trajectoryPanel.get());
     addAndMakeVisible (terrainPanel.get());
@@ -94,14 +94,15 @@ void MainEditor::resetInterface()
     removeChildComponent (header.get());
     
     trajectoryPanel = std::make_unique<ti::TrajectoryPanel> (processorRef.getValueTreeState(), 
-                                                             processorRef.getMPEWaveTerrainSynthesizer().getVoicesState()); 
+                                                             processorRef.getVoiceData()); 
     terrainPanel = std::make_unique<ti::TerrainPanel> (processorRef.getValueTreeState(), 
-                                                       processorRef.getMPEWaveTerrainSynthesizer().getVoicesState()); 
+                                                       processorRef.getVoiceData()); 
     controlPanel = std::make_unique<ti::ControlPanel> (processorRef.getValueTreeState(), 
-                                                       processorRef.getMPEWaveTerrainSynthesizer().getVoicesState());
+                                                       processorRef.getVoiceData());
     header = std::make_unique<ti::Header> (processorRef.getPresetManager(), 
                                            processorRef.getState().getChildWithName (id::PRESET_SETTINGS), 
-                                           ephemeralState.getState());
+                                           ephemeralState.getState(), 
+                                           processorRef.getMPEWaveTerrainSynthesizer());
     centerConsole->setState (processorRef.getState().getChildWithName (id::PRESET_SETTINGS));
 
     addAndMakeVisible (trajectoryPanel.get());

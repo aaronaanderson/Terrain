@@ -2,13 +2,16 @@
 
 #include "Panel.h"
 #include "AttachedInterfaces.h"
+
+#include "../DSP/MPEVoiceData.h"
 namespace ti
 {
 class OutputLevel : public juce::Component 
 {
 public:
-    OutputLevel (juce::AudioProcessorValueTreeState& vts)
-      : level ("Output Level", "OutputLevel", vts)
+    OutputLevel (juce::AudioProcessorValueTreeState& vts,
+                 tp::MPEVoiceData& vd)
+      : level ("Output Level", "OutputLevel", vts, vd)
     {
         addAndMakeVisible (level);
     }
@@ -30,9 +33,10 @@ private:
 class Compressor : public juce::Component 
 {
 public:
-    Compressor (juce::AudioProcessorValueTreeState& vts)
-      : threshold ("Threshold", "CompressorThreshold", vts), 
-        ratio ("Ratio", "CompressorRatio", vts)
+    Compressor (juce::AudioProcessorValueTreeState& vts,
+                tp::MPEVoiceData& vd)
+      : threshold ("Threshold", "CompressorThreshold", vts, vd), 
+        ratio ("Ratio", "CompressorRatio", vts, vd)
     {
         label.setText ("Compressor", juce::dontSendNotification);
         label.setJustificationType (juce::Justification::centred);
@@ -63,9 +67,9 @@ class PerVoiceFilter : public juce::Component
 {
 public:
     PerVoiceFilter (juce::AudioProcessorValueTreeState& vts, 
-                    juce::ValueTree voicesState)
-      : perVoiceFrequency ("Frequency", "Per-VoiceFilterFrequency", vts, voicesState),
-        perVoiceResonance ("Resonance", "Per-VoiceFilterResonance", vts, voicesState),
+                    tp::MPEVoiceData& vd)
+      : perVoiceFrequency ("Frequency", "Per-VoiceFilterFrequency", vts, vd),
+        perVoiceResonance ("Resonance", "Per-VoiceFilterResonance", vts, vd),
         perVoiceOnOff ("", "Per-VoiceFilterOnOff", vts)
     {
         label.setText ("Per-Voice Filter", juce::dontSendNotification);
@@ -100,12 +104,13 @@ private:
 class Filter : public juce::Component 
 {
 public:
-    Filter (juce::AudioProcessorValueTreeState& vts)
-      : frequency ("Frequency", "FilterFrequency", vts), 
-        resonance ("Resonance", "FilterResonance", vts), 
+    Filter (juce::AudioProcessorValueTreeState& vts, 
+            tp::MPEVoiceData& vd)
+      : frequency ("Frequency", "FilterFrequency", vts, vd), 
+        resonance ("Resonance", "FilterResonance", vts, vd), 
         onOff ("", "FilterOnOff", vts), 
-        perVoiceFrequency ("Frequency", "Per-VoiceFilterFrequency", vts),
-        perVoiceResonance ("Resonance", "Per-VoiceFilterResonance", vts),
+        perVoiceFrequency ("Frequency", "Per-VoiceFilterFrequency", vts, vd),
+        perVoiceResonance ("Resonance", "Per-VoiceFilterResonance", vts, vd),
         perVoiceOnOff ("", "Per-VoiceFilterOnOff", vts)
     {
         label.setText ("Global Filter", juce::dontSendNotification);
@@ -147,13 +152,13 @@ class Envelope : public juce::Component
 {
 public:
     Envelope (juce::AudioProcessorValueTreeState& vts, 
-              juce::ValueTree voicesState)
+              tp::MPEVoiceData& vd)
       : envelopeSize ("ES", "EnvelopeSize", vts),
-        attack ("Attack","Attack", vts, voicesState),
-        decay ("Decay","Decay", vts, voicesState),
-        sustain ("Sustain","Sustain", vts, voicesState),
-        release ("Release","Release", vts, voicesState), 
-        sensitivity ("Sensitivity", "Sensitivity", vts, voicesState)
+        attack ("Attack","Attack", vts, vd),
+        decay ("Decay","Decay", vts, vd),
+        sustain ("Sustain","Sustain", vts, vd),
+        release ("Release","Release", vts, vd), 
+        sensitivity ("Sensitivity", "Sensitivity", vts, vd)
     {
         label.setText ("Envelope", juce::dontSendNotification);
         label.setJustificationType (juce::Justification::centred);
@@ -195,13 +200,13 @@ class ControlPanel : public Panel
 {
 public:
     ControlPanel (juce::AudioProcessorValueTreeState& vts, 
-                  juce::ValueTree voicesState)
+                  tp::MPEVoiceData& vd)
       : Panel ("Control Panel"), 
-        envelope (vts, voicesState),
-        perVoiceFilter (vts, voicesState), 
-        filter (vts), 
-        compressor (vts), 
-        outputLevel (vts)
+        envelope (vts, vd),
+        perVoiceFilter (vts, vd), 
+        filter (vts, vd), 
+        compressor (vts, vd), 
+        outputLevel (vts, vd)
     {
         addAndMakeVisible (envelope);  
         addAndMakeVisible (perVoiceFilter);

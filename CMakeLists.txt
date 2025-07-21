@@ -43,7 +43,7 @@ clap_juce_extensions_plugin(TARGET WaveTerrainSynth
 
 set_target_properties(WaveTerrainSynth PROPERTIES 
     CXX_STANDARD 17
-    # COMPILE_WARNING_AS_ERROR ON
+    COMPILE_WARNING_AS_ERROR ON
 )
 
 juce_add_module(glm_module)
@@ -55,7 +55,8 @@ set_target_properties(glm_module PROPERTIES
 target_sources(WaveTerrainSynth
     PRIVATE
         Source/MainEditor.cpp
-        Source/MainProcessor.cpp)
+        Source/MainProcessor.cpp
+        Source/DSP/MPEVoiceData.cpp)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON) #necessary for GCC linking
 add_library(MTS-ESP STATIC MTS-ESP/Client/libMTSClient.cpp)
@@ -70,7 +71,7 @@ target_compile_definitions(WaveTerrainSynth
         # JUCE_WEB_BROWSER and JUCE_USE_CURL would be on by default, but you might not need them.
         JUCE_WEB_BROWSER=0  # If you remove this, add `NEEDS_WEB_BROWSER TRUE` to the `juce_add_plugin` call
         JUCE_USE_CURL=0     # If you remove this, add `NEEDS_CURL TRUE` to the `juce_add_plugin` call
-        JUCE_VST3_CAN_REPLACE_VST2=0)
+        )
 
 juce_add_binary_data(BinaryData SOURCES
     Source/Interface/Renderer/Shaders/TrajectoryPoint.frag 
@@ -96,6 +97,8 @@ if(WIN32)
     )
 endif()
 
+add_subdirectory(morphlib)
+
 target_link_libraries(WaveTerrainSynth
     PRIVATE
         BinaryData
@@ -104,6 +107,7 @@ target_link_libraries(WaveTerrainSynth
         juce::juce_dsp
         juce::juce_opengl
         MTS-ESP
+        morphlib
     PUBLIC
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags

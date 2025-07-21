@@ -2,14 +2,15 @@
 
 #include "Panel.h"
 #include "AttachedInterfaces.h"
+#include "../DSP/MPEVoiceData.h"
 namespace ti
 {
 class TerrainVariables : public juce::Component 
 {
 public:
     TerrainVariables (juce::AudioProcessorValueTreeState& vts, 
-                      juce::ValueTree voicesState)
-      : saturation ("Saturation", "TerrainSaturation", vts, voicesState)
+                      tp::MPEVoiceData& vd)
+      : saturation ("Saturation", "TerrainSaturation", vts, vd)
     {
         addAndMakeVisible (saturation);
     }
@@ -27,11 +28,11 @@ class TerrainModifierArray : public juce::Component
 {
 public:
     TerrainModifierArray (juce::AudioProcessorValueTreeState& vts, 
-                          juce::ValueTree voicesState)
-      : aModifier ("a", "TerrainModA", vts, voicesState),
-        bModifier ("b", "TerrainModB", vts, voicesState),
-        cModifier ("c", "TerrainModC", vts, voicesState),
-        dModifier ("d", "TerrainModD", vts, voicesState)
+                          tp::MPEVoiceData& vd)
+      : aModifier ("a", "TerrainModA", vts, vd),
+        bModifier ("b", "TerrainModB", vts, vd),
+        cModifier ("c", "TerrainModC", vts, vd),
+        dModifier ("d", "TerrainModD", vts, vd)
     {
         addAndMakeVisible (aModifier);
         addAndMakeVisible (bModifier);
@@ -90,8 +91,8 @@ class TerrainSelector : public juce::Component
 {
 public:
     TerrainSelector (juce::AudioProcessorValueTreeState& vts, 
-                     juce::ValueTree voicesState)
-      : modifierArray (vts, voicesState), 
+                     tp::MPEVoiceData& vd)
+      : modifierArray (vts, vd), 
         terrainList ("CurrentTerrain", vts, resetModifierArray)
     {
 
@@ -142,10 +143,10 @@ class TerrainPanel : public Panel
 {
 public:
     TerrainPanel (juce::AudioProcessorValueTreeState& vts, 
-                  juce::ValueTree voicesState)
+                  tp::MPEVoiceData& vd)
       : Panel ("Terrain"), 
-        terrainSelector (vts, voicesState), 
-        terrainVariables (vts, voicesState)
+        terrainSelector (vts, vd), 
+        terrainVariables (vts, vd)
     {
         addAndMakeVisible (terrainSelector);
         addAndMakeVisible (terrainVariables);

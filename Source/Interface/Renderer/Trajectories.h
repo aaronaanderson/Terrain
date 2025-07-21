@@ -7,6 +7,9 @@
 #include "Camera.h"
 #include "Attributes.h"
 
+#include <morphlib/Voice.h>
+#include "../../DSP/MPEVoice.h"
+
 struct TrajectoryUniforms
 {
     explicit TrajectoryUniforms (juce::OpenGLShaderProgram& shader)
@@ -118,10 +121,10 @@ private:
 };
 struct TrajectoryMesh : PointsMesh // must be constructed on GL Initialize
 {
-    TrajectoryMesh(juce::OpenGLContext& c, const tp::VoiceInterface* t,  int numVertices = 4096)
+    TrajectoryMesh(juce::OpenGLContext& c, const tp::MPEVoice* v,  int numVertices = 4096)
       : PointsMesh (numVertices),
         glContext (c),
-        voice (t)
+        voice (v)
         
     {
         if (loadShaders())
@@ -170,7 +173,7 @@ struct TrajectoryMesh : PointsMesh // must be constructed on GL Initialize
     }
 private:
     juce::OpenGLContext& glContext;
-    const tp::VoiceInterface* voice; // non-owning 
+    const tp::MPEVoice* voice; // non-owning 
     std::unique_ptr<juce::OpenGLShaderProgram>  shaders; // tell GL how to draw
     std::unique_ptr<Attributes>           attributes; // tell shaders about vertex data
     std::unique_ptr<TrajectoryUniforms>   uniforms;
@@ -191,38 +194,26 @@ private:
         return loaded;
     }
 };
-struct Trajectories : private tp::WaveTerrainSynthesizer::VoiceListener 
+struct Trajectories
 {
     Trajectories (juce::OpenGLContext& c, 
-                  tp::WaveTerrainSynthesizerStandard& wts, 
                   tp::WaveTerrainSynthesizerMPE& wtsmpe)
       : context(c)
     {
-        juce::ignoreUnused (wts);
-        wts.setVoiceListener(this);
-        addVoices (wts.getVoices());
-        wtsmpe.setVoiceListener (this);
-        addVoices (wtsmpe.getVoices());
+        for (int i = 0; i < wtsmpe.getNumVoices(); i++)
+        {
+            auto* juceVoice = wtsmpe.getVoice (i);
+            auto* voice = dynamic_cast<tp::MPEVoice*> (juceVoice);
+            trajectories.add (std::make_unique<TrajectoryMesh> (context, voice));
+        }
     }
-    ~Trajectories() override {}
+
     void render (const Camera& camera, const juce::Colour color)
     {
         for(auto t : trajectories)
             t->render (camera, color);
     }
 private:
-    void addVoices (juce::Array<tp::VoiceInterface*> voices) override 
-    {
-        for(auto v : voices)
-        {
-            auto* trajectory = dynamic_cast<tp::VoiceInterface*>(v);
-            jassert (trajectory != nullptr);
-
-            trajectories.add(std::make_unique<TrajectoryMesh>(context, trajectory));
-        }
-    }
-
-    void resetVoices() override { trajectories.clear(); }
     juce::OwnedArray<TrajectoryMesh> trajectories;
     juce::OpenGLContext& context;
 };

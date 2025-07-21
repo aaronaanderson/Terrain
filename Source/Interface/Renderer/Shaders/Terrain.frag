@@ -10,5 +10,11 @@ void main()
 {
     vec3 lightDirection = normalize(lightPosition - fragmentPosition);
     float diffuseScalar = max(dot(normal, lightDirection), 0.0);
-    gl_FragColor = (vec4(color.r / 255.0, color.g / 255.0, color.b / 255.0, color.a / 255.0) * (diffuseScalar + ambient));
+    float alpha = color.a / 255.0;
+    vec3 rgb = vec3(color.r, color.g, color.b) / 255.0;
+
+    float lighting = (diffuseScalar * 0.6) + ambient;
+    vec3 litRGB = rgb * lighting;
+
+    gl_FragColor = vec4(litRGB, alpha);
 }

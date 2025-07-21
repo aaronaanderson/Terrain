@@ -9,7 +9,7 @@
 #include "Utility/Presets.h"
 
 #include "DSP/WaveTerrainSynthesizerMPE.h"
-#include "DSP/WaveTerrainSynthesizerStandard.h"
+#include "DSP/MPEVoiceData.h"
 //==============================================================================
 class MainProcessor  : public juce::AudioProcessor, 
                        private juce::ValueTree::Listener
@@ -51,19 +51,18 @@ public:
     PresetManager& getPresetManager() { return *presetManager.get(); }
 
     const tp::Parameters& getCastedParameters() const { return parameters; }
-    tp::WaveTerrainSynthesizerStandard& getStandardWaveTerrainSynthesizer() { return *standardSynthesizer.get(); }
     tp::WaveTerrainSynthesizerMPE& getMPEWaveTerrainSynthesizer() { return *mpeSynthesizer.get(); }
     juce::AudioProcessorValueTreeState& getAudioProcessorValueTreeState() {return valueTreeState; }
     bool getMTSConnectionStatus() { return MTS_HasMaster (mtsClient); }
     juce::String getTuningSystemName() { return MTS_GetScaleName (mtsClient); }
     juce::ValueTree& getMPESettings() { return mpeSettings; }
+    tp::MPEVoiceData& getVoiceData() { return voiceData; }
 private:
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     juce::AudioProcessorValueTreeState valueTreeState;
     juce::UndoManager undoManager;
     tp::Parameters parameters;
     std::unique_ptr<PresetManager> presetManager;
-    std::unique_ptr<tp::WaveTerrainSynthesizerStandard> standardSynthesizer;
     std::unique_ptr<tp::WaveTerrainSynthesizerMPE> mpeSynthesizer;
     std::atomic<bool> mpeOn;
     std::unique_ptr<juce::dsp::Oversampling<float>> overSampler;
@@ -81,6 +80,7 @@ private:
     void prepareOversampling (int bufferSize);
     juce::ValueTree verifiedSettings (juce::ValueTree);
     juce::ValueTree mpeSettings;
+    tp::MPEVoiceData voiceData;
     void loadMPESettings();
     void saveMPESettings();
     void valueTreePropertyChanged (juce::ValueTree& tree, 

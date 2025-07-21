@@ -4,14 +4,16 @@
 #include <juce_data_structures/juce_data_structures.h>
 #include "LookAndFeel.h"
 
+#include "../DSP/MPEVoiceData.h"
+
 namespace ti
 {
 struct VoiceMeter : public juce::Component, 
                     private juce::Timer
 {
-    VoiceMeter (juce::ValueTree voicesStateTree, 
+    VoiceMeter (tp::MPEVoiceData& vd, 
                 juce::ValueTree RoutingBranch)
-      : voicesState (voicesStateTree), 
+      : voiceData (vd), 
         routingBranch (RoutingBranch)
     {
         startTimerHz (24);
@@ -32,7 +34,7 @@ struct VoiceMeter : public juce::Component,
     void setRoutingState (juce::ValueTree routing) { routingBranch = routing; }
 private:
     void timerCallback() override { repaint(); }
-    juce::ValueTree voicesState;
+    tp::MPEVoiceData& voiceData;
     juce::ValueTree routingBranch;
     juce::Identifier mpeChannel;
     juce::Identifier outputID;
@@ -48,14 +50,16 @@ private:
         g.fillRect (sliderRect.toFloat());
 
         float width = sliderRect.getHeight() * 0.6f;
-        for (int i = 0; i < voicesState.getNumChildren(); i++)
+        auto voicesData = voiceData.getVoiceDataMT();
+        for (int i = 0; i < voicesData.size(); i++)
         {
-            if (!(bool)voicesState.getChild (i).getProperty (id::voiceActive)) continue;
+            // if (!(bool)voicesState.getChild (i).getProperty (id::voiceActive)) continue;
+            if( !voicesData[i].voiceActive ) { continue; }
             
             g.setColour (laf->getAccentColour());
             float x = 0.0f;
-            if (mpeChannel == id::PRESSURE) x = voicesState.getChild (i).getProperty (id::voicePressure);
-            if (mpeChannel == id::TIMBRE) x = voicesState.getChild (i).getProperty (id::voiceTimbre);                       
+            if (mpeChannel == id::PRESSURE) x = voicesData[i].pressure;
+            if (mpeChannel == id::TIMBRE) x = voicesData[i].timbre;                       
             auto curvedX = curveValue (x, 
                                        (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::curve),
                                        (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::handleOne),
@@ -90,12 +94,15 @@ private:
         g.setColour (laf->getBackgroundColour());
         g.strokePath (backgroundArc, juce::PathStrokeType (lineW, juce::PathStrokeType::mitered, juce::PathStrokeType::square));
 
-        for (int i = 0; i < voicesState.getNumChildren(); i++)
+        auto voicesData = voiceData.getVoiceDataMT();
+        for (int i = 0; i < voicesData.size(); i++)
         {
-            if (!voicesState.getChild (i).getProperty (id::voiceActive)) continue;
+            // if (!voicesState.getChild (i).getProperty (id::voiceActive)) continue;
+            if (!voicesData[i].voiceActive) { continue; }
+
             float x = 0.0f;
-            if (mpeChannel == id::PRESSURE) x = voicesState.getChild (i).getProperty (id::voicePressure);
-            if (mpeChannel == id::TIMBRE) x = voicesState.getChild (i).getProperty (id::voiceTimbre);
+            if (mpeChannel == id::PRESSURE) x = voicesData[i].pressure;
+            if (mpeChannel == id::TIMBRE) x = voicesData[i].timbre;
             auto curvedX = curveValue (x, 
                                        (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::curve),
                                        (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::handleOne),
@@ -118,13 +125,16 @@ private:
         g.fillRect (sliderRect.toFloat());
 
         float width = sliderRect.getWidth() * 0.6f;
-        for (int i = 0; i < voicesState.getNumChildren(); i++)
+        auto voicesData = voiceData.getVoiceDataMT();
+        for (int i = 0; i < voicesData.size(); i++)
         {
-            if (!voicesState.getChild (i).getProperty (id::voiceActive)) continue;
+            // if (!voicesState.getChild (i).getProperty (id::voiceActive)) continue;
+            if (!voicesData[i].voiceActive) { continue; }
+
             g.setColour (laf->getAccentColour());
             float x = 0.0f;
-            if (mpeChannel == id::PRESSURE) x = voicesState.getChild (i).getProperty (id::voicePressure);
-            if (mpeChannel == id::TIMBRE) x = voicesState.getChild (i).getProperty (id::voiceTimbre);
+            if (mpeChannel == id::PRESSURE) x = voicesData[i].pressure;
+            if (mpeChannel == id::TIMBRE) x = voicesData[i].timbre;
             auto curvedX = curveValue (x, 
                                        (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::curve),
                                        (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::handleOne),
