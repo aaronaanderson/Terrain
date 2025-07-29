@@ -45,6 +45,8 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
+    bool supportsMPE() const override { return true; }
+
     juce::AudioProcessorValueTreeState& getValueTreeState() { return valueTreeState; }
     juce::ValueTree& getState() { return valueTreeState.state; }
     juce::UndoManager& getUndoManager() { return undoManager; }

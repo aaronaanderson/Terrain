@@ -27,6 +27,7 @@ juce_add_plugin(WaveTerrainSynth
     APP_SANDBOX_ENABLED TRUE        # Needed for GarageBand
     FORMATS Standalone VST3 AU     # The formats to build. Other valid formats are: AAX Unity VST AU AUv3
     PRODUCT_NAME "Terrain"         # The name of the final executable, which can differ from the target name    
+    APP_SANDBOX_FILE_ACCESS_HOME_RW "Library/Audio/Presets/Aaron Anderson/Terrain"
 )    
 
 clap_juce_extensions_plugin(TARGET WaveTerrainSynth

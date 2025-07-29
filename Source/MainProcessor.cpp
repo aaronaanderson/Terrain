@@ -44,6 +44,8 @@ MainProcessor::MainProcessor()
     
     mpeOn.store (valueTreeState.state.getChildWithName (id::PRESET_SETTINGS).getProperty (id::mpeEnabled));
     valueTreeState.state.addListener (this);
+
+    // mpeSynthesizer->enableLegacyMode(0);
 }
 
 MainProcessor::~MainProcessor() 
