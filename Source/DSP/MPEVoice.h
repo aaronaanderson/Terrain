@@ -123,12 +123,12 @@ public:
         voiceData.setTimbreAT( timbre, note.midiChannel);
     }
     void onNoteKeyStateChanged() override {}
-    void onAllocation (int maxBlockSize)
+    void onAllocation(int maxBlockSize) override
     { 
         trajectory.allocate (maxBlockSize);
         terrain.allocate (maxBlockSize); 
     }
-    void panic() { onNoteStop (false); }
+    void panic() override { onNoteStop (false); }
     
     void renderNextBlock (juce::AudioBuffer<float>& outputBuffer,
                           int startSample,
