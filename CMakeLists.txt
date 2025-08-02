@@ -53,11 +53,26 @@ set_target_properties(glm_module PROPERTIES
     COMPILE_FLAGS "${CMAKE_CXX_FLAGS} -W"
 )
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-lto")
+# target_sources(WaveTerrainSynth
+#     PRIVATE
+#         Source/MainEditor.cpp
+#         Source/MainProcessor.cpp
+#         Source/DSP/MPEVoiceData.cpp)
+file(GLOB_RECURSE TERRAIN_CPP_FILES CONFIGURE_DEPENDS
+    Source/*.cpp
+    Source/*.c
+)
+
+file(GLOB_RECURSE TERRAIN_HEADER_FILES CONFIGURE_DEPENDS
+    Source/*.h
+    Source/*.hpp
+)
+
 target_sources(WaveTerrainSynth
     PRIVATE
-        Source/MainEditor.cpp
-        Source/MainProcessor.cpp
-        Source/DSP/MPEVoiceData.cpp)
+        ${TERRAIN_CPP_FILES}
+        ${TERRAIN_HEADER_FILES}
+)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON) #necessary for GCC linking
 add_library(MTS-ESP STATIC MTS-ESP/Client/libMTSClient.cpp)
