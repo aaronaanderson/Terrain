@@ -6,6 +6,9 @@ find_package(OpenGL REQUIRED)
 add_subdirectory(JUCE)                    # If you've put JUCE in a subdirectory called JUCE
 add_subdirectory(clap-juce-extensions EXCLUDE_FROM_ALL)
 
+# set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64")
+# set(CMAKE_OSX_DEPLOYMENT_TARGET "10.14" CACHE STRING "Minimum OS X deployment target" FORCE)
+
 juce_add_plugin(WaveTerrainSynth
     VERSION "1.2.2"                               # Set this if the plugin version is different to the project version
     # ICON_BIG ...                              # ICON_* arguments specify a path to an image file to use as an icon for the Standalone
@@ -17,13 +20,14 @@ juce_add_plugin(WaveTerrainSynth
     IS_MIDI_EFFECT FALSE                 # Is this plugin a MIDI effect?
     # VST3_COPY_DIR "./vst3" 
     BUNDLE_ID com.AaronAnderson.WaveTerrainSynth
-    COPY_PLUGIN_AFTER_BUILD FALSE
+    COPY_PLUGIN_AFTER_BUILD TRUE
     PLUGIN_MANUFACTURER_CODE Aaro               # A four-character manufacturer id with at least one upper-case character
     PLUGIN_CODE JEe9                        # A unique four-character plugin id with exactly one upper-case character
                                                 # GarageBand 10.3 requires the first letter to be upper-case, and the remaining letters to be lower-case
     APP_SANDBOX_ENABLED TRUE        # Needed for GarageBand
     FORMATS Standalone VST3 AU     # The formats to build. Other valid formats are: AAX Unity VST AU AUv3
     PRODUCT_NAME "Terrain"         # The name of the final executable, which can differ from the target name    
+    APP_SANDBOX_FILE_ACCESS_HOME_RW "Library/Audio/Presets/Aaron Anderson/Terrain"
 )    
 
 clap_juce_extensions_plugin(TARGET WaveTerrainSynth
@@ -31,17 +35,44 @@ clap_juce_extensions_plugin(TARGET WaveTerrainSynth
     CLAP_FEATURES instrument synthesizer
 )
 
+# if (APPLE)
+#    target_link_options(WaveTerrainSynth PUBLIC -Wl -ld_classic)
+# endif()
+
+# target_compile_options(WaveTerrainSynth PRIVATE -fsanitize=thread)
+# target_link_options(WaveTerrainSynth PRIVATE -fsanitize=thread)
+
 set_target_properties(WaveTerrainSynth PROPERTIES 
     CXX_STANDARD 17
-    COMPILE_WARNING_AS_ERROR ON
+    COMPILE_WARNING_AS_ERROR OFF
 )
 
 juce_add_module(glm_module)
+set_target_properties(glm_module PROPERTIES 
+    COMPILE_WARNING_AS_ERROR OFF,
+    COMPILE_FLAGS "${CMAKE_CXX_FLAGS} -W"
+)
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-lto")
+# target_sources(WaveTerrainSynth
+#     PRIVATE
+#         Source/MainEditor.cpp
+#         Source/MainProcessor.cpp
+#         Source/DSP/MPEVoiceData.cpp)
+file(GLOB_RECURSE TERRAIN_CPP_FILES CONFIGURE_DEPENDS
+    Source/*.cpp
+    Source/*.c
+)
+
+file(GLOB_RECURSE TERRAIN_HEADER_FILES CONFIGURE_DEPENDS
+    Source/*.h
+    Source/*.hpp
+)
 
 target_sources(WaveTerrainSynth
     PRIVATE
-        Source/MainEditor.cpp
-        Source/MainProcessor.cpp)
+        ${TERRAIN_CPP_FILES}
+        ${TERRAIN_HEADER_FILES}
+)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON) #necessary for GCC linking
 add_library(MTS-ESP STATIC MTS-ESP/Client/libMTSClient.cpp)
@@ -56,7 +87,7 @@ target_compile_definitions(WaveTerrainSynth
         # JUCE_WEB_BROWSER and JUCE_USE_CURL would be on by default, but you might not need them.
         JUCE_WEB_BROWSER=0  # If you remove this, add `NEEDS_WEB_BROWSER TRUE` to the `juce_add_plugin` call
         JUCE_USE_CURL=0     # If you remove this, add `NEEDS_CURL TRUE` to the `juce_add_plugin` call
-        JUCE_VST3_CAN_REPLACE_VST2=0)
+        )
 
 juce_add_binary_data(BinaryData SOURCES
     Source/Interface/Renderer/Shaders/TrajectoryPoint.frag 
@@ -64,6 +95,15 @@ juce_add_binary_data(BinaryData SOURCES
     Source/Interface/Renderer/Shaders/Terrain.frag 
     Source/Interface/Renderer/Shaders/Terrain.vert
     Source/Interface/Paul-le1V.ttf
+
+    Presets/MPE-Basic.xml
+    Presets/MPE-ButterFly.xml
+    Presets/MPE-Echo.xml
+    Presets/MPE-Fire.xml
+    Presets/MPE-Space.xml
+    Presets/Basic.xml
+    Presets/PatternRun.xml
+    Presets/Plunky.xml
 )
 
 if(WIN32) 
@@ -73,6 +113,8 @@ if(WIN32)
     )
 endif()
 
+add_subdirectory(morphlib)
+
 target_link_libraries(WaveTerrainSynth
     PRIVATE
         BinaryData
@@ -81,6 +123,7 @@ target_link_libraries(WaveTerrainSynth
         juce::juce_dsp
         juce::juce_opengl
         MTS-ESP
+        morphlib
     PUBLIC
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags

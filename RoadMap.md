@@ -7,13 +7,13 @@
 * MPE Support
 
 ## 1.4.0
-* MIDI Learn
-
-## 1.5.0
 * Multiple Oscillators
 * Detuning spread control
 * Trajectory spacing spread control
 * Panning/Spatial spread control
+
+## 1.5.0
+* Controllers and assignments
 
 # Completed
 

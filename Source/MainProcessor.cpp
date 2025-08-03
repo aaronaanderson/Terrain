@@ -4,19 +4,58 @@
 #include "Utility/DefaultTreeGenerator.h"
 #include "Utility/VersionType.h"
 
+
+static void crashHandleFunction (void*)
+{   
+    juce::String stacktrace = juce::SystemStats::getStackBacktrace();
+    auto* l = juce::Logger::getCurrentLogger();
+    l->writeToLog (stacktrace);
+}
+
 //==============================================================================
 MainProcessor::MainProcessor()
      : AudioProcessor (BusesProperties().withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
        valueTreeState (*this, &undoManager, id::TERRAIN_SYNTH, createParameterLayout()),
        parameters (valueTreeState)
 {
+    mtsClient = MTS_RegisterClient();
+    
+    loadMPESettings();
+    PresetSaver::movePresetsToDisk();
+    
+    logger.reset (juce::FileLogger::createDateStampedLogger (juce::FileLogger::getSystemLogFileFolder().getFullPathName() + "/Terrain",
+                                                                               "Terrain",
+                                                                               ".txt",
+                                                                               "Hello From Terrain"));
+    juce::Logger::setCurrentLogger (logger.get());
+    std::cout << juce::FileLogger::getSystemLogFileFolder().getFullPathName() << std::endl;
+    juce::SystemStats::setApplicationCrashHandler (crashHandleFunction);
+    
     valueTreeState.state.addChild (SettingsTree::create(), -1, nullptr);
     presetManager = std::make_unique<PresetManager> (this, valueTreeState.state);
-    synthesizer = std::make_unique<tp::WaveTerrainSynthesizer> (parameters, valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
+
+    mpeSynthesizer = std::make_unique<tp::WaveTerrainSynthesizerMPE> (parameters, 
+                                                                      *mtsClient, 
+                                                                      valueTreeState.state.getChildWithName (id::PRESET_SETTINGS),
+                                                                      mpeSettings,
+                                                                      valueTreeState, 
+                                                                      voiceData);
     outputChain.reset();
+    
+    mpeOn.store (valueTreeState.state.getChildWithName (id::PRESET_SETTINGS).getProperty (id::mpeEnabled));
+    valueTreeState.state.addListener (this);
+
+    // mpeSynthesizer->enableLegacyMode(0);
 }
 
-MainProcessor::~MainProcessor() {}
+MainProcessor::~MainProcessor() 
+{
+    saveMPESettings();
+    MTS_DeregisterClient (mtsClient);
+    valueTreeState.state.removeListener (this);
+    
+    juce::Logger::setCurrentLogger (nullptr);
+}
 //==============================================================================
 const juce::String MainProcessor::getName() const  { return JucePlugin_Name; }
 bool MainProcessor::acceptsMidi() const            { return true; }
@@ -76,19 +115,20 @@ void MainProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
-
+    
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
-    
-    prepareOversampling (buffer.getNumSamples());
-    synthesizer->updateTerrain();
+
     auto overSamplingBlock = overSampler->processSamplesUp (renderBuffer);
     juce::Array<float*> channelPointers = {overSamplingBlock.getChannelPointer(0)};
     juce::AudioBuffer<float> overSamplingBufferReference (channelPointers.getRawDataPointer(), 
                                                           static_cast<int> (overSamplingBlock.getNumChannels()), 
                                                           static_cast<int> (overSamplingBlock.getNumSamples()));
+    prepareOversampling (buffer.getNumSamples());
 
-    synthesizer->renderNextBlock (overSamplingBufferReference, midiMessages, 0, overSamplingBufferReference.getNumSamples());
+    mpeSynthesizer->updateTerrain();
+    mpeSynthesizer->renderNextBlock (overSamplingBufferReference, midiMessages, 0, overSamplingBufferReference.getNumSamples());
+
     auto outputBlock = juce::dsp::AudioBlock<float> (renderBuffer);
     overSampler->processSamplesDown (outputBlock);
 
@@ -111,6 +151,9 @@ void MainProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         buffer.copyFrom (c, 0, renderBuffer.getReadPointer (0), buffer.getNumSamples());
     
     renderBuffer.clear();
+
+    mpeSynthesizer->updateVoiceData();
+    voiceData.publishAT();
 }
 //==============================================================================
 bool MainProcessor::hasEditor() const { return true; }
@@ -138,19 +181,14 @@ void MainProcessor::setStateInformation (const void* data, int sizeInBytes)
             auto verifiedSettingsBranch = verifiedSettings (newState.getChildWithName (id::PRESET_SETTINGS));
             
             for (int i =  newState.getNumChildren() - 1; i >= 0; i--)
-            {
                 if (newState.getChild (i).getType() == id::PRESET_SETTINGS)
-                {
-                    // std::cout << i << std::endl;
-                    // std::cout << newState.getChild(i).toXmlString() << std::endl;
                     newState.removeChild (i, nullptr);
-                }
-            }
 
             newState.addChild (verifiedSettingsBranch, -1, nullptr);
             valueTreeState.replaceState (newState);
             presetManager->setState (valueTreeState.state);
-            synthesizer->setState (valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
+            //standardSynthesizer->setState (valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
+            mpeSynthesizer->setState (valueTreeState.state.getChildWithName (id::PRESET_SETTINGS));
         }
     }
 }
@@ -181,6 +219,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout MainProcessor::createParamet
     layout.add (std::make_unique<tp::NormalizedFloatParameter> ("Trajectory Mod C", 0.5f));
     layout.add (std::make_unique<tp::NormalizedFloatParameter> ("Trajectory Mod D", 0.5f));
     
+    layout.add (std::make_unique<tp::NormalizedFloatParameter> ("Amplitude", 1.0f));
     layout.add (std::make_unique<tp::NormalizedFloatParameter> ("Size", 0.5f));
     range = {0.0f, juce::MathConstants<float>::twoPi};
     layout.add (std::make_unique<tp::RangedFloatParameter> ("Rotation", 
@@ -199,6 +238,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout MainProcessor::createParamet
                                                                 0.0f));
 
     layout.add (std::make_unique<juce::AudioParameterBool> (juce::ParameterID {"EnvelopeSize", 1}, "Envelope Size", true));
+    range = juce::NormalisableRange<float> (0.0f, 60.0f);
+    layout.add (std::make_unique<tp::RangedFloatParameter> ("Sensitivity", 
+                                                            range, 
+                                                            60.0f));
     range = juce::NormalisableRange<float> (2.0f, 5000.0f); range.setSkewForCentre (500.0f);
     layout.add (std::make_unique<tp::RangedFloatParameter> ("Attack", 
                                                             range, 
@@ -260,6 +303,12 @@ juce::AudioProcessorValueTreeState::ParameterLayout MainProcessor::createParamet
                                                             range,
                                                             800.0f));
     layout.add (std::make_unique<juce::AudioParameterBool> (juce::ParameterID {"FilterOnOff", 1}, "Filter Bypass", false));
+    layout.add (std::make_unique<tp::NormalizedFloatParameter> ("Per-Voice Filter Resonance", 0.5f));
+    range = juce::NormalisableRange<float> (-1.0f, 6.0f);
+    layout.add (std::make_unique<tp::RangedFloatParameter> ("Per-Voice Filter Frequency", 
+                                                            range,
+                                                            1.0f));
+    layout.add (std::make_unique<juce::AudioParameterBool> (juce::ParameterID {"Per-VoiceFilterOnOff", 1}, "Per-Voice Filter Bypass", false));
 
     range = {-24.0f, 0.0f};
     layout.add (std::make_unique<tp::RangedFloatParameter> ("Compressor Threshold", 
@@ -280,7 +329,8 @@ void MainProcessor::allocateMaxSamplesPerBlock (int maxSamples)
 {
     auto settingsTree = valueTreeState.state.getChildWithName (id::PRESET_SETTINGS);
     auto overSamplingFactor = static_cast<int> (settingsTree.getProperty (id::oversampling));
-    synthesizer->allocate (maxSamples * static_cast<int> (std::pow (2, overSamplingFactor)));
+    // synthesizer->allocate (maxSamples * static_cast<int> (std::pow (2, overSamplingFactor)));
+    mpeSynthesizer->allocate (maxSamples * static_cast<int> (std::pow (2, overSamplingFactor)));
     overSampler = std::make_unique<juce::dsp::Oversampling<float>> (1, 
                                                                     overSamplingFactor, 
                                                                     juce::dsp::Oversampling<float>::FilterType::filterHalfBandPolyphaseIIR);
@@ -296,14 +346,14 @@ void MainProcessor::prepareOversampling (int bufferSize)
     //===The situation only arises if oversampling factor has changed
     if (overSamplingFactor != storedFactor)
     {
-        synthesizer->allocate (maxSamplesPerBlock * static_cast<int> (std::pow (2, overSamplingFactor)));
+        mpeSynthesizer->allocate (maxSamplesPerBlock * static_cast<int> (std::pow (2, overSamplingFactor)));
         overSampler = std::make_unique<juce::dsp::Oversampling<float>> (1, 
                                                                         overSamplingFactor, 
                                                                         juce::dsp::Oversampling<float>::FilterType::filterHalfBandPolyphaseIIR);
         overSampler->initProcessing (static_cast<size_t> (maxSamplesPerBlock));
         
-        synthesizer->prepareToPlay (sampleRate * std::pow (2, overSamplingFactor), 
-                                    bufferSize * static_cast<int> (std::pow (2, overSamplingFactor)));
+        mpeSynthesizer->prepareToPlay (sampleRate * std::pow (2, overSamplingFactor), 
+                                       bufferSize * static_cast<int> (std::pow (2, overSamplingFactor)));
         renderBuffer.setSize (1, bufferSize, false, false, true); // Don't re-allocate; maxBufferSize is set in prepareToPlay
         renderBuffer.clear();
         
@@ -313,8 +363,8 @@ void MainProcessor::prepareOversampling (int bufferSize)
     
     if (bufferSize != storedBufferSize)
     {
-        synthesizer->prepareToPlay (sampleRate * std::pow (2, overSamplingFactor), 
-                                    bufferSize * static_cast<int> (std::pow (2, overSamplingFactor)));
+        mpeSynthesizer->prepareToPlay (sampleRate * std::pow (2, overSamplingFactor), 
+                                       bufferSize * static_cast<int> (std::pow (2, overSamplingFactor)));
         renderBuffer.setSize (1, bufferSize, false, false, true); // Don't re-allocate; maxBufferSize is set in prepareToPlay
         renderBuffer.clear();
         storedBufferSize = bufferSize;
@@ -329,6 +379,113 @@ juce::ValueTree MainProcessor::verifiedSettings (juce::ValueTree settings)
         settings.setProperty (id::pitchBendRange, SettingsTree::DefaultSettings::pitchBendRange, nullptr);
     if (!settings.hasProperty (id::presetRandomizationScale))
         settings.setProperty (id::presetRandomizationScale, SettingsTree::DefaultSettings::presetRandomizationScale, nullptr);
+    if (!settings.hasProperty (id::mpeEnabled))
+        settings.setProperty (id::mpeEnabled, SettingsTree::DefaultSettings::mpeEnabled, nullptr);
+    
+    //std::cout << settings.toXmlString() << std::endl;
+    // settings.removeChild (settings.getChildWithName (id::MPE_ROUTING), nullptr);
+    // MPE ROUTING ==========================================
+    auto mpeTree = settings.getChildWithName (id::MPE_ROUTING);
+    // if preset uses old routing
+    if (mpeTree.isValid() && !mpeTree.getChildWithName (id::PRESSURE).getChildWithName (id::OUTPUT_ONE).hasProperty (id::curve))
+        settings.removeChild (settings.getChildWithName (id::MPE_ROUTING), nullptr);
+    
+    mpeTree = settings.getChildWithName (id::MPE_ROUTING);
+    if (mpeTree == juce::ValueTree())
+        settings.addChild (MPERoutingTree::create(), -1, nullptr);
+    
+    mpeTree = settings.getChildWithName (id::MPE_ROUTING);
+    auto pressureTree = mpeTree.getChildWithName (id::PRESSURE);
+    if (pressureTree == juce::ValueTree())
+        mpeTree.addChild (juce::ValueTree (id::PRESSURE), -1, nullptr);
+    
+    auto outputOneTree = pressureTree.getChildWithName (id::OUTPUT_ONE);
+    if (outputOneTree == juce::ValueTree())
+        pressureTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_ONE), -1, nullptr);
+    auto outputTwoTree = pressureTree.getChildWithName (id::OUTPUT_TWO);
+    if (outputTwoTree == juce::ValueTree())
+        pressureTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_TWO), -1, nullptr);
+    auto outputThreeTree = pressureTree.getChildWithName (id::OUTPUT_THREE);
+    if (outputThreeTree == juce::ValueTree())
+        pressureTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_THREE), -1, nullptr);
+    auto outputFourTree = pressureTree.getChildWithName (id::OUTPUT_FOUR);
+    if (outputFourTree == juce::ValueTree())
+        pressureTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_FOUR), -1, nullptr);
+    auto outputFiveTree = pressureTree.getChildWithName (id::OUTPUT_FIVE);
+    if (outputFiveTree == juce::ValueTree())
+        pressureTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_FIVE), -1, nullptr);
+    auto outputSixTree = pressureTree.getChildWithName (id::OUTPUT_SIX);
+    if (outputSixTree == juce::ValueTree())
+        pressureTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_SIX), -1, nullptr);
 
+    auto timbreTree = mpeTree.getChildWithName (id::TIMBRE);
+    if (timbreTree == juce::ValueTree())
+        mpeTree.addChild (juce::ValueTree (id::TIMBRE), -1, nullptr);
+    
+    outputOneTree = timbreTree.getChildWithName (id::OUTPUT_ONE);
+    if (outputOneTree == juce::ValueTree())
+        timbreTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_ONE), -1, nullptr);
+    outputTwoTree = timbreTree.getChildWithName (id::OUTPUT_TWO);
+    if (outputTwoTree == juce::ValueTree())
+        timbreTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_TWO), -1, nullptr);
+    outputThreeTree = timbreTree.getChildWithName (id::OUTPUT_THREE);
+    if (outputThreeTree == juce::ValueTree())
+        timbreTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_THREE), -1, nullptr);
+    outputFourTree = timbreTree.getChildWithName (id::OUTPUT_FOUR);
+    if (outputFourTree == juce::ValueTree())
+        timbreTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_FOUR), -1, nullptr);
+    outputFiveTree = timbreTree.getChildWithName (id::OUTPUT_FIVE);
+    if (outputFiveTree == juce::ValueTree())
+        timbreTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_FIVE), -1, nullptr);
+    outputSixTree = timbreTree.getChildWithName (id::OUTPUT_SIX);
+    if (outputSixTree == juce::ValueTree())
+        timbreTree.addChild (MPERoutingTree::createRoute (id::OUTPUT_SIX), -1, nullptr);
     return settings;
+}
+void MainProcessor::valueTreePropertyChanged (juce::ValueTree& tree, 
+                                              const juce::Identifier& property)
+{
+    if (tree.getType() == id::PRESET_SETTINGS)
+        if (property == id::mpeEnabled)
+            mpeOn.store (tree.getProperty (property));
+}
+void MainProcessor::valueTreeRedirected (juce::ValueTree& tree)
+{
+    if (tree.getType() == id::TERRAIN_SYNTH)
+        mpeOn.store (tree.getChildWithName (id::PRESET_SETTINGS).getProperty (id::mpeEnabled));
+}
+void MainProcessor::loadMPESettings()
+{
+    auto file = juce::File::getSpecialLocation (juce::File::SpecialLocationType::userApplicationDataDirectory);
+    
+#ifdef JUCE_MAC
+	file = file.getChildFile("Audio").getChildFile("Presets");
+#endif
+	file = file.getChildFile("Aaron Anderson").getChildFile("Terrain"); // "Imogen" is the name of my plugin
+	file = file.getChildFile ("MPEPresets");
+    auto result = file.createDirectory();
+    file = file.getChildFile ("MPESettings.xml");
+    if (file.existsAsFile())
+    {
+        auto xml = juce::XmlDocument::parse (file);
+        mpeSettings = juce::ValueTree::fromXml (*xml.get());
+    }
+    else 
+    {
+        mpeSettings = MPESettingsTree::create();    
+    }
+}
+void MainProcessor::saveMPESettings()
+{
+	auto presetFolder = juce::File::getSpecialLocation(juce::File::SpecialLocationType::userApplicationDataDirectory);
+#ifdef JUCE_MAC
+	presetFolder = presetFolder.getChildFile("Audio").getChildFile("Presets");
+#endif
+	presetFolder = presetFolder.getChildFile("Aaron Anderson").getChildFile("Terrain"); // "Imogen" is the name of my plugin
+	presetFolder = presetFolder.getChildFile ("MPEPresets");
+    auto result = presetFolder.createDirectory();
+    auto xml = mpeSettings.createXml();
+    auto file = presetFolder.getChildFile ("MPESettings.xml");
+    if (!file.existsAsFile()) file.setCreationTime (juce::Time::getCurrentTime());
+    xml->writeTo (file);
 }

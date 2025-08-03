@@ -7,6 +7,9 @@
 #include "Camera.h"
 #include "Attributes.h"
 
+#include <morphlib/Voice.h>
+#include "../../DSP/MPEVoice.h"
+
 struct TrajectoryUniforms
 {
     explicit TrajectoryUniforms (juce::OpenGLShaderProgram& shader)
@@ -36,7 +39,6 @@ public:
     CircularBuffer(const int initialAllocation)
     {
         positionsBuffer.resize(initialAllocation); // nearly a second at 48000khz
-        writeSampleIndex = 0;
     }
     virtual ~CircularBuffer() {}
     virtual void feed(const juce::AudioBuffer<float>& input)
@@ -47,13 +49,13 @@ public:
             Position p = {input.getReadPointer(0)[i], input.getReadPointer(1)[i], input.getReadPointer(2)[i] * 0.6f};
             positionsBuffer.set(writeSampleIndex, p); 
             
-            writeSampleIndex = (++writeSampleIndex) % positionsBuffer.size();
+            writeSampleIndex = (writeSampleIndex + 1) % positionsBuffer.size();
         }
     }
 private:
     struct Position {float x = 0.0f; float y = 0.0f; float z = 0.0f;};
     juce::Array<Position> positionsBuffer;
-    int writeSampleIndex;
+    int writeSampleIndex = 0;
 };
 class PointsMesh
 {
@@ -102,7 +104,7 @@ private:
         
         ~VertexBuffer()
         {
-            juce::gl::glDeleteBuffers (1, &glVertexBuffer);
+            juce::gl::glDeleteBuffers (1, &glVertexBuffer); ERROR_CHECK();
         }
         void bind()
         {
@@ -119,10 +121,10 @@ private:
 };
 struct TrajectoryMesh : PointsMesh // must be constructed on GL Initialize
 {
-    TrajectoryMesh(juce::OpenGLContext& c, tp::Trajectory* t,  int numVertices = 4096)
+    TrajectoryMesh(juce::OpenGLContext& c, const tp::MPEVoice* v,  int numVertices = 4096)
       : PointsMesh (numVertices),
         glContext (c),
-        voice (t)
+        voice (v)
         
     {
         if (loadShaders())
@@ -143,16 +145,17 @@ struct TrajectoryMesh : PointsMesh // must be constructed on GL Initialize
     
     void render (const Camera& camera, const juce::Colour color)
     {
-        if (!voice->isVoiceActive())
+        if (!voice->isVoiceCurrentlyActive())
             return; 
             
-        juce::gl::glEnable (juce::gl::GL_BLEND);
-        juce::gl::glEnable (juce::gl::GL_DEPTH_TEST);
-        juce::gl::glDepthMask (juce::gl::GL_FALSE);
+        juce::gl::glEnable (juce::gl::GL_BLEND); ERROR_CHECK();
+        juce::gl::glEnable (juce::gl::GL_DEPTH_TEST); ERROR_CHECK();
+        juce::gl::glDepthMask (juce::gl::GL_FALSE); ERROR_CHECK();
         // juce::gl::glBlendFunc (juce::gl::GL_SRC_ALPHA, juce::gl::GL_ONE_MINUS_SRC_ALPHA);
-        juce::gl::glBlendFunc (juce::gl::GL_SRC_ALPHA, juce::gl::GL_ONE);
-        juce::gl::glEnable (juce::gl::GL_POINT_SPRITE);
-        
+        juce::gl::glBlendFunc (juce::gl::GL_SRC_ALPHA, juce::gl::GL_ONE); ERROR_CHECK();
+#ifndef JUCE_MAC
+        juce::gl::glEnable (juce::gl::GL_POINT_SPRITE); ERROR_CHECK(); // This caused an error on mac
+#endif
         if(shaders.get() == nullptr)
             return;
         
@@ -165,12 +168,12 @@ struct TrajectoryMesh : PointsMesh // must be constructed on GL Initialize
             uniforms->color->set (color.getRed(), color.getGreen(), color.getBlue());
 
         PointsMesh::draw (*attributes.get());
-        juce::gl::glBindBuffer (juce::gl::GL_ARRAY_BUFFER, 0);
-        juce::gl::glDepthMask (juce::gl::GL_TRUE);
+        juce::gl::glBindBuffer (juce::gl::GL_ARRAY_BUFFER, 0); ERROR_CHECK();
+        juce::gl::glDepthMask (juce::gl::GL_TRUE); ERROR_CHECK();
     }
 private:
     juce::OpenGLContext& glContext;
-    tp::Trajectory* voice; // non-owning 
+    const tp::MPEVoice* voice; // non-owning 
     std::unique_ptr<juce::OpenGLShaderProgram>  shaders; // tell GL how to draw
     std::unique_ptr<Attributes>           attributes; // tell shaders about vertex data
     std::unique_ptr<TrajectoryUniforms>   uniforms;
@@ -191,32 +194,26 @@ private:
         return loaded;
     }
 };
-struct Trajectories : private tp::WaveTerrainSynthesizer::VoiceListener
+struct Trajectories
 {
-    Trajectories (juce::OpenGLContext& c, tp::WaveTerrainSynthesizer& wts)
+    Trajectories (juce::OpenGLContext& c, 
+                  tp::WaveTerrainSynthesizerMPE& wtsmpe)
       : context(c)
     {
-        wts.setVoiceListener(this);
-        voicesReset (wts.getVoices());
+        for (int i = 0; i < wtsmpe.getNumVoices(); i++)
+        {
+            auto* juceVoice = wtsmpe.getVoice (i);
+            auto* voice = dynamic_cast<tp::MPEVoice*> (juceVoice);
+            trajectories.add (std::make_unique<TrajectoryMesh> (context, voice));
+        }
     }
-    ~Trajectories() override {}
+
     void render (const Camera& camera, const juce::Colour color)
     {
         for(auto t : trajectories)
             t->render (camera, color);
     }
 private:
-    void voicesReset (juce::Array<juce::SynthesiserVoice*> voices) override 
-    {
-        trajectories.clear();
-        for(auto v : voices)
-        {
-            auto* trajectory = dynamic_cast<tp::Trajectory*>(v);
-            jassert (trajectory != nullptr);
-
-            trajectories.add(std::make_unique<TrajectoryMesh>(context, trajectory));
-        }
-    }
     juce::OwnedArray<TrajectoryMesh> trajectories;
     juce::OpenGLContext& context;
 };

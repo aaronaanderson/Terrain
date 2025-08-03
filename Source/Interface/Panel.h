@@ -1,7 +1,7 @@
 #pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
-
+#include "LookAndFeel.h"
 namespace ti
 {
 class Panel : public juce::Component
@@ -16,8 +16,9 @@ public:
     }
     void paint (juce::Graphics& g) override 
     {
-        g.setColour (juce::Colours::black);
         auto b = getLocalBounds();
+        auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
+        g.setColour (laf->getBackgroundDark());
         g.drawRect (b, 2);
 
         g.drawRect (b.removeFromTop (20));

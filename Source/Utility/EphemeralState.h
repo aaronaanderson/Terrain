@@ -8,7 +8,7 @@ struct EphemeralState : private juce::Timer
       : processorRef (p)
     {
         state = EphemeralStateTree::create();
-        startTimer (3000);
+        startTimer (1000);
         timerCallback();
     }
     void timerCallback() override

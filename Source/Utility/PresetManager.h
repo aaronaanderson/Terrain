@@ -25,7 +25,6 @@ public:
     void loadPreset (juce::String presetName)
     {
         auto file = getPresetFolder().getChildFile (presetName + ".xml");
-        std::cout << file.getFullPathName() << std::endl;
         if (file.existsAsFile())
         {
             auto xml = juce::XmlDocument::parse (file);

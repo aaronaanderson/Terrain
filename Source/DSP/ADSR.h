@@ -11,11 +11,15 @@ class ADSR
 {
 public:
     ADSR()
-      : EXP_N4_95 (std::exp (-4.95f)), 
+      : sampleRate (48000.0),
+        EXP_N4_95 (std::exp (-4.95f)), 
         LOG_EXP_N4_95 (-std::log((1.0f + std::exp (-4.95f)) / std::exp (-4.95f))),
         EXP_N1_5 (std::exp (-1.5f)),
         LOG_EXP_N1_5 (-std::log((1.0f + std::exp (-1.5f)) / std::exp (-1.5f)))
-    {}
+    {
+        setParameters (Parameters());
+        calculateCoefficients();
+    }
     void prepare (double sr)
     {
         sampleRate = sr;
@@ -110,6 +114,7 @@ public:
     }
     bool isActive() { return (phase == Phase::OFF) ? false : true; }
 
+    void setPhase (Phase nextPhase) { phase = nextPhase; }
 private:
     double currentValue = 0.0;
     double sampleRate;
@@ -163,7 +168,6 @@ private:
         release.coefficient = juce::dsp::FastMathApproximations::exp (b / release.numSamples);
         release.offset = -release.tco * (1.0 - release.coefficient);
     }
-    void setPhase (Phase nextPhase) { phase = nextPhase; }
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ADSR)
 };

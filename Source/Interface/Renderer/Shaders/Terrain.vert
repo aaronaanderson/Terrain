@@ -89,22 +89,34 @@ float calculateDepth (int index, vec2 p)
 }
 
 // https://stackoverflow.com/questions/13983189/opengl-how-to-calculate-normals-in-a-terrain-height-grid
-vec3 calculateNormal (int index, vec2 p)
+// vec3 calculateNormal (int index, vec2 p)
+// {
+//     vec3 offset = vec3(0.05, 0.05, 0.0);
+//     float hL = calculateDepth (index, p - offset.xz);
+//     float hR = calculateDepth (index, p + offset.xz);
+//     float hD = calculateDepth (index, p - offset.zy);
+//     float hU = calculateDepth (index, p + offset.zy);
+
+//     vec3 n;
+//     n.x = hL - hR;
+//     n.y = hD - hU;
+//     n.z = 2.0; // no idea why 2 hmmmm
+//     n = normalize (n);
+//     return n;
+// }
+vec3 calculateNormal(int index, vec2 p)
 {
-    vec3 offset = vec3(0.05, 0.05, 0.0);
-    float hL = calculateDepth (index, p - offset.xz);
-    float hR = calculateDepth (index, p + offset.xz);
-    float hD = calculateDepth (index, p - offset.zy);
-    float hU = calculateDepth (index, p + offset.zy);
+    vec2 dx = vec2(0.05, 0.0);
+    vec2 dy = vec2(0.0, 0.05);
 
-    vec3 n;
-    n.x = hL - hR;
-    n.y = hD - hU;
-    n.z = 2.0; // no idea why 2 hmmmm
-    n = normalize (n);
-    return n;
+    float hL = calculateDepth(index, p - dx);
+    float hR = calculateDepth(index, p + dx);
+    float hD = calculateDepth(index, p - dy);
+    float hU = calculateDepth(index, p + dy);
+
+    vec3 normal = normalize(vec3(hL - hR, hD - hU, 0.1)); // 0.1 = 2 * offset spacing
+    return normal;
 }
-
 void main()
 {
     depth = calculateDepth (terrainIndex, vec2(position.x, position.y));

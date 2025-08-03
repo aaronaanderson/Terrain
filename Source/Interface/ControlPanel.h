@@ -2,13 +2,16 @@
 
 #include "Panel.h"
 #include "AttachedInterfaces.h"
+
+#include "../DSP/MPEVoiceData.h"
 namespace ti
 {
 class OutputLevel : public juce::Component 
 {
 public:
-    OutputLevel (juce::AudioProcessorValueTreeState& vts)
-      : level ("Output Level", "OutputLevel", vts)
+    OutputLevel (juce::AudioProcessorValueTreeState& vts,
+                 tp::MPEVoiceData& vd)
+      : level ("Output Level", "OutputLevel", vts, vd)
     {
         addAndMakeVisible (level);
     }
@@ -30,9 +33,10 @@ private:
 class Compressor : public juce::Component 
 {
 public:
-    Compressor (juce::AudioProcessorValueTreeState& vts)
-      : threshold ("Threshold", "CompressorThreshold", vts), 
-        ratio ("Ratio", "CompressorRatio", vts)
+    Compressor (juce::AudioProcessorValueTreeState& vts,
+                tp::MPEVoiceData& vd)
+      : threshold ("Threshold", "CompressorThreshold", vts, vd), 
+        ratio ("Ratio", "CompressorRatio", vts, vd)
     {
         label.setText ("Compressor", juce::dontSendNotification);
         label.setJustificationType (juce::Justification::centred);
@@ -59,20 +63,66 @@ private:
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Compressor)
 };
+class PerVoiceFilter : public juce::Component
+{
+public:
+    PerVoiceFilter (juce::AudioProcessorValueTreeState& vts, 
+                    tp::MPEVoiceData& vd)
+      : perVoiceFrequency ("Frequency", "Per-VoiceFilterFrequency", vts, vd),
+        perVoiceResonance ("Resonance", "Per-VoiceFilterResonance", vts, vd),
+        perVoiceOnOff ("", "Per-VoiceFilterOnOff", vts)
+    {
+        label.setText ("Per-Voice Filter", juce::dontSendNotification);
+        label.setJustificationType (juce::Justification::centred);
+        addAndMakeVisible (label);
+
+        addAndMakeVisible (perVoiceFrequency);
+        addAndMakeVisible (perVoiceResonance);
+        addAndMakeVisible (perVoiceOnOff);
+
+    }
+    void paint (juce::Graphics& g) override 
+    {
+        g.setColour (juce::Colours::black);
+        g.drawRect (getLocalBounds());
+    }
+    void resized() override 
+    {
+        auto b = getLocalBounds();
+        perVoiceOnOff.setBounds (0, 0, 22, 22);
+        label.setBounds (b.removeFromTop (20));
+        auto unitWidth = b.getWidth() / 2.0f;
+        perVoiceFrequency.setBounds (b.removeFromLeft (static_cast<int> (unitWidth)));
+        perVoiceResonance.setBounds (b.removeFromLeft (static_cast<int> (unitWidth)));
+    }
+private:
+    juce::Label label;
+    ParameterSlider perVoiceFrequency, perVoiceResonance;
+    ParameterToggle perVoiceOnOff;
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PerVoiceFilter)
+};
 class Filter : public juce::Component 
 {
 public:
-    Filter (juce::AudioProcessorValueTreeState& vts)
-      : frequency ("Frequency", "FilterFrequency", vts), 
-        resonance ("Resonance", "FilterResonance", vts), 
-        onOff ("", "FilterOnOff", vts)
+    Filter (juce::AudioProcessorValueTreeState& vts, 
+            tp::MPEVoiceData& vd)
+      : frequency ("Frequency", "FilterFrequency", vts, vd), 
+        resonance ("Resonance", "FilterResonance", vts, vd), 
+        onOff ("", "FilterOnOff", vts), 
+        perVoiceFrequency ("Frequency", "Per-VoiceFilterFrequency", vts, vd),
+        perVoiceResonance ("Resonance", "Per-VoiceFilterResonance", vts, vd),
+        perVoiceOnOff ("", "Per-VoiceFilterOnOff", vts)
     {
-        label.setText ("Filter", juce::dontSendNotification);
+        label.setText ("Global Filter", juce::dontSendNotification);
         label.setJustificationType (juce::Justification::centred);
         addAndMakeVisible (label);
         addAndMakeVisible (frequency);
         addAndMakeVisible (resonance);
         addAndMakeVisible (onOff);
+
+        addAndMakeVisible (perVoiceFrequency);
+        addAndMakeVisible (perVoiceResonance);
+        addAndMakeVisible (perVoiceOnOff);
 
     }
     void paint (juce::Graphics& g) override 
@@ -94,59 +144,21 @@ private:
     ParameterSlider frequency, resonance;
     ParameterToggle onOff;
 
+    ParameterSlider perVoiceFrequency, perVoiceResonance;
+    ParameterToggle perVoiceOnOff;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Filter)
-};
-class OverSampling : public juce::Component
-{
-public:
-    OverSampling (juce::AudioProcessorValueTreeState& vts)
-    {
-        settings = vts.state.getChildWithName (id::PRESET_SETTINGS);
-
-        dropDown.addItem ("1X", 1);
-        dropDown.addItem ("2X", 2);
-        dropDown.addItem ("4X", 3);
-        dropDown.addItem ("8X", 4);
-        dropDown.addItem ("16X", 5);
-        dropDown.setSelectedId (static_cast<int> (settings.getProperty (id::oversampling)) + 1, juce::dontSendNotification);
-        dropDown.onChange = [&]() 
-            {
-                auto index = dropDown.getSelectedItemIndex();
-                settings.setProperty (id::oversampling, index, nullptr);
-            };
-        addAndMakeVisible (dropDown);
-        label.setText ("Oversampling", juce::dontSendNotification);
-        label.setJustificationType (juce::Justification::centred);
-        addAndMakeVisible (label);
-    }
-    void paint (juce::Graphics& g) override 
-    {
-        auto b = getLocalBounds();
-        g.setColour (juce::Colours::black);
-        g.drawRect (b);
-    }
-    void resized() override 
-    {
-        auto b = getLocalBounds();
-        label.setBounds (b.removeFromTop (20));
-        dropDown.setBounds (b.removeFromTop (20));
-    }
-private:
-    juce::ValueTree settings;
-    juce::Label label;
-    juce::ComboBox dropDown;
-
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OverSampling)
 };
 class Envelope : public juce::Component
 {
 public:
-    Envelope (juce::AudioProcessorValueTreeState& vts)
+    Envelope (juce::AudioProcessorValueTreeState& vts, 
+              tp::MPEVoiceData& vd)
       : envelopeSize ("ES", "EnvelopeSize", vts),
-        attack ("Attack","Attack", vts),
-        decay ("Decay","Decay", vts),
-        sustain ("Sustain","Sustain", vts),
-        release ("Release","Release", vts)
+        attack ("Attack","Attack", vts, vd),
+        decay ("Decay","Decay", vts, vd),
+        sustain ("Sustain","Sustain", vts, vd),
+        release ("Release","Release", vts, vd), 
+        sensitivity ("Sensitivity", "Sensitivity", vts, vd)
     {
         label.setText ("Envelope", juce::dontSendNotification);
         label.setJustificationType (juce::Justification::centred);
@@ -156,6 +168,7 @@ public:
         addAndMakeVisible (decay);
         addAndMakeVisible (sustain);
         addAndMakeVisible (release);
+        addAndMakeVisible (sensitivity);
     }
     void paint (juce::Graphics& g) override 
     {
@@ -167,34 +180,36 @@ public:
     {
         auto b = getLocalBounds();
         label.setBounds (b.removeFromTop (20));
-        auto unitWidth = b.getWidth() / 43.0f;
+        auto unitWidth = b.getWidth() / 53.0f;
         envelopeSize.setBounds (b.removeFromLeft (static_cast<int> (juce::jmax (unitWidth * 3.0f, 22.0f))));
         attack.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 10.0f)));
         decay.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 10.0f)));
         sustain.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 10.0f)));
         release.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 10.0f)));
+        sensitivity.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 10.0f)));
     }
 
 private:
     juce::Label label;
     ti::ParameterToggle envelopeSize;
-    ti::ParameterSlider attack, decay, sustain, release;
+    ti::ParameterSlider attack, decay, sustain, release, sensitivity;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Envelope)
 };
 class ControlPanel : public Panel
 {
 public:
-    ControlPanel (juce::AudioProcessorValueTreeState& vts)
+    ControlPanel (juce::AudioProcessorValueTreeState& vts, 
+                  tp::MPEVoiceData& vd)
       : Panel ("Control Panel"), 
-        envelope (vts), 
-        oversampling (vts), 
-        filter (vts), 
-        compressor (vts), 
-        outputLevel (vts)
+        envelope (vts, vd),
+        perVoiceFilter (vts, vd), 
+        filter (vts, vd), 
+        compressor (vts, vd), 
+        outputLevel (vts, vd)
     {
         addAndMakeVisible (envelope);  
-        addAndMakeVisible (oversampling);
+        addAndMakeVisible (perVoiceFilter);
         addAndMakeVisible (filter);
         addAndMakeVisible (compressor);
         addAndMakeVisible (outputLevel);
@@ -203,16 +218,16 @@ public:
     {
         Panel::resized();
         auto b = getAdjustedBounds();
-        auto unitWidth = b.getWidth() / 10.0f;
+        auto unitWidth = b.getWidth() / 11.0f;
         envelope.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 4.0f)));
-        oversampling.setBounds (b.removeFromLeft (static_cast<int> (unitWidth)));
+        perVoiceFilter.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 2.0f)));
         filter.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 2.0f)));
         compressor.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 2.0f)));
         outputLevel.setBounds (b.removeFromLeft (static_cast<int> (unitWidth)));
     }
 private:
     Envelope envelope;
-    OverSampling oversampling;
+    PerVoiceFilter perVoiceFilter;
     Filter filter;
     Compressor compressor;
     OutputLevel outputLevel;

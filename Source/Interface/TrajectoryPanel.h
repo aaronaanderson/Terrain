@@ -3,17 +3,19 @@
 #include "Panel.h"
 #include "AttachedInterfaces.h"
 #include "../Parameters.h"
+#include "../DSP/MPEVoiceData.h"
 namespace ti
 {
 class ModifierArray : public juce::Component,
                       private juce::ValueTree::Listener
 {
 public:
-    ModifierArray (juce::AudioProcessorValueTreeState& vts)
-      : aModifier ("a", "TrajectoryModA", vts),
-        bModifier ("b", "TrajectoryModB", vts),
-        cModifier ("c", "TrajectoryModC", vts),
-        dModifier ("d", "TrajectoryModD", vts)
+    ModifierArray (juce::AudioProcessorValueTreeState& vts, 
+                   tp::MPEVoiceData& vd)
+      : aModifier ("a", "TrajectoryModA", vts, vd),
+        bModifier ("b", "TrajectoryModB", vts, vd),
+        cModifier ("c", "TrajectoryModC", vts, vd),
+        dModifier ("d", "TrajectoryModD", vts, vd)
     {
         addAndMakeVisible (aModifier);
         addAndMakeVisible (bModifier);
@@ -70,8 +72,9 @@ private:
 class TrajectorySelector : public juce::Component
 {
 public:
-    TrajectorySelector (juce::AudioProcessorValueTreeState& vts)
-      : modifierArray (vts),
+    TrajectorySelector (juce::AudioProcessorValueTreeState& vts, 
+                        tp::MPEVoiceData& vd)
+      : modifierArray (vts, vd),
         trajectoryList ("CurrentTrajectory", vts, resetModifierArray)
     {
         trajectoryListLabel.setText ("Current Trajectory", juce::NotificationType::dontSendNotification);
@@ -127,11 +130,12 @@ private:
 class FeedbackPanel : public juce::Component
 {
 public:
-    FeedbackPanel (juce::AudioProcessorValueTreeState& vts)
-      : time ("Time", "FeedbackTime", vts), 
-        feedback ("Feedback", "Feedback", vts), 
-        mix ("Mix", "FeedbackMix", vts),
-        compression ("Compression", "FeedbackCompression", vts)
+    FeedbackPanel (juce::AudioProcessorValueTreeState& vts, 
+                   tp::MPEVoiceData& vd)
+      : time ("Time", "FeedbackTime", vts, vd), 
+        feedback ("Feedback", "Feedback", vts, vd), 
+        mix ("Mix", "FeedbackMix", vts, vd),
+        compression ("Compression", "FeedbackCompression", vts, vd)
     {
         label.setText ("Trajectory Feedback", juce::dontSendNotification);
         label.setJustificationType (juce::Justification::centred);
@@ -160,12 +164,15 @@ private:
 class TrajectoryVariables : public juce::Component 
 {
 public:
-    TrajectoryVariables (juce::AudioProcessorValueTreeState& vts)
-      : size ("Size", "Size", vts),
-        rotation ("Rotation", "Rotation", vts),
-        translation_x ("Translation X", "TranslationX", vts),
-        translation_y ("Translation Y", "TranslationY", vts)
+    TrajectoryVariables (juce::AudioProcessorValueTreeState& vts, 
+                         tp::MPEVoiceData& vd)
+      : amplitude ("Amplitude", "Amplitude", vts, vd),
+        size ("Size", "Size", vts, vd),
+        rotation ("Rotation", "Rotation", vts, vd),
+        translation_x ("Translation X", "TranslationX", vts, vd),
+        translation_y ("Translation Y", "TranslationY", vts, vd)
     {
+        addAndMakeVisible (amplitude);
         addAndMakeVisible (size);
         addAndMakeVisible (rotation);
         addAndMakeVisible (translation_x);
@@ -174,13 +181,15 @@ public:
     void resized() override 
     {
         auto b = getLocalBounds();
-        auto unitHeight = b.getHeight() / static_cast<float> (4);
+        auto unitHeight = b.getHeight() / static_cast<float> (5);
+        amplitude.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
         size.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
         rotation.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
         translation_x.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
         translation_y.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
     }
 private:
+    ParameterSlider amplitude;
     ParameterSlider size;
     ParameterSlider rotation;
     ParameterSlider translation_x;
@@ -191,9 +200,10 @@ private:
 class MeanderancePanel : public juce::Component
 {
 public:
-    MeanderancePanel (juce::AudioProcessorValueTreeState& vts)
-      : scale ("Scale", "MeanderanceScale", vts),
-        speed ("Speed", "MeanderanceSpeed", vts)
+    MeanderancePanel (juce::AudioProcessorValueTreeState& vts,
+                      tp::MPEVoiceData& vd)
+      : scale ("Scale", "MeanderanceScale", vts, vd),
+        speed ("Speed", "MeanderanceSpeed", vts, vd)
     {
         label.setText ("Meanderance", juce::dontSendNotification);
         label.setJustificationType (juce::Justification::centred);
@@ -218,12 +228,13 @@ private:
 class TrajectoryPanel : public Panel
 {
 public:
-    TrajectoryPanel (juce::AudioProcessorValueTreeState& vts)
+    TrajectoryPanel (juce::AudioProcessorValueTreeState& vts, 
+                     tp::MPEVoiceData& vd)
       : Panel ("Trajectory"),  
-        trajectorySelector (vts),
-        trajectoryVariables (vts),
-        meanderancePanel (vts),
-        feedbackPanel (vts)
+        trajectorySelector (vts, vd),
+        trajectoryVariables (vts, vd),
+        meanderancePanel (vts, vd),
+        feedbackPanel (vts, vd)
     {
         addAndMakeVisible (trajectorySelector);
         addAndMakeVisible (trajectoryVariables);
@@ -234,9 +245,9 @@ public:
     {
         Panel::resized();
         auto b = getAdjustedBounds();
-        auto unitHeight = b.getHeight() / static_cast<float> ((12 + 16 + 10 + 22));
+        auto unitHeight = b.getHeight() / static_cast<float> ((12 + 20 + 10 + 22));
         trajectorySelector.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 12.0f)));
-        trajectoryVariables.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 16.0f)));
+        trajectoryVariables.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 20.0f)));
         meanderancePanel.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 10.0f)));
         feedbackPanel.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 22.0f)));
     }

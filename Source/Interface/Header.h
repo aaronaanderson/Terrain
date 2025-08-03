@@ -6,9 +6,9 @@
 #include "Panel.h"
 #include "../Utility/Identifiers.h"
 #include "../Utility/PresetManager.h"
+#include "../DSP/WaveTerrainSynthesizerMPE.h"
 
 namespace ti{
-
 class PresetComponent : public Panel
 {
 public:
@@ -294,7 +294,6 @@ public:
     {
         Panel::resized();
         auto b = getAdjustedBounds();
-        b.removeFromLeft (b.getWidth() / 2);
         slider.setBounds (b);
     }
 private:
@@ -417,18 +416,45 @@ private:
         }
     }
 };
+class PanicComponent : public Panel
+{
+public:
+    PanicComponent (juce::ValueTree settingsBranch, tp::WaveTerrainSynthesizerMPE& synth)
+      : Panel ("PANIC!"),
+        settings (settingsBranch)
+    {
+        panicButton.onClick = [&]()
+            {
+                synth.panic();
+            };
+        addAndMakeVisible (panicButton);
+    }
+    void resized() override
+    {
+        Panel::resized();
+        auto b = getAdjustedBounds();
+        juce::Rectangle<int> r = {0, 0, 80, 22};
+        panicButton.setBounds (r.withCentre (b.getCentre()));
+    }
+private:
+    juce::ValueTree settings;
+    juce::TextButton panicButton {"Panic!", "PANIC!"};
+};
 class Header : public juce::Component
 {
 public:
     Header (PresetManager& pm, 
             juce::ValueTree settingsBranch,
-            juce::ValueTree ephemeralState)
+            juce::ValueTree ephemeralState,
+            tp::WaveTerrainSynthesizerMPE& synth)
       : mtsComponent (settingsBranch, ephemeralState),
         presetComponent (pm, settingsBranch), 
+        panicComponent (settingsBranch, synth),
         pitchBendComponent (settingsBranch)
     {
         addAndMakeVisible (mtsComponent);
         addAndMakeVisible (presetComponent);
+        addAndMakeVisible (panicComponent);
         addAndMakeVisible (pitchBendComponent);
     }
     void resized() override
@@ -438,11 +464,15 @@ public:
 
         mtsComponent.setBounds (b.removeFromLeft (oneThird));
         presetComponent.setBounds (b.removeFromLeft (oneThird));
-        pitchBendComponent.setBounds (b);                                                  
+
+        auto remainingThird = oneThird / 3;
+        panicComponent.setBounds (b.removeFromLeft (remainingThird));
+        pitchBendComponent.setBounds (b);                                                 
     }
 private:
     MTSComponent mtsComponent;
     PresetComponent presetComponent;
+    PanicComponent panicComponent;
     PitchBendComponent pitchBendComponent;
 };
 } // end namespace ti

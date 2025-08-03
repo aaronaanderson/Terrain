@@ -1,0 +1,506 @@
+#pragma once
+
+#include <juce_gui_basics/juce_gui_basics.h>
+#include <juce_data_structures/juce_data_structures.h>
+#include "LookAndFeel.h"
+#include "RoutingCurve.h"
+namespace ti
+{
+struct HeaderLabel : public juce::Component
+{
+    HeaderLabel (juce::String name)
+    {
+        label.setJustificationType (juce::Justification::centred);
+        label.setText (name, juce::dontSendNotification);
+        addAndMakeVisible (label);
+    }
+    void paint (juce::Graphics& g) override 
+    {
+        auto b = getLocalBounds();
+        auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
+        g.setColour (laf->getBackgroundDark());
+        g.drawRect (b.toFloat().toFloat(), 2.0f);
+    }
+    void resized() override 
+    {
+        label.setBounds (getLocalBounds());
+    }
+private:
+    juce::Label label;
+};
+struct MPECurve : public juce::Component
+{
+    enum class CurveMode
+    {
+        Absolute,
+        Relative,
+        Continuation
+    };
+    MPECurve (juce::ValueTree MPESettings, 
+              const juce::Identifier& MPEChannel)
+      : mpeSettings (MPESettings), 
+        mpeChannel (MPEChannel)
+    {
+        jassert (mpeSettings.getType() == id::MPE_SETTINGS);
+
+        curveFactorSlider.setRange ({0.125, 8.0}, 0.0);
+        curveFactorSlider.setSkewFactorFromMidPoint (1.0);
+        curveFactorSlider.setTextBoxStyle (juce::Slider::NoTextBox, false, 20, 20);
+        float value = 1.0f;
+        if (mpeChannel == id::PRESSURE) value = mpeSettings.getProperty (id::pressureCurve);
+        else if (mpeChannel == id::TIMBRE) value = mpeSettings.getProperty (id::timbreCurve);
+        curveFactorSlider.setValue (value);
+        curveFactorSlider.setDoubleClickReturnValue (true, 1.0);
+        curveFactorSlider.onValueChange = [&]() 
+        { 
+            if (MPEChannel == id::PRESSURE)
+                mpeSettings.setProperty (id::pressureCurve, curveFactorSlider.getValue(), nullptr);
+            else if (MPEChannel == id::TIMBRE)
+                mpeSettings.setProperty (id::timbreCurve, curveFactorSlider.getValue(), nullptr);
+
+            repaint(); 
+        };
+        addAndMakeVisible (curveFactorSlider);
+    }
+    void paint (juce::Graphics& g) override
+    {
+        juce::ignoreUnused (g);
+        auto b = getLocalBounds();
+        b.removeFromBottom (static_cast<int> (b.getHeight() * 0.2f));
+        auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
+        g.setColour (laf->getBackgroundDark());
+        g.fillRect (b.toFloat());
+
+        g.setColour (laf->getAccentColour());
+
+        juce::Path curve;
+        float curveThicc = 4.0f;
+        curve.startNewSubPath ({0.0f, static_cast<float> (b.getHeight())});
+        for (int i = 0; i < b.getWidth(); i++)
+        {
+            float normalX = juce::jmap (static_cast<float> (i), 0.0f, static_cast<float> (b.getWidth()) - 1.0f, 0.0f, 1.0f);
+            auto normalY = static_cast<float> (std::pow (normalX, 1.0f / curveFactorSlider.getValue()));
+  
+            auto halfLine = curveThicc * 0.5f;
+            juce::Point<float> nextPoint = {juce::jmap (normalX, 
+                                                        halfLine, 
+                                                        static_cast<float> (b.getWidth()) - halfLine), 
+                                                        juce::jmap (normalY, 
+                                                                   static_cast<float> (b.getHeight() - halfLine), 
+                                                                   halfLine)};
+            curve.lineTo (nextPoint); 
+        }  
+        g.strokePath (curve, juce::PathStrokeType (curveThicc));
+    }
+    void resized() override
+    {
+        auto b = getLocalBounds();
+        b.removeFromTop (static_cast<int> (b.getHeight() * 0.8f));
+        curveFactorSlider.setBounds (b);
+    }
+private:
+    juce::ValueTree mpeSettings;
+    const juce::Identifier& mpeChannel;
+    juce::Slider curveFactorSlider;
+};
+struct PressureSmoothingComponent : public juce::Component
+{
+    PressureSmoothingComponent (juce::ValueTree& MPESettings)
+      : mpeSettings (MPESettings)
+    {
+        jassert (mpeSettings.getType() == id::MPE_SETTINGS);
+        addAndMakeVisible (label);
+        smoothingSlider.setTextBoxStyle (juce::Slider::TextBoxLeft, false, 60, 18);
+        smoothingSlider.setNumDecimalPlacesToDisplay (1);
+        smoothingSlider.setRange ({2.5, 1280.0}, 0.0);
+        smoothingSlider.setSkewFactorFromMidPoint (80.0);
+        smoothingSlider.setValue (mpeSettings.getProperty (id::pressureSmoothing), juce::dontSendNotification);
+        smoothingSlider.onValueChange = [&]()
+            {
+                mpeSettings.setProperty (id::pressureSmoothing, smoothingSlider.getValue(), nullptr);
+            };
+        addAndMakeVisible (smoothingSlider);
+    }
+    void paint (juce::Graphics& g) override 
+    {
+        auto b = getLocalBounds();
+        auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
+        g.setColour (laf->getBackgroundDark());
+        g.drawRect (b.toFloat(), 2.0f);
+    }
+    void resized() override
+    {
+        auto b = getLocalBounds();
+        auto hScalar = static_cast<float> (b.getWidth()) / 430.0f;
+        label.setBounds (b.removeFromLeft (static_cast <int> (130 * hScalar)));
+        smoothingSlider.setBounds (b.removeFromLeft (static_cast<int> (200 * hScalar)));
+    }
+private:
+    juce::ValueTree mpeSettings;
+    juce::Label label {"pSMooth", "Pressure Smoothing (ms)"};
+    juce::Slider smoothingSlider;
+};
+struct TimbreSmoothingComponent : public juce::Component
+{
+    TimbreSmoothingComponent (juce::ValueTree& MPESettings)
+      : mpeSettings (MPESettings)
+    {
+        jassert (mpeSettings.getType() == id::MPE_SETTINGS);
+        addAndMakeVisible (label);
+        smoothingSlider.setTextBoxStyle (juce::Slider::TextBoxLeft, false, 60, 18);
+        smoothingSlider.setNumDecimalPlacesToDisplay (1);
+        smoothingSlider.setRange ({2.5, 1280.0}, 0.0);
+        smoothingSlider.setSkewFactorFromMidPoint (80.0);
+        smoothingSlider.setValue (mpeSettings.getProperty (id::timbreSmoothing), juce::dontSendNotification);
+        smoothingSlider.onValueChange = [&]()
+            {
+                mpeSettings.setProperty (id::timbreSmoothing, smoothingSlider.getValue(), nullptr);
+            };
+        addAndMakeVisible (smoothingSlider);
+    }
+    void paint (juce::Graphics& g) override 
+    {
+        auto b = getLocalBounds();
+        auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
+        g.setColour (laf->getBackgroundDark());
+        g.drawRect (b.toFloat(), 2.0f);
+    }
+    void resized() override
+    {
+        auto b = getLocalBounds();
+        auto hScalar = static_cast<float> (b.getWidth()) / 430.0f;
+        label.setBounds (b.removeFromLeft (static_cast <int> (130 * hScalar)));
+        smoothingSlider.setBounds (b.removeFromLeft (static_cast<int> (200 * hScalar)));
+    }
+private:
+    juce::ValueTree mpeSettings;
+    juce::Label label {"pSMooth", "Timbre Smoothing (ms)"};
+    juce::Slider smoothingSlider;
+};
+struct RoutingComponent : public juce::Component
+{
+    RoutingComponent (juce::ValueTree MPERouting, 
+                      const juce::Identifier& MPEChannel, // timbre or pressure
+                      const juce::AudioProcessorValueTreeState& apvts)
+      : mpeRouting (MPERouting),
+        curveOne   (mpeRouting.getChildWithName (MPEChannel).getChildWithName (id::OUTPUT_ONE), apvts),
+        curveTwo   (mpeRouting.getChildWithName (MPEChannel).getChildWithName (id::OUTPUT_TWO), apvts),
+        curveThree (mpeRouting.getChildWithName (MPEChannel).getChildWithName (id::OUTPUT_THREE), apvts),
+        curveFour  (mpeRouting.getChildWithName (MPEChannel).getChildWithName (id::OUTPUT_FOUR), apvts),
+        curveFive  (mpeRouting.getChildWithName (MPEChannel).getChildWithName (id::OUTPUT_FIVE), apvts),
+        curveSix   (mpeRouting.getChildWithName (MPEChannel).getChildWithName (id::OUTPUT_SIX), apvts)
+    {
+        jassert (mpeRouting.getType() == id::MPE_ROUTING);
+
+        addAndMakeVisible (curveOne);
+        addAndMakeVisible (curveTwo);
+        addAndMakeVisible (curveThree);
+        addAndMakeVisible (curveFour);
+        addAndMakeVisible (curveFive);
+        addAndMakeVisible (curveSix);
+    }
+    void resized() override
+    {
+        auto b = getLocalBounds();
+        float hScale = static_cast<float> (b.getWidth()) / 598.0f;
+        int pad = 4;
+        b.removeFromTop (pad);
+        auto top = b.removeFromTop (b.getHeight() / 2);
+
+        top.removeFromLeft (pad / 2); top.removeFromRight (pad / 2);
+        curveOne.setBounds (top.removeFromLeft (static_cast<int> (196 * hScale)));
+        top.removeFromLeft (pad);
+        curveTwo.setBounds (top.removeFromLeft (static_cast<int> (196 * hScale)));
+        top.removeFromLeft (pad);
+        curveThree.setBounds (top.removeFromLeft (static_cast<int> (196 * hScale)));
+        
+        b.removeFromTop (pad); b.removeFromBottom (pad);
+        b.removeFromLeft (pad / 2); b.removeFromRight (pad / 2);
+        curveFour.setBounds (b.removeFromLeft (static_cast<int> (196 * hScale)));
+        b.removeFromLeft (pad);
+        curveFive.setBounds (b.removeFromLeft (static_cast<int> (196 * hScale)));
+        b.removeFromLeft (pad);
+        curveSix.setBounds (b.removeFromLeft (static_cast<int> (196 * hScale)));
+    }
+private:
+    juce::ValueTree mpeRouting;
+    AssignableCurve curveOne, curveTwo, curveThree, 
+                    curveFour, curveFive, curveSix;
+};
+struct MPESaveComponent : public juce::Component
+{
+public:
+    MPESaveComponent (juce::ValueTree& MPESettings)
+      : mpeSettings (MPESettings)
+    {
+        jassert (mpeSettings.getType() == id::MPE_SETTINGS);
+        saveButton.onClick = [&]() { savePreset(); };
+        addAndMakeVisible (saveButton);
+    }
+    void resized() override
+    {
+        auto b = getLocalBounds();
+        saveButton.setBounds (b.removeFromLeft (100));
+    }
+private:
+    juce::ValueTree mpeSettings;
+    juce::TextButton saveButton {"Save MPE Settings"};
+
+    void savePreset()
+    {
+        auto mpeFolder = getMPEPresetFolder();
+        auto xml = mpeSettings.createXml();
+        auto file = getMPEPresetFolder().getChildFile ("MPESettings.xml");
+        if (!file.existsAsFile()) file.setCreationTime (juce::Time::getCurrentTime());
+        xml->writeTo (file);
+    }
+    juce::File getMPEPresetFolder()
+    {
+	    auto presetFolder = juce::File::getSpecialLocation(juce::File::SpecialLocationType::userApplicationDataDirectory);
+	
+#ifdef JUCE_MAC
+	    presetFolder = presetFolder.getChildFile("Audio").getChildFile("Presets");
+#endif
+	    presetFolder = presetFolder.getChildFile("Aaron Anderson").getChildFile("Terrain"); // "Imogen" is the name of my plugin
+	    presetFolder = presetFolder.getChildFile ("MPEPresets");
+        auto result = presetFolder.createDirectory();
+
+	    return presetFolder;
+    }
+};
+struct MPEChannelComponent : public juce::Component 
+{
+    MPEChannelComponent (juce::ValueTree MPERouting,
+                         const juce::AudioProcessorValueTreeState& apvts,
+                         juce::String whichChannel, 
+                         const juce::Identifier& mpeChannel)
+      : mpeRouting (MPERouting), 
+        routingComponent (mpeRouting, mpeChannel, apvts)
+    {
+        jassert (mpeRouting.getType() == id::MPE_ROUTING);
+        channelNameLabel.setJustificationType (juce::Justification::left);
+        channelNameLabel.setText (whichChannel, juce::dontSendNotification);
+        addAndMakeVisible (channelNameLabel);
+        addAndMakeVisible (routingComponent);
+    }
+    void paint (juce::Graphics& g) override
+    {
+        auto b = getLocalBounds();
+        auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
+        g.setColour (laf->getBackgroundDark());
+        g.drawRect (b.removeFromTop(labelHeight).toFloat(), 2.0f);
+        g.drawRect (b.toFloat(), 2.0f);
+    }
+    void resized() override
+    {
+        auto b = getLocalBounds();
+        channelNameLabel.setBounds (b.removeFromTop (labelHeight));
+        routingComponent.setBounds (b);
+    }
+private:
+    juce::ValueTree mpeRouting;
+    juce::Label channelNameLabel;
+    RoutingComponent routingComponent;
+    const int labelHeight = 20;
+};
+struct PitchBendSettingsComponent : public juce::Component
+{
+    PitchBendSettingsComponent (juce::ValueTree MPESettings)
+      : mpeSettings (MPESettings)
+    {
+        jassert (mpeSettings.getType() == id::MPE_SETTINGS);
+
+        pitchBendEnabled.setToggleState (mpeSettings.getProperty (id::pitchBendEnabled), juce::dontSendNotification);
+        pitchBendEnabled.onStateChange = [&]()
+            {
+                mpeSettings.setProperty (id::pitchBendEnabled, pitchBendEnabled.getToggleState(), nullptr);
+            };
+        
+        divisionOfOctave.setValue (mpeSettings.getProperty (id::pitchBendDivisionOfOctave), juce::dontSendNotification);
+        divisionOfOctave.onValueChange = [&]()
+            {
+                mpeSettings.setProperty (id::pitchBendDivisionOfOctave, (int)divisionOfOctave.getValue(), nullptr);
+            };
+        addAndMakeVisible (pitchBendEnabledLabel);
+        addAndMakeVisible (pitchBendEnabled);
+        addAndMakeVisible (divisionOfOctaveLabel);
+        divisionOfOctave.setTextBoxStyle (juce::Slider::TextBoxLeft, false, 40, 20);
+        divisionOfOctave.setRange (1.0, 48.0, 1.0);
+        addAndMakeVisible (divisionOfOctave);
+    }
+    void paint (juce::Graphics& g) override
+    {
+        auto b = getLocalBounds();
+        auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
+        g.setColour (laf->getBackgroundDark());
+        g.drawRect (b.toFloat(), 2.0f);
+    }
+    void resized() override
+    {
+        auto b = getLocalBounds();
+        auto hScalar = static_cast<float> (b.getWidth()) / 430.0f;
+        pitchBendEnabled.setBounds (b.removeFromLeft (static_cast<int> (juce::jmax (22 * hScalar, 22.0f))));
+        pitchBendEnabledLabel.setBounds (b.removeFromLeft (static_cast<int> (70 * hScalar)));
+
+        divisionOfOctave.setBounds (b.removeFromLeft (static_cast<int> (200 * hScalar)));
+        divisionOfOctaveLabel.setBounds (b.removeFromLeft (static_cast<int> (200 * hScalar)));
+    }
+private:
+    juce::ValueTree mpeSettings;
+    juce::Label pitchBendEnabledLabel {"pbel", "Pitch Bend Enabled"};
+    juce::ToggleButton pitchBendEnabled;
+    juce::Label divisionOfOctaveLabel {"dool", "Pitch Bend Division of Octave"};
+    juce::Slider divisionOfOctave;
+};
+struct OversamplingHeader : public HeaderLabel
+{
+    OversamplingHeader() : HeaderLabel ("Oversampling"){}
+};
+class OverSamplingComponent : public juce::Component
+{
+public:
+    OverSamplingComponent (juce::ValueTree presetSettings)
+      : settings (presetSettings)
+    {
+        dropDown.addItem ("1X", 1);
+        dropDown.addItem ("2X", 2);
+        dropDown.addItem ("4X", 3);
+        dropDown.addItem ("8X", 4);
+        dropDown.addItem ("16X", 5);
+        dropDown.setSelectedId (static_cast<int> (settings.getProperty (id::oversampling)) + 1, juce::dontSendNotification);
+        dropDown.onChange = [&]() 
+            {
+                auto index = dropDown.getSelectedItemIndex();
+                settings.setProperty (id::oversampling, index, nullptr);
+            };
+        addAndMakeVisible (dropDown);
+    }
+    void paint (juce::Graphics& g) override 
+    {
+        auto b = getLocalBounds();
+        auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
+        g.setColour (laf->getBackgroundDark());
+        g.drawRect (b);
+    }
+    void resized() override 
+    {
+        auto b = getLocalBounds();
+        dropDown.setBounds (b.removeFromLeft (100));
+    }
+private:
+    juce::ValueTree settings;
+    juce::ComboBox dropDown;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OverSamplingComponent)
+};
+class SettingsComponentLayout : public juce::Component
+{
+public:
+    SettingsComponentLayout (juce::ValueTree settingsBranch, 
+                             const juce::AudioProcessorValueTreeState& apvts, 
+                             juce::ValueTree& MPESettings)
+      :  valueTreeState (apvts),
+         settings (settingsBranch), 
+         mpeHeader ("MPE"), 
+         pressureSmoothingComponent (MPESettings),
+         timbreSmoothingComponent (MPESettings), 
+         pitchBendComponent (MPESettings), 
+         oversamplingComponent (settingsBranch)
+    {
+        jassert (settings.getType() == id::PRESET_SETTINGS);
+
+        pressureChannelComponent = std::make_unique<MPEChannelComponent> (settings.getChildWithName (id::MPE_ROUTING), 
+                                                                          valueTreeState,
+                                                                          "Pressure", 
+                                                                          id::PRESSURE);  
+        timbreChannelComponent = std::make_unique<MPEChannelComponent> (settings.getChildWithName (id::MPE_ROUTING), 
+                                                                        valueTreeState,
+                                                                        "Timbre", 
+                                                                        id::TIMBRE);
+        addAndMakeVisible (mpeHeader);
+        addAndMakeVisible (pressureChannelComponent.get());
+        addAndMakeVisible (pressureSmoothingComponent);
+        addAndMakeVisible (timbreChannelComponent.get());
+        addAndMakeVisible (timbreSmoothingComponent);
+        addAndMakeVisible (pitchBendComponent);
+
+        addAndMakeVisible (oversamplingHeader);
+        addAndMakeVisible (oversamplingComponent);
+    }
+    void resized() override
+    {
+        auto b = getLocalBounds();
+
+        mpeHeader.setBounds (b.removeFromTop (24));
+        pressureChannelComponent->setBounds (b.removeFromTop (370));
+        pressureSmoothingComponent.setBounds (b.removeFromTop (24));
+        timbreChannelComponent->setBounds (b.removeFromTop (370));
+        timbreSmoothingComponent.setBounds (b.removeFromTop (24));
+        pitchBendComponent.setBounds (b.removeFromTop (24));
+        oversamplingHeader.setBounds (b.removeFromTop (24));
+        oversamplingComponent.setBounds (b.removeFromTop (24));
+    }
+    void setState (juce::ValueTree settingsBranch)
+    {
+        settings = settingsBranch;
+        resetChannelComponents();
+    }
+    int getDesiredHeight() { return 884; }
+private:
+    const juce::AudioProcessorValueTreeState& valueTreeState;
+    juce::ValueTree settings;
+    HeaderLabel mpeHeader;
+    std::unique_ptr<MPEChannelComponent> pressureChannelComponent;
+    PressureSmoothingComponent pressureSmoothingComponent;
+    std::unique_ptr<MPEChannelComponent> timbreChannelComponent;
+    TimbreSmoothingComponent timbreSmoothingComponent;
+    PitchBendSettingsComponent pitchBendComponent;
+    
+    OversamplingHeader oversamplingHeader;
+    OverSamplingComponent oversamplingComponent;
+
+    void resetChannelComponents()
+    {
+        removeChildComponent (pressureChannelComponent.get());
+        removeChildComponent (timbreChannelComponent.get());
+        pressureChannelComponent = std::make_unique<MPEChannelComponent> (settings.getChildWithName (id::MPE_ROUTING), 
+                                                                          valueTreeState,
+                                                                          "Pressure", 
+                                                                          id::PRESSURE);  
+        timbreChannelComponent = std::make_unique<MPEChannelComponent> (settings.getChildWithName (id::MPE_ROUTING), 
+                                                                        valueTreeState,
+                                                                        "Timbre", 
+                                                                        id::TIMBRE);
+        addAndMakeVisible (pressureChannelComponent.get());
+        addAndMakeVisible (timbreChannelComponent.get());
+        resized(); repaint();
+    }
+};
+class SettingsComponent : public juce::Component
+{
+public:
+    SettingsComponent (juce::ValueTree settingsBranch, 
+                       const juce::AudioProcessorValueTreeState& apvts, 
+                       juce::ValueTree& MPESettings)
+    {
+        viewport.setViewedComponent (new SettingsComponentLayout (settingsBranch, apvts, MPESettings));
+        viewport.setScrollBarsShown (true, false);
+        addAndMakeVisible (viewport);
+    }
+    void resized() override 
+    {
+        auto b = getLocalBounds();
+        viewport.setBounds (b);
+
+        auto scl = dynamic_cast<SettingsComponentLayout*> (viewport.getViewedComponent());
+        scl->setBounds ({b.getWidth() - viewport.getScrollBarThickness(), scl->getDesiredHeight()});
+    }
+    void setState (juce::ValueTree state)
+    {
+        auto scl = dynamic_cast<SettingsComponentLayout*> (viewport.getViewedComponent());
+        scl->setState (state);
+    }
+private:
+    juce::Viewport viewport;
+};
+}

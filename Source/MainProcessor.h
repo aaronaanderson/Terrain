@@ -1,10 +1,15 @@
 #pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
+#include <MTS-ESP/Client/libMTSClient.h>
+
 #include "Parameters.h"
 #include "Utility/Identifiers.h"
 #include "Utility/PresetManager.h"
-#include "DSP/WaveTerrainSynthesizer.h"
+#include "Utility/Presets.h"
+
+#include "DSP/WaveTerrainSynthesizerMPE.h"
+#include "DSP/MPEVoiceData.h"
 //==============================================================================
 class MainProcessor  : public juce::AudioProcessor, 
                        private juce::ValueTree::Listener
@@ -40,23 +45,28 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
+    bool supportsMPE() const override { return true; }
+
     juce::AudioProcessorValueTreeState& getValueTreeState() { return valueTreeState; }
     juce::ValueTree& getState() { return valueTreeState.state; }
     juce::UndoManager& getUndoManager() { return undoManager; }
     PresetManager& getPresetManager() { return *presetManager.get(); }
 
     const tp::Parameters& getCastedParameters() const { return parameters; }
-    tp::WaveTerrainSynthesizer& getWaveTerrainSynthesizer() { return *synthesizer.get(); }
-
-    bool getMTSConnectionStatus() { return synthesizer->getMTSConnectionStatus(); }
-    juce::String getTuningSystemName() { return synthesizer->getTuningSystemName(); }
+    tp::WaveTerrainSynthesizerMPE& getMPEWaveTerrainSynthesizer() { return *mpeSynthesizer.get(); }
+    juce::AudioProcessorValueTreeState& getAudioProcessorValueTreeState() {return valueTreeState; }
+    bool getMTSConnectionStatus() { return MTS_HasMaster (mtsClient); }
+    juce::String getTuningSystemName() { return MTS_GetScaleName (mtsClient); }
+    juce::ValueTree& getMPESettings() { return mpeSettings; }
+    tp::MPEVoiceData& getVoiceData() { return voiceData; }
 private:
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     juce::AudioProcessorValueTreeState valueTreeState;
     juce::UndoManager undoManager;
     tp::Parameters parameters;
     std::unique_ptr<PresetManager> presetManager;
-    std::unique_ptr<tp::WaveTerrainSynthesizer> synthesizer;
+    std::unique_ptr<tp::WaveTerrainSynthesizerMPE> mpeSynthesizer;
+    std::atomic<bool> mpeOn;
     std::unique_ptr<juce::dsp::Oversampling<float>> overSampler;
     int storedFactor = -1; // initialize with invalid factor
     int storedBufferSize = 0;
@@ -67,10 +77,18 @@ private:
                               juce::dsp::LadderFilter<float>, 
                               juce::dsp::Compressor<float>, 
                               juce::dsp::Gain<float>> outputChain;
-
+    MTSClient* mtsClient = nullptr;
     void allocateMaxSamplesPerBlock (int maxSamples);
     void prepareOversampling (int bufferSize);
     juce::ValueTree verifiedSettings (juce::ValueTree);
+    juce::ValueTree mpeSettings;
+    tp::MPEVoiceData voiceData;
+    void loadMPESettings();
+    void saveMPESettings();
+    void valueTreePropertyChanged (juce::ValueTree& tree, 
+                                   const juce::Identifier& property) override;
+    void valueTreeRedirected (juce::ValueTree& treeWhichHasBeenChanged) override;
 
+    std::unique_ptr<juce::FileLogger> logger;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainProcessor)
 };
