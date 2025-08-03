@@ -19,8 +19,8 @@ Page custom SelectInstallPresets Leave_SelectInstallPresets ; Page 3: presets
 
 BrandingText "Aaron Anderson"
 
-Name "${PLUG_NAME} 1.0.3 Installer"
-OutFile "${PLUG_NAME} 1.0.3 Installer.exe"
+Name "${PLUG_NAME} 1.2.2 Installer"
+OutFile "${PLUG_NAME} 1.2.2 Installer.exe"
 
 RequestExecutionLevel admin
 
@@ -41,11 +41,11 @@ Function SelectInstallScope
     ${NSD_CreateLabel} 0 0 100% 12u "Install for:"
     Pop $1
 
-    ${NSD_CreateRadioButton} 10u 20u 100% 12u "All users (system-wide)"
+    ${NSD_CreateRadioButton} 10u 20u 100% 12u "All users"
     Pop $RADIO_SYS
     SendMessage $RADIO_SYS ${BM_SETCHECK} ${BST_CHECKED} 0
 
-    ${NSD_CreateRadioButton} 10u 35u 100% 12u "Current user only (user-wide)"
+    ${NSD_CreateRadioButton} 10u 35u 100% 12u "Current user only"
     Pop $RADIO_USER
 
     nsDialogs::Show
