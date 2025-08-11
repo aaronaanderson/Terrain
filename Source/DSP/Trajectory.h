@@ -400,7 +400,7 @@ public:
             if (*voiceParameters.envelopeSize)
                 point = scale (point, static_cast<float> (envelope.getCurrentValue()));
             point = feedback (point, 
-                              voiceParameters.feedbackTime.getNext(), 
+                              /*voiceParameters.feedbackTime.getNext()*/ 1000.0f / frequency, 
                               voiceParameters.feedbackScalar.getNext(), 
                               voiceParameters.feedbackMix.getNext(), 
                               voiceParameters.size.getCurrent(), 
@@ -642,7 +642,7 @@ public:
             if (*voiceParameters.envelopeSize)
                 point = scale (point, static_cast<float> (envelope.getCurrentValue()));
             point = feedback (point, 
-                              voiceParameters.feedbackTime.getNext(), 
+                              /*voiceParameters.feedbackTime.getNext()*/ ( 1000.0f / frequency ) * 0.5, 
                               voiceParameters.feedbackScalar.getNext(), 
                               voiceParameters.feedbackMix.getNext(), 
                               voiceParameters.size.getCurrent(), 
