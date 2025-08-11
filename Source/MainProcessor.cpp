@@ -21,7 +21,6 @@ MainProcessor::MainProcessor()
     mtsClient = MTS_RegisterClient();
     
     loadMPESettings();
-    PresetSaver::movePresetsToDisk();
     
     logger.reset (juce::FileLogger::createDateStampedLogger (juce::FileLogger::getSystemLogFileFolder().getFullPathName() + "/Terrain",
                                                                                "Terrain",

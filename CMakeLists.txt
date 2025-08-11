@@ -95,15 +95,6 @@ juce_add_binary_data(BinaryData SOURCES
     Source/Interface/Renderer/Shaders/Terrain.frag 
     Source/Interface/Renderer/Shaders/Terrain.vert
     Source/Interface/Paul-le1V.ttf
-
-    Presets/MPE-Basic.xml
-    Presets/MPE-ButterFly.xml
-    Presets/MPE-Echo.xml
-    Presets/MPE-Fire.xml
-    Presets/MPE-Space.xml
-    Presets/Basic.xml
-    Presets/PatternRun.xml
-    Presets/Plunky.xml
 )
 
 if(WIN32) 
