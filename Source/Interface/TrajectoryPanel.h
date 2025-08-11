@@ -132,7 +132,7 @@ class FeedbackPanel : public juce::Component
 public:
     FeedbackPanel (juce::AudioProcessorValueTreeState& vts, 
                    tp::MPEVoiceData& vd)
-      : time ("Time", "FeedbackTime", vts, vd), 
+      : time ("Freq", "CombFrequency", vts, vd), 
         feedback ("Feedback", "Feedback", vts, vd), 
         mix ("Mix", "FeedbackMix", vts, vd),
         compression ("Compression", "FeedbackCompression", vts, vd)

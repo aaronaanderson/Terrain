@@ -143,12 +143,12 @@ juce_add_plugin(WaveTerrainSynth
     IS_MIDI_EFFECT FALSE
     BUNDLE_ID com.AaronAnderson.WaveTerrainSynth
     COPY_PLUGIN_AFTER_BUILD TRUE
+    VST3_COPY_DIR "C:\\Program Files\\Common Files\\VST3\\"
     PLUGIN_MANUFACTURER_CODE Aaro
     PLUGIN_CODE JEe9
     APP_SANDBOX_ENABLED TRUE
     FORMATS Standalone VST3 AU
     PRODUCT_NAME "Terrain"
-    APP_SANDBOX_FILE_ACCESS_HOME_RW "Library/Audio/Presets/Aaron Anderson/Terrain"
 )
 
 clap_juce_extensions_plugin(TARGET WaveTerrainSynth

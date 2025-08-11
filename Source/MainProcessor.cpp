@@ -258,10 +258,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout MainProcessor::createParamet
                                                             range, 
                                                             800.0f));
     //=======Feedback
-    range = juce::NormalisableRange<float> (0.0f, 2000.0f); range.setSkewForCentre (250.0f);
-    layout.add (std::make_unique<tp::RangedFloatParameter> ("Feedback Time", 
+    range = juce::NormalisableRange<float> (-2.0, 2.0f);
+    layout.add (std::make_unique<tp::RangedFloatParameter> ("Comb Frequency", 
                                                             range,
-                                                            200.0f));
+                                                            0.0f));
     range = juce::NormalisableRange<float> (0.0f, 0.9999f); range.setSkewForCentre (0.8f);
     layout.add (std::make_unique<tp::RangedFloatParameter> ("Feedback", 
                                                             range,

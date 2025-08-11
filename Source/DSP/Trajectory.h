@@ -331,228 +331,6 @@ protected:
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Trajectory)
 };
-class StandardTrajectory : public Trajectory
-{
-public:
-    StandardTrajectory (Terrain& t, 
-                        Parameters& p, 
-                        juce::ValueTree settingsBranch, 
-                        MTSClient& mtsc)
-      : Trajectory (t, settingsBranch, mtsc), 
-        voiceParameters (p)
-    {}
-    void startNote (int midiNoteNumber,
-                    float velocity,
-                    int currentPitchWheelPosition) 
-    {   
-        setPitchWheelIncrementScalar (currentPitchWheelPosition);
-        midiNote = midiNoteNumber;
-        
-        setFrequencyImmediate (static_cast<float> (MTS_NoteToFrequency (&mtsClient, 
-                                                                        static_cast<char> (midiNote),
-                                                                        -1)));
-        readyToClear = false;
-        if (MTS_ShouldFilterNote (&mtsClient, static_cast<char> (midiNote), -1)) 
-            readyToClear = true; 
-
-        float scaledVelocity = juce::jmap (velocity, 0.0f, 1.0f, juce::Decibels::decibelsToGain (-voiceParameters.sensitivity.getNext()), 1.0f);
-        amplitude.setCurrentAndTargetValue (scaledVelocity);
-        envelope.noteOn();
-        
-        feedbackBuffer.fill (Point(0.0f, 0.0f));
-    }
-    void prepareToPlay (double newRate, int blockSize) override
-    {
-        Trajectory::prepareToPlay (newRate, blockSize);
-        voiceParameters.resetSampleRate (newRate);
-        
-        renderBuffer.clear();
-        renderBuffer.setSize (1, blockSize, false, false, true);
-        processSpec.maximumBlockSize = static_cast<juce::uint32> (blockSize);
-        processSpec.numChannels = 1;
-        processSpec.sampleRate = newRate;
-        ladderFilter.prepare (processSpec);
-        ladderFilter.setCutoffFrequencyHz (400.0f);
-        ladderFilter.setResonance (0.7f);
-    }
-    void renderNextBlock (juce::AudioBuffer<float>& outputBuffer, 
-                          int startSample, int numSamples) override
-    {
-        auto* o = renderBuffer.getWritePointer(0);
-        if (smoothFrequencyEnabled.get())
-            setFrequencySmooth (static_cast<float> (MTS_NoteToFrequency (&mtsClient, 
-                                                                         static_cast<char> (midiNote), 
-                                                                         -1)));
-        for(int i = startSample; i < startSample + numSamples; i++)
-        {
-            if(!envelope.isActive()) break;
-            tp::ADSR::Parameters p = {voiceParameters.attack.getNext(), 
-                                      voiceParameters.decay.getNext(), 
-                                      juce::Decibels::decibelsToGain (voiceParameters.sustain.getNext()), 
-                                      voiceParameters.release.getNext()};
-            envelope.setParameters (p);
-
-            auto point = functions[*voiceParameters.currentTrajectory](static_cast<float> (phase), getModSet());
-            
-            float smoothAmplitude = amplitude.getNextValue();
-            point = rotate (point, voiceParameters.rotation.getNext());
-            point = scale (point, voiceParameters.size.getNext() * smoothAmplitude);
-            if (*voiceParameters.envelopeSize)
-                point = scale (point, static_cast<float> (envelope.getCurrentValue()));
-            point = feedback (point, 
-                              /*voiceParameters.feedbackTime.getNext()*/ 1000.0f / frequency, 
-                              voiceParameters.feedbackScalar.getNext(), 
-                              voiceParameters.feedbackMix.getNext(), 
-                              voiceParameters.size.getCurrent(), 
-                              voiceParameters.feedbackCompression.getNext());
-            point = translate (point, 
-                               voiceParameters.translationX.getNext(), 
-                               voiceParameters.translationY.getNext());
-            perlinVector.setSpeed (voiceParameters.meanderanceSpeed.getNext());
-            point = meander (point, voiceParameters.meanderanceScale.getNext());
-            point = compressEdge (point);
-
-            float outputSample = terrain.sampleAt (point, i);
-            history.feedNext (point, outputSample);
-            o[i] = outputSample * static_cast<float> (envelope.calculateNext()) * smoothAmplitude;
-
-            phase = std::fmod (phase + (phaseIncrement.getNextValue() * pitchWheelIncrementScalar.getNextValue()),
-                               juce::MathConstants<double>::twoPi);
-
-            if(!envelope.isActive())
-            {
-                history.clear();
-                readyToClear = true;
-            }
-        }
-        scratchBuffer.setSize (1, numSamples, false, false, true);
-        for (int i = 0; i < numSamples; i++)
-            scratchBuffer.getWritePointer (0)[i] = renderBuffer.getReadPointer (0)[startSample + i];
-        
-        if (*voiceParameters.filterBypass)
-        {
-            auto outputBlock = juce::dsp::AudioBlock<float> (scratchBuffer);
-            juce::dsp::ProcessContextReplacing<float> context (outputBlock);
-            
-            float freqScalar = static_cast<float> (std::pow (2, voiceParameters.filterFrequency.getNext()));
-            ladderFilter.setCutoffFrequencyHz (frequency * freqScalar);
-            ladderFilter.setResonance (voiceParameters.filterResonance.getNext());
-            ladderFilter.process (context);
-        } 
-        // copy from scratch buffer, adding to incoming content
-        for (int i = 0; i < numSamples; i++)
-            outputBuffer.getWritePointer (0)[i + startSample] += scratchBuffer.getReadPointer (0)[i];
-    } 
-    void allocate (int maximumSamplesPerBlock) 
-    {
-        scratchBuffer.setSize (1, maximumSamplesPerBlock);
-        scratchBuffer.clear();
-        renderBuffer.setSize (1, maximumSamplesPerBlock); 
-        renderBuffer.clear();
-    }
-private:
-    juce::AudioBuffer<float> renderBuffer;
-    juce::AudioBuffer<float> scratchBuffer;
-    juce::dsp::LadderFilter<float> ladderFilter;
-    juce::dsp::ProcessSpec processSpec;
-    struct VoiceParameters
-    {
-        VoiceParameters (Parameters& p)
-          : currentTrajectory (p.currentTrajectory),
-            mod_a (p.trajectoryModA),
-            mod_b (p.trajectoryModB),
-            mod_c (p.trajectoryModC),
-            mod_d (p.trajectoryModD), 
-            size (p.trajectorySize), 
-            rotation (p.trajectoryRotation), 
-            translationX (p.trajectoryTranslationX), 
-            translationY (p.trajectoryTranslationY), 
-            meanderanceScale (p.meanderanceScale),
-            meanderanceSpeed (p.meanderanceSpeed),
-            feedbackScalar (p.feedbackScalar), 
-            feedbackTime (p.feedbackTime), 
-            feedbackCompression (p.feedbackCompression),
-            feedbackMix (p.feedbackMix), 
-            envelopeSize (p.envelopeSize),
-            attack (p.attack), 
-            decay (p.decay), 
-            sustain (p.sustain), 
-            release (p.release),
-            sensitivity (p.sensitivity),
-            filterFrequency (p.perVoiceFilterFrequency),
-            filterResonance (p.perVoiceFilterResonance),
-            filterBypass (p.perVoiceFilterOnOff)
-        {
-            sensitivity.setTimeMS (0.0f);
-            filterFrequency.setTimeMS (0.0f);
-            filterResonance.setTimeMS (0.0f);
-        }
-        void noteOn()
-        {
-            mod_a.noteOn();
-            mod_b.noteOn();
-            mod_c.noteOn();
-            mod_d.noteOn();
-            size.noteOn();
-            rotation.noteOn();
-            translationX.noteOn();
-            translationY.noteOn();
-            meanderanceScale.noteOn();
-            meanderanceSpeed.noteOn();
-            feedbackScalar.noteOn();
-            feedbackTime.noteOn();
-            feedbackCompression.noteOn();
-            feedbackMix.noteOn();
-            attack.noteOn();
-            decay.noteOn();
-            sustain.noteOn();
-            release.noteOn();
-            sensitivity.noteOn();
-            filterFrequency.noteOn();
-            filterResonance.noteOn();
-        }
-        void resetSampleRate (double newSampleRate)
-        {
-            mod_a.prepare (newSampleRate);
-            mod_b.prepare (newSampleRate);
-            mod_c.prepare (newSampleRate);
-            mod_d.prepare (newSampleRate);
-            size.prepare (newSampleRate);
-            rotation.prepare (newSampleRate);
-            translationX.prepare (newSampleRate); 
-            translationY.prepare (newSampleRate);
-            meanderanceScale.prepare (newSampleRate);
-            meanderanceSpeed.prepare (newSampleRate);
-            feedbackScalar.prepare (newSampleRate);
-            feedbackTime.prepare (newSampleRate);
-            feedbackCompression.prepare (newSampleRate);
-            feedbackMix.prepare (newSampleRate);
-            attack.prepare (newSampleRate);
-            decay.prepare (newSampleRate);
-            sustain.prepare (newSampleRate);
-            release.prepare (newSampleRate);
-            sensitivity.prepare (newSampleRate);
-            filterFrequency.prepare (newSampleRate);
-            filterResonance.prepare (newSampleRate);
-        }
-        tp::ChoiceParameter* currentTrajectory;
-        SmoothedParameter mod_a, mod_b, mod_c, mod_d;
-        SmoothedParameter size, rotation, translationX, translationY;
-        SmoothedParameter meanderanceScale, meanderanceSpeed;
-        SmoothedParameter feedbackScalar, feedbackTime, feedbackCompression, feedbackMix;
-        juce::AudioParameterBool* envelopeSize;
-        SmoothedParameter attack, decay, sustain, release, sensitivity;
-        SmoothedParameter filterFrequency, filterResonance;
-        juce::AudioParameterBool* filterBypass;
-    };
-    VoiceParameters voiceParameters;
-    const ModSet getModSet()
-     {
-         return ModSet (voiceParameters.mod_a.getNext(), voiceParameters.mod_b.getNext(), 
-                        voiceParameters.mod_c.getNext(), voiceParameters.mod_d.getNext());
-    }
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (StandardTrajectory)
-};
 
 class MPETrajectory : public Trajectory
 {
@@ -641,8 +419,9 @@ public:
             point = scale (point, voiceParameters.size.getNext());
             if (*voiceParameters.envelopeSize)
                 point = scale (point, static_cast<float> (envelope.getCurrentValue()));
+            float adjustedFrequency = frequency * std::pow (2.0, voiceParameters.feedbackTime.getNext());
             point = feedback (point, 
-                              /*voiceParameters.feedbackTime.getNext()*/ ( 1000.0f / frequency ) * 0.5, 
+                              /*voiceParameters.feedbackTime.getNext()*/ ( 1000.0f / adjustedFrequency ), 
                               voiceParameters.feedbackScalar.getNext(), 
                               voiceParameters.feedbackMix.getNext(), 
                               voiceParameters.size.getCurrent(), 
@@ -740,7 +519,7 @@ private:
             meanderanceScale (p.meanderanceScale, vts, MPERouting),
             meanderanceSpeed (p.meanderanceSpeed, vts, MPERouting),
             feedbackScalar (p.feedbackScalar, vts, MPERouting), 
-            feedbackTime (p.feedbackTime, vts, MPERouting), 
+            feedbackTime (p.combFrequency, vts, MPERouting), 
             feedbackCompression (p.feedbackCompression, vts, MPERouting),
             feedbackMix (p.feedbackMix, vts, MPERouting), 
             envelopeSize (p.envelopeSize),

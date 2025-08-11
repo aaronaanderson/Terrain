@@ -69,7 +69,7 @@ struct Parameters
 private:
     juce::AudioProcessorValueTreeState& valueTreeState;
 public:
-    ChoiceParameter* currentTrajectory              = dynamic_cast<ChoiceParameter*> (valueTreeState.getParameter ("CurrentTrajectory"));
+    ChoiceParameter*          currentTrajectory     = dynamic_cast<ChoiceParameter*> (valueTreeState.getParameter ("CurrentTrajectory"));
     NormalizedFloatParameter* trajectoryModA        = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter ("TrajectoryModA"));
     NormalizedFloatParameter* trajectoryModB        = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter ("TrajectoryModB"));
     NormalizedFloatParameter* trajectoryModC        = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter ("TrajectoryModC"));
@@ -81,27 +81,27 @@ public:
     RangedFloatParameter*     trajectoryTranslationX = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter ("TranslationX"));
     RangedFloatParameter*     trajectoryTranslationY = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter ("TranslationY"));
     NormalizedFloatParameter* meanderanceScale = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter   ("MeanderanceScale"));
-    NormalizedFloatParameter*     meanderanceSpeed = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter       ("MeanderanceSpeed"));
+    NormalizedFloatParameter* meanderanceSpeed = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter       ("MeanderanceSpeed"));
 
-    RangedFloatParameter*     feedbackTime = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter        ("FeedbackTime"));
+    RangedFloatParameter*     combFrequency = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter        ("CombFrequency"));
     RangedFloatParameter*     feedbackScalar = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter      ("Feedback"));
     RangedFloatParameter*     feedbackCompression = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter ("FeedbackCompression"));
-    NormalizedFloatParameter*     feedbackMix = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter         ("FeedbackMix"));
-
-    ChoiceParameter* currentTerrain = dynamic_cast<ChoiceParameter*> (valueTreeState.getParameter                ("CurrentTerrain"));
+    NormalizedFloatParameter* feedbackMix = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter         ("FeedbackMix"));
+     
+    ChoiceParameter*          currentTerrain = dynamic_cast<ChoiceParameter*> (valueTreeState.getParameter                ("CurrentTerrain"));
     NormalizedFloatParameter* terrainModA = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter ("TerrainModA"));
     NormalizedFloatParameter* terrainModB = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter ("TerrainModB"));
     NormalizedFloatParameter* terrainModC = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter ("TerrainModC"));
     NormalizedFloatParameter* terrainModD = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter ("TerrainModD"));
 
-    RangedFloatParameter* terrainSaturation = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter ("TerrainSaturation"));
+    RangedFloatParameter*     terrainSaturation = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter ("TerrainSaturation"));
 
     juce::AudioParameterBool* envelopeSize = dynamic_cast<juce::AudioParameterBool*> (valueTreeState.getParameter ("EnvelopeSize"));
-    RangedFloatParameter* sensitivity = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter               ("Sensitivity"));
-    RangedFloatParameter* attack = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter               ("Attack"));
-    RangedFloatParameter* decay = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter                ("Decay"));
-    RangedFloatParameter* sustain = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter              ("Sustain"));
-    RangedFloatParameter* release = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter              ("Release"));
+    RangedFloatParameter*     sensitivity = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter               ("Sensitivity"));
+    RangedFloatParameter*     attack = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter               ("Attack"));
+    RangedFloatParameter*     decay = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter                ("Decay"));
+    RangedFloatParameter*     sustain = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter              ("Sustain"));
+    RangedFloatParameter*     release = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter              ("Release"));
 
     NormalizedFloatParameter* filterResonance = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter ("FilterResonance"));
     RangedFloatParameter*     filterFrequency = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter     ("FilterFrequency"));
