@@ -11,7 +11,7 @@ class RadialCompressor
 {
 public:
     void reset();
-    void prepare (double sampleRate, int maxBlockSize);
+    void prepare (double sampleRate);
 
     juce::Point<float> processPoint (const juce::Point<float> input);
     void setThreshold (float threshold); // 0.0 to 1.0, think in terms of radius

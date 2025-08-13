@@ -363,7 +363,7 @@ public:
         ladderFilter.setResonance (0.7f);
         smoothRMS.reset (4);
 
-        radialCompressor.prepare (newRate, blockSize);
+        radialCompressor.prepare (newRate);
     }
     void startNote (int midiNoteNumber,
                     float velocity, 
@@ -428,12 +428,13 @@ public:
                               voiceParameters.feedbackScalar.getNext(), 
                               voiceParameters.feedbackMix.getNext());
 
-            juce::Point pointCast { point.x, point.y };
             radialCompressor.setThreshold( voiceParameters.radialCompressorThreshold.getNext());
-            radialCompressor.setRatio( voiceParameters.radialCompressorThreshold.getNext());
-            radialCompressor.setResponsiveness( voiceParameters.radialCompressorThreshold.getNext());
-            pointCast = radialCompressor.processPoint (pointCast);
-            point = { pointCast.getX(), pointCast.getY() };
+            radialCompressor.setRatio( voiceParameters.radialCompressorRatio.getNext());
+            radialCompressor.setResponsiveness( juce::jmap (voiceParameters.radialCompressorResponsiveness.getNext(), 0.0f, 1.0f, 200.0f, 1.0f) );
+            radialCompressor.setKnee (0.0f);
+            juce::Point pointCast { point.x, point.y };
+            auto jucePoint = radialCompressor.processPoint (pointCast);
+            point = { jucePoint.getX(), jucePoint.getY() };
 
             point = translate (point, 
                                voiceParameters.translationX.getNext(), 

@@ -269,6 +269,7 @@ public:
         addAndMakeVisible (trajectoryVariables);
         addAndMakeVisible (meanderancePanel);
         addAndMakeVisible (feedbackPanel);
+        addAndMakeVisible (radialCompressorPanel);
     }
     void resized () override 
     {

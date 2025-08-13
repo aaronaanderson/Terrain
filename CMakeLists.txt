@@ -149,6 +149,7 @@ juce_add_plugin(WaveTerrainSynth
     APP_SANDBOX_ENABLED TRUE
     FORMATS Standalone VST3 AU
     PRODUCT_NAME "Terrain"
+    VST3_AUTO_MANIFEST FALSE
 )
 
 clap_juce_extensions_plugin(TARGET WaveTerrainSynth
