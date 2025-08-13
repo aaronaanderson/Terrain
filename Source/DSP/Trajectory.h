@@ -7,6 +7,7 @@
 #include "DataTypes.h"
 #include "ADSR.h"
 #include "Terrain.h"
+#include "RadialCompressor.h"
 
 #include "MPEVoiceData.h"
 namespace tp{
@@ -281,7 +282,7 @@ protected:
         auto output = Point (p.x + meanderance.x, p.y + meanderance.y);
         return output;
     }
-    Point feedback (Point input, float feedbackTime, float feedback, float mix, float threshold, float ratio)
+    Point feedback (Point input, float feedbackTime, float feedback, float mix)
     {
         auto delayInSamples = static_cast<int>((feedbackTime * 0.001f) * sampleRate);
         delayInSamples = std::min(delayInSamples, feedbackBuffer.size() - 1);
@@ -291,8 +292,6 @@ protected:
         feedbackBuffer.set (feedbackWriteIndex, input + scaledHistory);
         feedbackWriteIndex = (feedbackWriteIndex + 1) % feedbackBuffer.size();
         auto outputPoint = input + (scaledHistory * mix);
-
-        outputPoint = radialCompression (outputPoint, threshold, ratio);
 
         return outputPoint;
     }
@@ -363,6 +362,8 @@ public:
         ladderFilter.setCutoffFrequencyHz (400.0f);
         ladderFilter.setResonance (0.7f);
         smoothRMS.reset (4);
+
+        radialCompressor.prepare (newRate, blockSize);
     }
     void startNote (int midiNoteNumber,
                     float velocity, 
@@ -388,6 +389,8 @@ public:
         feedbackBuffer.fill (Point(0.0f, 0.0f));
         rmsUpdater = std::make_unique<RMSUpdater> (voiceData, midiChannel, currentRMS);
         rmsUpdater->startTimerHz (24);
+
+        radialCompressor.reset();
     }
     void stopNote() override
     {
@@ -419,13 +422,19 @@ public:
             point = scale (point, voiceParameters.size.getNext());
             if (*voiceParameters.envelopeSize)
                 point = scale (point, static_cast<float> (envelope.getCurrentValue()));
-            float adjustedFrequency = frequency * std::pow (2.0, voiceParameters.feedbackTime.getNext());
+            float adjustedFrequency = frequency * std::pow (2.0f, voiceParameters.feedbackTime.getNext());
             point = feedback (point, 
                               /*voiceParameters.feedbackTime.getNext()*/ ( 1000.0f / adjustedFrequency ), 
                               voiceParameters.feedbackScalar.getNext(), 
-                              voiceParameters.feedbackMix.getNext(), 
-                              voiceParameters.size.getCurrent(), 
-                              voiceParameters.feedbackCompression.getNext());
+                              voiceParameters.feedbackMix.getNext());
+
+            juce::Point pointCast { point.x, point.y };
+            radialCompressor.setThreshold( voiceParameters.radialCompressorThreshold.getNext());
+            radialCompressor.setRatio( voiceParameters.radialCompressorThreshold.getNext());
+            radialCompressor.setResponsiveness( voiceParameters.radialCompressorThreshold.getNext());
+            pointCast = radialCompressor.processPoint (pointCast);
+            point = { pointCast.getX(), pointCast.getY() };
+
             point = translate (point, 
                                voiceParameters.translationX.getNext(), 
                                voiceParameters.translationY.getNext());
@@ -494,6 +503,9 @@ private:
     juce::ValueTree mpeRouting;
     juce::AudioBuffer<float> renderBuffer;
     juce::AudioBuffer<float> scratchBuffer;
+
+    RadialCompressor radialCompressor;
+
     juce::dsp::LadderFilter<float> ladderFilter;
     juce::dsp::ProcessSpec processSpec;
     
@@ -520,7 +532,7 @@ private:
             meanderanceSpeed (p.meanderanceSpeed, vts, MPERouting),
             feedbackScalar (p.feedbackScalar, vts, MPERouting), 
             feedbackTime (p.combFrequency, vts, MPERouting), 
-            feedbackCompression (p.feedbackCompression, vts, MPERouting),
+            //feedbackCompression (p.feedbackCompression, vts, MPERouting),
             feedbackMix (p.feedbackMix, vts, MPERouting), 
             envelopeSize (p.envelopeSize),
             attack (p.attack, vts, MPERouting), 
@@ -530,7 +542,10 @@ private:
             sensitivity (p.sensitivity, vts, MPERouting),
             filterFrequency (p.perVoiceFilterFrequency, vts, MPERouting), 
             filterResonance (p.perVoiceFilterResonance, vts, MPERouting),
-            filterBypass (p.perVoiceFilterOnOff)
+            filterBypass (p.perVoiceFilterOnOff),
+            radialCompressorThreshold (p.radialCompressorThreshold, vts, MPERouting),
+            radialCompressorRatio (p.radialCompressorRatio, vts, MPERouting),
+            radialCompressorResponsiveness (p.radialCompressorResponsiveness, vts, MPERouting)
         {
             sensitivity.setControlSmoothing (0.0);
             filterFrequency.setControlSmoothing (0.0);
@@ -551,7 +566,6 @@ private:
             meanderanceSpeed.noteOn(timbre, pressure);
             feedbackScalar.noteOn(timbre, pressure);
             feedbackTime.noteOn(timbre, pressure);
-            feedbackCompression.noteOn(timbre, pressure);
             feedbackMix.noteOn(timbre, pressure);
             attack.noteOn(timbre, pressure);
             decay.noteOn(timbre, pressure);
@@ -560,6 +574,9 @@ private:
             sensitivity.noteOn (timbre, pressure);
             filterFrequency.noteOn(timbre, pressure);
             filterResonance.noteOn(timbre, pressure);
+            radialCompressorThreshold.noteOn (timbre, pressure);
+            radialCompressorRatio.noteOn(timbre, pressure);
+            radialCompressorResponsiveness.noteOn(timbre, pressure);
         }
         void resetSampleRate (double newSampleRate)
         {
@@ -576,7 +593,6 @@ private:
             meanderanceSpeed.prepare (newSampleRate);
             feedbackScalar.prepare (newSampleRate);
             feedbackTime.prepare (newSampleRate);
-            feedbackCompression.prepare (newSampleRate);
             feedbackMix.prepare (newSampleRate);
             attack.prepare (newSampleRate);
             decay.prepare (newSampleRate);
@@ -585,6 +601,9 @@ private:
             sensitivity.prepare (newSampleRate);
             filterFrequency.prepare (newSampleRate);
             filterResonance.prepare (newSampleRate);
+            radialCompressorThreshold.prepare (newSampleRate);
+            radialCompressorRatio.prepare (newSampleRate);
+            radialCompressorResponsiveness.prepare (newSampleRate);
         }
         void setTimbre (float newTimbre)
         {
@@ -601,7 +620,6 @@ private:
             meanderanceSpeed.setTimbre (newTimbre);
             feedbackScalar.setTimbre (newTimbre);
             feedbackTime.setTimbre (newTimbre);
-            feedbackCompression.setTimbre (newTimbre);
             feedbackMix.setTimbre (newTimbre);
             attack.setTimbre (newTimbre);
             decay.setTimbre (newTimbre);
@@ -610,6 +628,9 @@ private:
             sensitivity.setTimbre (newTimbre);
             filterFrequency.setTimbre (newTimbre);
             filterResonance.setTimbre (newTimbre);
+            radialCompressorThreshold.setTimbre (newTimbre);
+            radialCompressorRatio.setTimbre (newTimbre);
+            radialCompressorResponsiveness.setTimbre (newTimbre);
         }
         void setPressure (float newPressure)
         {
@@ -626,7 +647,6 @@ private:
             meanderanceSpeed.setPressure (newPressure);
             feedbackScalar.setPressure (newPressure);
             feedbackTime.setPressure (newPressure);
-            feedbackCompression.setPressure (newPressure);
             feedbackMix.setPressure (newPressure);
             attack.setPressure (newPressure);
             decay.setPressure (newPressure);
@@ -635,6 +655,9 @@ private:
             sensitivity.setPressure (newPressure);
             filterFrequency.setPressure (newPressure);
             filterResonance.setPressure (newPressure);
+            radialCompressorThreshold.setPressure (newPressure);
+            radialCompressorRatio.setPressure (newPressure);
+            radialCompressorResponsiveness.setPressure (newPressure);
         }
         void setState (juce::ValueTree mpeRoutingBranch)
         {
@@ -651,7 +674,6 @@ private:
             meanderanceSpeed.setState (mpeRoutingBranch);
             feedbackScalar.setState (mpeRoutingBranch);
             feedbackTime.setState (mpeRoutingBranch);
-            feedbackCompression.setState (mpeRoutingBranch);
             feedbackMix.setState (mpeRoutingBranch);
             attack.setState (mpeRoutingBranch);
             decay.setState (mpeRoutingBranch);
@@ -659,7 +681,10 @@ private:
             release.setState (mpeRoutingBranch);
             sensitivity.setState (mpeRoutingBranch);
             filterFrequency.setState (mpeRoutingBranch);
-            filterResonance.setState (mpeRoutingBranch);           
+            filterResonance.setState (mpeRoutingBranch);      
+            radialCompressorThreshold.setState (mpeRoutingBranch);
+            radialCompressorRatio.setState (mpeRoutingBranch);
+            radialCompressorResponsiveness.setState (mpeRoutingBranch);      
         }
         void setPressureSmoothing (float ms)
         {
@@ -676,7 +701,6 @@ private:
             meanderanceSpeed.setPressureSmoothing (ms);
             feedbackScalar.setPressureSmoothing (ms);
             feedbackTime.setPressureSmoothing (ms);
-            feedbackCompression.setPressureSmoothing (ms);
             feedbackMix.setPressureSmoothing (ms);
             attack.setPressureSmoothing (ms);
             decay.setPressureSmoothing (ms);
@@ -685,6 +709,9 @@ private:
             sensitivity.setPressureSmoothing (0.0);
             filterFrequency.setPressureSmoothing (0.0); // no smoothing, 
             filterResonance.setPressureSmoothing (0.0); // called per-buffer
+            radialCompressorThreshold.setPressureSmoothing (ms);
+            radialCompressorRatio.setPressureSmoothing (ms);
+            radialCompressorResponsiveness.setPressureSmoothing (ms);
         }
         void setTimbreSmoothing (float ms)
         {
@@ -701,7 +728,6 @@ private:
             meanderanceSpeed.setTimbreSmoothing (ms);
             feedbackScalar.setTimbreSmoothing (ms);
             feedbackTime.setTimbreSmoothing (ms);
-            feedbackCompression.setTimbreSmoothing (ms);
             feedbackMix.setTimbreSmoothing (ms);
             attack.setTimbreSmoothing (ms);
             decay.setTimbreSmoothing (ms);
@@ -710,12 +736,16 @@ private:
             sensitivity.setTimbreSmoothing (0.0);  
             filterFrequency.setTimbreSmoothing (0.0);   
             filterResonance.setTimbreSmoothing (0.0);   
+            radialCompressorThreshold.setTimbreSmoothing (ms);
+            radialCompressorRatio.setTimbreSmoothing (ms);
+            radialCompressorResponsiveness.setTimbreSmoothing (ms); 
         }
         tp::ChoiceParameter* currentTrajectory;
         MPESmoothedParameter mod_a, mod_b, mod_c, mod_d;
         MPESmoothedParameter amplitude, size, rotation, translationX, translationY;
         MPESmoothedParameter meanderanceScale, meanderanceSpeed;
-        MPESmoothedParameter feedbackScalar, feedbackTime, feedbackCompression, feedbackMix;
+        MPESmoothedParameter feedbackScalar, feedbackTime, feedbackMix;
+        MPESmoothedParameter radialCompressorThreshold, radialCompressorRatio, radialCompressorResponsiveness;
         juce::AudioParameterBool* envelopeSize;
         MPESmoothedParameter attack, decay, sustain, release, sensitivity;
         MPESmoothedParameter filterFrequency, filterResonance;
@@ -744,14 +774,6 @@ private:
                 juce::jmap(smoothRMS.getNextValue(), 0.0f, 0.5f, 0.0f, 2.0f));
             smoothRMS.setTargetValue (currentRMS.load());
             voiceData.setRMSAT (adjustedRMS, midiChannel - 2);
-            // if (voicesState.getChild (midiChannel - 2).isValid())
-            // {
-            //     auto channelState = voicesState.getChild (midiChannel - 2);
-            //     smoothRMS.setTargetValue (currentRMS.load());
-            //     float adjustedRMS = juce::jlimit(0.0f, 1.0f, 
-            //         juce::jmap(smoothRMS.getNextValue(), 0.0f, 0.5f, 0.0f, 2.0f));
-            //     channelState.setProperty(id::voiceRMS, adjustedRMS, nullptr);
-            // }
         }
     private:
         // juce::ValueTree voicesState;

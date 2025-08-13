@@ -134,32 +134,60 @@ public:
                    tp::MPEVoiceData& vd)
       : time ("Freq", "CombFrequency", vts, vd), 
         feedback ("Feedback", "Feedback", vts, vd), 
-        mix ("Mix", "FeedbackMix", vts, vd),
-        compression ("Compression", "FeedbackCompression", vts, vd)
+        mix ("Mix", "FeedbackMix", vts, vd)
     {
         label.setText ("Trajectory Feedback", juce::dontSendNotification);
         label.setJustificationType (juce::Justification::centred);
         addAndMakeVisible (label);
         addAndMakeVisible (time);
         addAndMakeVisible (feedback);
-        addAndMakeVisible (compression);
         addAndMakeVisible (mix);
     }
     void resized() override 
     {
         auto b = getLocalBounds();
-        auto unitHeight = b.getHeight() / static_cast<float> (2 + 4 + 4 + 4 + 4);
+        auto unitHeight = b.getHeight() / static_cast<float> (2 + 4 + 4 + 4);
         label.setBounds (b.removeFromTop(static_cast<int> (unitHeight * 2.0f)));
         time.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 4.0f)));
         feedback.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 4.0f)));
-        compression.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 4.0f)));
         mix.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 4.0f)));
     }
 private:
     juce::Label label;
-    ParameterSlider time, feedback, mix, compression;
+    ParameterSlider time, feedback, mix;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FeedbackPanel)
+};
+class RadialCompressorPanel : public juce::Component
+{
+public:
+    RadialCompressorPanel (juce::AudioProcessorValueTreeState& vts, 
+                   tp::MPEVoiceData& vd)
+      : threshold ("Threshold", "RadialCompressorThreshold", vts, vd), 
+        ratio ("Ratio", "RadialCompressorRatio", vts, vd), 
+        responsiveness ("Responsiveness", "RadialCompressorResponsiveness", vts, vd)
+    {
+        label.setText ("Radial Compression", juce::dontSendNotification);
+        label.setJustificationType (juce::Justification::centred);
+        addAndMakeVisible (label);
+        addAndMakeVisible (threshold);
+        addAndMakeVisible (ratio);
+        addAndMakeVisible (responsiveness);
+    }
+    void resized() override 
+    {
+        auto b = getLocalBounds();
+        auto unitHeight = b.getHeight() / static_cast<float> (2 + 4 + 4 + 4);
+        label.setBounds (b.removeFromTop(static_cast<int> (unitHeight * 2.0f)));
+        threshold.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 4.0f)));
+        ratio.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 4.0f)));
+        responsiveness.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 4.0f)));
+    }
+private:
+    juce::Label label;
+    ParameterSlider threshold, ratio, responsiveness;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (RadialCompressorPanel)
 };
 class TrajectoryVariables : public juce::Component 
 {
@@ -234,7 +262,8 @@ public:
         trajectorySelector (vts, vd),
         trajectoryVariables (vts, vd),
         meanderancePanel (vts, vd),
-        feedbackPanel (vts, vd)
+        feedbackPanel (vts, vd),
+        radialCompressorPanel (vts, vd)
     {
         addAndMakeVisible (trajectorySelector);
         addAndMakeVisible (trajectoryVariables);
@@ -245,17 +274,19 @@ public:
     {
         Panel::resized();
         auto b = getAdjustedBounds();
-        auto unitHeight = b.getHeight() / static_cast<float> ((12 + 20 + 10 + 22));
+        auto unitHeight = b.getHeight() / static_cast<float> ((12 + 20 + 10 + 22 + 22));
         trajectorySelector.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 12.0f)));
         trajectoryVariables.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 20.0f)));
         meanderancePanel.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 10.0f)));
         feedbackPanel.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 22.0f)));
+        radialCompressorPanel.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 22.0f)));
     }
 private:
     TrajectorySelector trajectorySelector;
     TrajectoryVariables trajectoryVariables;
     MeanderancePanel meanderancePanel;
     FeedbackPanel feedbackPanel;
+    RadialCompressorPanel radialCompressorPanel;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TrajectoryPanel)
 };

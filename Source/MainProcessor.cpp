@@ -266,12 +266,20 @@ juce::AudioProcessorValueTreeState::ParameterLayout MainProcessor::createParamet
     layout.add (std::make_unique<tp::RangedFloatParameter> ("Feedback", 
                                                             range,
                                                             0.8f));
-    range = {1.0f, 20.0f};
-    layout.add (std::make_unique<tp::RangedFloatParameter> ("Feedback Compression", 
-                                                            range,
-                                                            10.0f));
     layout.add (std::make_unique<tp::NormalizedFloatParameter> ("Feedback Mix",
                                                                 0.0f));
+    range = {0.0f, 1.0f};
+    layout.add (std::make_unique<tp::RangedFloatParameter> ("RadialCompressorThreshold", 
+                                                            range,
+                                                            1.0f));
+    range = {1.0f, 40.0f}; range.setSkewForCentre(4.0f);
+    layout.add (std::make_unique<tp::RangedFloatParameter> ("RadialCompressorRatio", 
+                                                             range, 
+                                                             1.0f));
+    range = {200.0f, 0.1f}; range.setSkewForCentre(20.0f);
+    layout.add (std::make_unique<tp::RangedFloatParameter> ("RadialCompressorRatio", 
+                                                             range, 
+                                                             20.0f));
 
     //=======================================Terrain Parameters
     layout.add (std::make_unique<tp::ChoiceParameter> ("Current Terrain", 
