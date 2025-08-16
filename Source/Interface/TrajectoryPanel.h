@@ -195,12 +195,14 @@ public:
     TrajectoryVariables (juce::AudioProcessorValueTreeState& vts, 
                          tp::MPEVoiceData& vd)
       : amplitude ("Amplitude", "Amplitude", vts, vd),
+        pitch ("Pitch", "pitch", vts, vd),
         size ("Size", "Size", vts, vd),
         rotation ("Rotation", "Rotation", vts, vd),
         translation_x ("Translation X", "TranslationX", vts, vd),
         translation_y ("Translation Y", "TranslationY", vts, vd)
     {
         addAndMakeVisible (amplitude);
+        addAndMakeVisible (pitch);
         addAndMakeVisible (size);
         addAndMakeVisible (rotation);
         addAndMakeVisible (translation_x);
@@ -209,8 +211,9 @@ public:
     void resized() override 
     {
         auto b = getLocalBounds();
-        auto unitHeight = b.getHeight() / static_cast<float> (5);
+        auto unitHeight = b.getHeight() / static_cast<float> (6);
         amplitude.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
+        pitch.setBounds (b.removeFromTop( static_cast<int> (unitHeight)));
         size.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
         rotation.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
         translation_x.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
@@ -218,6 +221,7 @@ public:
     }
 private:
     ParameterSlider amplitude;
+    ParameterSlider pitch;
     ParameterSlider size;
     ParameterSlider rotation;
     ParameterSlider translation_x;

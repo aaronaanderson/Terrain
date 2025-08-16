@@ -533,7 +533,6 @@ private:
             meanderanceSpeed (p.meanderanceSpeed, vts, MPERouting),
             feedbackScalar (p.feedbackScalar, vts, MPERouting), 
             feedbackTime (p.combFrequency, vts, MPERouting), 
-            //feedbackCompression (p.feedbackCompression, vts, MPERouting),
             feedbackMix (p.feedbackMix, vts, MPERouting), 
             envelopeSize (p.envelopeSize),
             attack (p.attack, vts, MPERouting), 
@@ -552,195 +551,14 @@ private:
             filterFrequency.setControlSmoothing (0.0);
             filterResonance.setControlSmoothing (0.0);
         }
-        void noteOn (float timbre, float pressure)
-        {
-            mod_a.noteOn(timbre, pressure);
-            mod_b.noteOn(timbre, pressure);
-            mod_c.noteOn(timbre, pressure);
-            mod_d.noteOn(timbre, pressure);
-            amplitude.noteOn (timbre, pressure);
-            size.noteOn(timbre, pressure);
-            rotation.noteOn(timbre, pressure);
-            translationX.noteOn(timbre, pressure);
-            translationY.noteOn(timbre, pressure);
-            meanderanceScale.noteOn(timbre, pressure);
-            meanderanceSpeed.noteOn(timbre, pressure);
-            feedbackScalar.noteOn(timbre, pressure);
-            feedbackTime.noteOn(timbre, pressure);
-            feedbackMix.noteOn(timbre, pressure);
-            attack.noteOn(timbre, pressure);
-            decay.noteOn(timbre, pressure);
-            sustain.noteOn(timbre, pressure);
-            release.noteOn(timbre, pressure);
-            sensitivity.noteOn (timbre, pressure);
-            filterFrequency.noteOn(timbre, pressure);
-            filterResonance.noteOn(timbre, pressure);
-            radialCompressorThreshold.noteOn (timbre, pressure);
-            radialCompressorRatio.noteOn(timbre, pressure);
-            radialCompressorResponsiveness.noteOn(timbre, pressure);
-        }
-        void resetSampleRate (double newSampleRate)
-        {
-            mod_a.prepare (newSampleRate);
-            mod_b.prepare (newSampleRate);
-            mod_c.prepare (newSampleRate);
-            mod_d.prepare (newSampleRate);
-            amplitude.prepare (newSampleRate);
-            size.prepare (newSampleRate);
-            rotation.prepare (newSampleRate);
-            translationX.prepare (newSampleRate); 
-            translationY.prepare (newSampleRate);
-            meanderanceScale.prepare (newSampleRate);
-            meanderanceSpeed.prepare (newSampleRate);
-            feedbackScalar.prepare (newSampleRate);
-            feedbackTime.prepare (newSampleRate);
-            feedbackMix.prepare (newSampleRate);
-            attack.prepare (newSampleRate);
-            decay.prepare (newSampleRate);
-            sustain.prepare (newSampleRate);
-            release.prepare (newSampleRate);
-            sensitivity.prepare (newSampleRate);
-            filterFrequency.prepare (newSampleRate);
-            filterResonance.prepare (newSampleRate);
-            radialCompressorThreshold.prepare (newSampleRate);
-            radialCompressorRatio.prepare (newSampleRate);
-            radialCompressorResponsiveness.prepare (newSampleRate);
-        }
-        void setTimbre (float newTimbre)
-        {
-            mod_a.setTimbre (newTimbre);
-            mod_b.setTimbre (newTimbre);
-            mod_c.setTimbre (newTimbre);
-            mod_d.setTimbre (newTimbre);
-            amplitude.setTimbre (newTimbre);
-            size.setTimbre (newTimbre);
-            rotation.setTimbre (newTimbre);
-            translationX.setTimbre (newTimbre); 
-            translationY.setTimbre (newTimbre);
-            meanderanceScale.setTimbre (newTimbre);
-            meanderanceSpeed.setTimbre (newTimbre);
-            feedbackScalar.setTimbre (newTimbre);
-            feedbackTime.setTimbre (newTimbre);
-            feedbackMix.setTimbre (newTimbre);
-            attack.setTimbre (newTimbre);
-            decay.setTimbre (newTimbre);
-            sustain.setTimbre (newTimbre);
-            release.setTimbre (newTimbre);
-            sensitivity.setTimbre (newTimbre);
-            filterFrequency.setTimbre (newTimbre);
-            filterResonance.setTimbre (newTimbre);
-            radialCompressorThreshold.setTimbre (newTimbre);
-            radialCompressorRatio.setTimbre (newTimbre);
-            radialCompressorResponsiveness.setTimbre (newTimbre);
-        }
-        void setPressure (float newPressure)
-        {
-            mod_a.setPressure (newPressure);
-            mod_b.setPressure (newPressure);
-            mod_c.setPressure (newPressure);
-            mod_d.setPressure (newPressure);
-            amplitude.setPressure (newPressure);
-            size.setPressure (newPressure);
-            rotation.setPressure (newPressure);
-            translationX.setPressure (newPressure); 
-            translationY.setPressure (newPressure);
-            meanderanceScale.setPressure (newPressure);
-            meanderanceSpeed.setPressure (newPressure);
-            feedbackScalar.setPressure (newPressure);
-            feedbackTime.setPressure (newPressure);
-            feedbackMix.setPressure (newPressure);
-            attack.setPressure (newPressure);
-            decay.setPressure (newPressure);
-            sustain.setPressure (newPressure);
-            release.setPressure (newPressure);
-            sensitivity.setPressure (newPressure);
-            filterFrequency.setPressure (newPressure);
-            filterResonance.setPressure (newPressure);
-            radialCompressorThreshold.setPressure (newPressure);
-            radialCompressorRatio.setPressure (newPressure);
-            radialCompressorResponsiveness.setPressure (newPressure);
-        }
-        void setState (juce::ValueTree mpeRoutingBranch)
-        {
-            mod_a.setState (mpeRoutingBranch);
-            mod_b.setState (mpeRoutingBranch);
-            mod_c.setState (mpeRoutingBranch);
-            mod_d.setState (mpeRoutingBranch);
-            amplitude.setState (mpeRoutingBranch);
-            size.setState (mpeRoutingBranch);
-            rotation.setState (mpeRoutingBranch);
-            translationX.setState (mpeRoutingBranch); 
-            translationY.setState (mpeRoutingBranch);
-            meanderanceScale.setState (mpeRoutingBranch);
-            meanderanceSpeed.setState (mpeRoutingBranch);
-            feedbackScalar.setState (mpeRoutingBranch);
-            feedbackTime.setState (mpeRoutingBranch);
-            feedbackMix.setState (mpeRoutingBranch);
-            attack.setState (mpeRoutingBranch);
-            decay.setState (mpeRoutingBranch);
-            sustain.setState (mpeRoutingBranch);
-            release.setState (mpeRoutingBranch);
-            sensitivity.setState (mpeRoutingBranch);
-            filterFrequency.setState (mpeRoutingBranch);
-            filterResonance.setState (mpeRoutingBranch);      
-            radialCompressorThreshold.setState (mpeRoutingBranch);
-            radialCompressorRatio.setState (mpeRoutingBranch);
-            radialCompressorResponsiveness.setState (mpeRoutingBranch);      
-        }
-        void setPressureSmoothing (float ms)
-        {
-            mod_a.setPressureSmoothing (ms);
-            mod_b.setPressureSmoothing (ms);
-            mod_c.setPressureSmoothing (ms);
-            mod_d.setPressureSmoothing (ms);
-            amplitude.setPressureSmoothing (ms);
-            size.setPressureSmoothing (ms);
-            rotation.setPressureSmoothing (ms);
-            translationX.setPressureSmoothing (ms); 
-            translationY.setPressureSmoothing (ms);
-            meanderanceScale.setPressureSmoothing (ms);
-            meanderanceSpeed.setPressureSmoothing (ms);
-            feedbackScalar.setPressureSmoothing (ms);
-            feedbackTime.setPressureSmoothing (ms);
-            feedbackMix.setPressureSmoothing (ms);
-            attack.setPressureSmoothing (ms);
-            decay.setPressureSmoothing (ms);
-            sustain.setPressureSmoothing (ms);
-            release.setPressureSmoothing (ms);
-            sensitivity.setPressureSmoothing (0.0);
-            filterFrequency.setPressureSmoothing (0.0); // no smoothing, 
-            filterResonance.setPressureSmoothing (0.0); // called per-buffer
-            radialCompressorThreshold.setPressureSmoothing (ms);
-            radialCompressorRatio.setPressureSmoothing (ms);
-            radialCompressorResponsiveness.setPressureSmoothing (ms);
-        }
-        void setTimbreSmoothing (float ms)
-        {
-            mod_a.setTimbreSmoothing (ms);
-            mod_b.setTimbreSmoothing (ms);
-            mod_c.setTimbreSmoothing (ms);
-            mod_d.setTimbreSmoothing (ms);
-            amplitude.setTimbreSmoothing (ms);
-            size.setTimbreSmoothing (ms);
-            rotation.setTimbreSmoothing (ms);
-            translationX.setTimbreSmoothing (ms); 
-            translationY.setTimbreSmoothing (ms);
-            meanderanceScale.setTimbreSmoothing (ms);
-            meanderanceSpeed.setTimbreSmoothing (ms);
-            feedbackScalar.setTimbreSmoothing (ms);
-            feedbackTime.setTimbreSmoothing (ms);
-            feedbackMix.setTimbreSmoothing (ms);
-            attack.setTimbreSmoothing (ms);
-            decay.setTimbreSmoothing (ms);
-            sustain.setTimbreSmoothing (ms);
-            release.setTimbreSmoothing (ms); 
-            sensitivity.setTimbreSmoothing (0.0);  
-            filterFrequency.setTimbreSmoothing (0.0);   
-            filterResonance.setTimbreSmoothing (0.0);   
-            radialCompressorThreshold.setTimbreSmoothing (ms);
-            radialCompressorRatio.setTimbreSmoothing (ms);
-            radialCompressorResponsiveness.setTimbreSmoothing (ms); 
-        }
+
+        /*
+            To add parameters, add it as a member, construct it in the list, add it to parameters, and
+            increment the list size. 
+            If it's special in some way, for example it doesn't want smoothing, place it in the appropriate
+            exception group.
+        */
+
         tp::ChoiceParameter* currentTrajectory;
         MPESmoothedParameter mod_a, mod_b, mod_c, mod_d;
         MPESmoothedParameter amplitude, size, rotation, translationX, translationY;
@@ -752,6 +570,33 @@ private:
         MPESmoothedParameter filterFrequency, filterResonance;
         juce::AudioParameterBool* filterBypass;
 
+        std::array<MPESmoothedParameter*, 24> parameters 
+        {
+            &mod_a,&mod_b,&mod_c,&mod_d,
+            &amplitude,&size,&rotation,&translationX,&translationY,
+            &meanderanceScale,&meanderanceSpeed,
+            &feedbackScalar,&feedbackTime,&feedbackMix,
+            &attack,&decay,&sustain,&release,&sensitivity,
+            &filterFrequency,&filterResonance,
+            &radialCompressorThreshold,&radialCompressorRatio,&radialCompressorResponsiveness            
+        };
+        // Exception groups
+        std::array<MPESmoothedParameter*, 3> noPressureSmooth { &sensitivity,&filterFrequency,&filterResonance };
+        std::array<MPESmoothedParameter*, 2> noTimbreSmooth   { &filterFrequency,&filterResonance };
+
+        template <class F> void forAll(F&& f) { for (auto* p : parameters) f(*p); }
+
+        void resetSampleRate (double sr)       { forAll([&](auto& x){ x.prepare(sr); }); }
+        void noteOn (float t, float p)         { forAll([&](auto& x){ x.noteOn(t, p); }); }
+        void setTimbre (float v)               { forAll([&](auto& x){ x.setTimbre(v); }); }
+        void setPressure (float v)             { forAll([&](auto& x){ x.setPressure(v); }); }
+        void setState (juce::ValueTree vt)     { forAll([&](auto& x){ x.setState(vt); }); }
+        void setPressureSmoothing (float ms)   { 
+            forAll([&](auto& x){ x.setPressureSmoothing(ms); });
+            for (auto* p : noPressureSmooth) p->setPressureSmoothing(0.0f); }
+        void setTimbreSmoothing (float ms)     { 
+            forAll([&](auto& x){ x.setTimbreSmoothing(ms); });
+            for (auto* p : noTimbreSmooth)   p->setTimbreSmoothing(0.0f); }
     };
     VoiceParameters voiceParameters;
     const ModSet getModSet()
