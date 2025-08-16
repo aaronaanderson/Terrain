@@ -23,7 +23,8 @@ public:
              MTSClient& mtsc, 
              juce::AudioProcessorValueTreeState& vts, 
              MPEVoiceData& vd)
-      : terrain (p, vts, SettingsBranch.getChildWithName (id::MPE_ROUTING)),
+      : morph::Voice (&mtsc),
+        terrain (p, vts, SettingsBranch.getChildWithName (id::MPE_ROUTING)),
         trajectory (terrain, p, SettingsBranch, mtsc, vts, vd), 
         routingBranch (SettingsBranch.getChildWithName (id::MPE_ROUTING)), 
         mpeSettingsBranch (MPESettings), 
@@ -64,7 +65,8 @@ public:
         auto note = getCurrentlyPlayingNote();
         terrain.noteOn (note.pressure.asUnsignedFloat(), 
                         note.timbre.asUnsignedFloat());
-        trajectory.startNote (note.initialNote, 
+        trajectory.startNote (note.initialNote,
+                              adjustedFrequency,
                               note.noteOnVelocity.asUnsignedFloat(), 
                               static_cast<float> (note.getFrequencyInHertz()), 
                               note.pressure.asUnsignedFloat(), 

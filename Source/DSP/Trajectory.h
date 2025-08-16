@@ -179,13 +179,13 @@ public:
         smoothFrequencyEnabled.referTo (settingsBranch, id::noteOnOrContinuous, nullptr);
     }
     bool shouldClear() { return readyToClear; }
-    void setFrequencyImmediate (float newFrequency)
+    virtual void setFrequencyImmediate (float newFrequency)
     {
         jassert (newFrequency > 0.0f);
         frequency = newFrequency;
         phaseIncrement.setCurrentAndTargetValue ((frequency * juce::MathConstants<float>::twoPi) / sampleRate);
     }
-    void setFrequencySmooth (float newFrequency)
+    virtual void setFrequencySmooth (float newFrequency)
     {
         jassert (newFrequency > 0.0f);
         frequency = newFrequency;
@@ -366,6 +366,7 @@ public:
         radialCompressor.prepare (newRate);
     }
     void startNote (int midiNoteNumber,
+                    float adjustedFrequency,
                     float velocity, 
                     float frequencyHz,
                     float pressure, 
@@ -376,8 +377,8 @@ public:
         midiNote = midiNoteNumber;
         midiChannel = channel;
         setPitchWheelIncrementScalar (0.0);
-        double freq = MTS_NoteToFrequency (&mtsClient, static_cast<char> (midiNoteNumber), -1);
-        setFrequencyImmediate (static_cast<float> (freq));
+
+        setFrequencyImmediate (static_cast<float> (adjustedFrequency));
         readyToClear = false;
         if (MTS_ShouldFilterNote (&mtsClient, static_cast<char> (midiNoteNumber), -1)) 
             readyToClear = true; 
@@ -403,12 +404,14 @@ public:
                           int startSample, int numSamples) override
     {
         auto* o = renderBuffer.getWritePointer(0);
-        if (smoothFrequencyEnabled.get())
-            setFrequencySmooth (static_cast<float> (MTS_NoteToFrequency (&mtsClient, 
-                                                                         static_cast<char> (midiNote), 
-                                                                         -1)));
+        //if (smoothFrequencyEnabled.get())
+        //{
+        //    setFrequencySmooth (static_cast<float> (frequency));
+        //    voiceParameters.pitch.skip(numSamples);
+        //}
         for(int i = startSample; i < startSample + numSamples; i++)
         {
+            juce::ignoreUnused (voiceParameters.pitch.getNext()); // hack, hopefully I'll get back to removing this!
             if(!envelope.isActive()) break;
             tp::ADSR::Parameters p = {voiceParameters.attack.getNext(), 
                                       voiceParameters.decay.getNext(), 
@@ -450,8 +453,8 @@ public:
             setRMS (env);
             o[i] = outputSample * env * smoothAmplitude * voiceParameters.amplitude.getNext();
 
-            phase = std::fmod (phase + (phaseIncrement.getNextValue() * pitchWheelIncrementScalar.getNextValue()),
-                               juce::MathConstants<double>::twoPi);
+            phase = std::fmod (phase + (phaseIncrement.getNextValue() * pitchWheelIncrementScalar.getNextValue() * static_cast<double> (getPitchScalar( voiceParameters.pitch.getNext()))),
+                               juce::MathConstants<double>::twoPi );
 
             if(!envelope.isActive())
             {
@@ -500,6 +503,19 @@ public:
     }
     float getRMS() { return currentRMS; }
 
+    void setFrequencyImmediate (float newFrequency) override
+    {
+        jassert (newFrequency > 0.0f);
+        frequency = newFrequency;
+        phaseIncrement.setCurrentAndTargetValue ((frequency * juce::MathConstants<float>::twoPi) / sampleRate);
+    }
+    void setFrequencySmooth (float newFrequency) override
+    {
+        jassert (newFrequency > 0.0f);
+        frequency = newFrequency;
+        DBG(frequency);
+        phaseIncrement.setTargetValue ((frequency * juce::MathConstants<float>::twoPi) / sampleRate);
+    }
 private:
     juce::ValueTree mpeRouting;
     juce::AudioBuffer<float> renderBuffer;
@@ -525,6 +541,7 @@ private:
             mod_c (p.trajectoryModC, vts, MPERouting),
             mod_d (p.trajectoryModD, vts, MPERouting), 
             amplitude (p.trajectoryAmplitude, vts, MPERouting),
+            pitch (p.trajectoryPitch, vts, MPERouting),
             size (p.trajectorySize, vts, MPERouting), 
             rotation (p.trajectoryRotation, vts, MPERouting), 
             translationX (p.trajectoryTranslationX, vts, MPERouting), 
@@ -561,7 +578,7 @@ private:
 
         tp::ChoiceParameter* currentTrajectory;
         MPESmoothedParameter mod_a, mod_b, mod_c, mod_d;
-        MPESmoothedParameter amplitude, size, rotation, translationX, translationY;
+        MPESmoothedParameter amplitude, pitch, size, rotation, translationX, translationY;
         MPESmoothedParameter meanderanceScale, meanderanceSpeed;
         MPESmoothedParameter feedbackScalar, feedbackTime, feedbackMix;
         MPESmoothedParameter radialCompressorThreshold, radialCompressorRatio, radialCompressorResponsiveness;
@@ -570,10 +587,10 @@ private:
         MPESmoothedParameter filterFrequency, filterResonance;
         juce::AudioParameterBool* filterBypass;
 
-        std::array<MPESmoothedParameter*, 24> parameters 
+        std::array<MPESmoothedParameter*, 25> parameters 
         {
             &mod_a,&mod_b,&mod_c,&mod_d,
-            &amplitude,&size,&rotation,&translationX,&translationY,
+            &amplitude, &pitch, &size,&rotation,&translationX,&translationY,
             &meanderanceScale,&meanderanceSpeed,
             &feedbackScalar,&feedbackTime,&feedbackMix,
             &attack,&decay,&sustain,&release,&sensitivity,
@@ -622,13 +639,15 @@ private:
             voiceData.setRMSAT (adjustedRMS, midiChannel - 2);
         }
     private:
-        // juce::ValueTree voicesState;
         MPEVoiceData& voiceData;
         int midiChannel;
         std::atomic<float>& currentRMS;
         juce::SmoothedValue<float> smoothRMS {0.0f};
     };
     std::unique_ptr<RMSUpdater> rmsUpdater;
+
+    const float ONE_TWELFTH = 1.0f / 12.0f;
+    inline float getPitchScalar(float pitch) { return std::pow(2.0f, pitch * ONE_TWELFTH); }
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MPETrajectory)
 };

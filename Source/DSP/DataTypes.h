@@ -245,6 +245,12 @@ public:
         smoothedValue.reset (sampleRate, ms * 0.001);
         smoothedValue.setCurrentAndTargetValue (rangedParameter->convertFrom0to1 (rangedParameter->getValue()));
     }
+    void skip(int numSamples)
+    {
+        smoothedValue.skip(numSamples);
+        smoothedPressure.skip(numSamples);
+        smoothedTimbre.skip(numSamples);
+    }
 private:
     juce::RangedAudioParameter* rangedParameter;
     juce::AudioProcessorValueTreeState& valueTreeState;
