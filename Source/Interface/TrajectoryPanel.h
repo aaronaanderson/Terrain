@@ -137,7 +137,7 @@ public:
         feedback ("Feedback", "Feedback", vts, vd), 
         mix ("Mix", "FeedbackMix", vts, vd)
     {
-        label.setText ("Trajectory Feedback", juce::dontSendNotification);
+        label.setText ("Spatial Comb", juce::dontSendNotification);
         label.setJustificationType (juce::Justification::centred);
         addAndMakeVisible (label);
         addAndMakeVisible (time);
@@ -286,16 +286,26 @@ public:
         addAndMakeVisible (meanderancePanel);
         addAndMakeVisible (feedbackPanel);
         addAndMakeVisible (radialCompressorPanel);
+
+        for( int i = 0; i < 5; i++) { lines.add (std::make_unique<Line> (lineThickness));}
+        for( auto* line : lines ) { addAndMakeVisible (line); }
     }
     void resized () override 
     {
         Panel::resized();
         auto b = getAdjustedBounds();
-        auto unitHeight = juce::roundToInt (b.getHeight() / static_cast<float> (6));
+        auto unitHeight = juce::roundToInt ( (b.getHeight() - lines.size() * lineThickness) / static_cast<float> (6));
+
+        jassert (lines.size() >= 5);
+        lines.getUnchecked( 0 )->setBounds (b.removeFromTop (lineThickness));
         trajectorySelector.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
+        lines.getUnchecked( 1 )->setBounds (b.removeFromTop (lineThickness));
         trajectoryVariables.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 2)));
+        lines.getUnchecked( 2 )->setBounds (b.removeFromTop (lineThickness));
         meanderancePanel.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
+        lines.getUnchecked( 3 )->setBounds (b.removeFromTop (lineThickness));
         feedbackPanel.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
+        lines.getUnchecked( 4 )->setBounds (b.removeFromTop (lineThickness));
         radialCompressorPanel.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
     }
 private:
@@ -304,6 +314,20 @@ private:
     MeanderancePanel meanderancePanel;
     FeedbackPanel feedbackPanel;
     RadialCompressorPanel radialCompressorPanel;
+
+    struct Line : public juce::Component {
+        explicit Line (int w = 2) : thickness (static_cast<float>(w)) {}
+        void paint (juce::Graphics& g) {
+            auto bounds = getLocalBounds();
+            auto* tlaf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel() );
+            jassert (tlaf != nullptr);
+            g.setColour (tlaf->getBackgroundDark().darker());
+            g.drawLine (0.0f, 0.0f, bounds.toFloat().getWidth(), 0.0, thickness);       
+        }
+        float thickness { 2.0f };
+    };
+    juce::OwnedArray<Line> lines;
+    const int lineThickness { 6 };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TrajectoryPanel)
 };
