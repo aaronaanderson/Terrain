@@ -26,7 +26,7 @@ public:
         level.setBounds (b.removeFromLeft (b.getWidth()));
     }
 private:
-    ParameterSlider level;
+    KnobParameterSlider level;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OutputLevel)
 };
@@ -59,7 +59,7 @@ public:
     }
 private:
     juce::Label label;
-    ParameterSlider threshold, ratio;
+    KnobParameterSlider threshold, ratio;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Compressor)
 };
@@ -97,7 +97,7 @@ public:
     }
 private:
     juce::Label label;
-    ParameterSlider perVoiceFrequency, perVoiceResonance;
+    KnobParameterSlider perVoiceFrequency, perVoiceResonance;
     ParameterToggle perVoiceOnOff;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PerVoiceFilter)
 };
@@ -141,10 +141,10 @@ public:
     }
 private:
     juce::Label label;
-    ParameterSlider frequency, resonance;
+    KnobParameterSlider frequency, resonance;
     ParameterToggle onOff;
 
-    ParameterSlider perVoiceFrequency, perVoiceResonance;
+    KnobParameterSlider perVoiceFrequency, perVoiceResonance;
     ParameterToggle perVoiceOnOff;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Filter)
 };
@@ -192,7 +192,7 @@ public:
 private:
     juce::Label label;
     ti::ParameterToggle envelopeSize;
-    ti::ParameterSlider attack, decay, sustain, release, sensitivity;
+    ti::KnobParameterSlider attack, decay, sustain, release, sensitivity;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Envelope)
 };

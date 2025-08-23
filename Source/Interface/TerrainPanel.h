@@ -20,7 +20,7 @@ public:
         saturation.setBounds (b.removeFromTop (b.getHeight()));
     }
 private:
-    ParameterSlider saturation;
+    LinearParameterSlider saturation;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TerrainVariables)
 };
@@ -80,10 +80,10 @@ public:
         }
     }
 private:
-    ParameterSlider aModifier;
-    ParameterSlider bModifier;
-    ParameterSlider cModifier;
-    ParameterSlider dModifier;
+    LinearParameterSlider aModifier;
+    LinearParameterSlider bModifier;
+    LinearParameterSlider cModifier;
+    LinearParameterSlider dModifier;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TerrainModifierArray)
 };

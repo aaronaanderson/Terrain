@@ -4,6 +4,7 @@
 #include "AttachedInterfaces.h"
 #include "../Parameters.h"
 #include "../DSP/MPEVoiceData.h"
+#include "morphlib/AutoFitTextBox.h"
 namespace ti
 {
 class ModifierArray : public juce::Component,
@@ -62,10 +63,10 @@ public:
         }
     }
 private:
-    ParameterSlider aModifier;
-    ParameterSlider bModifier;
-    ParameterSlider cModifier;
-    ParameterSlider dModifier;
+    LinearParameterSlider aModifier;
+    LinearParameterSlider bModifier;
+    LinearParameterSlider cModifier;
+    LinearParameterSlider dModifier;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ModifierArray)
 };
@@ -100,7 +101,7 @@ public:
 private:
     ModifierArray modifierArray;
     ParameterComboBox trajectoryList;
-    juce::Label trajectoryListLabel;
+    morph::AutoFitTextBox trajectoryListLabel;
 
     int trajectoryNameToVisibleSliders (juce::String trajectoryName)
     {
@@ -146,15 +147,17 @@ public:
     void resized() override 
     {
         auto b = getLocalBounds();
-        auto unitHeight = b.getHeight() / static_cast<float> (2 + 4 + 4 + 4);
-        label.setBounds (b.removeFromTop(static_cast<int> (unitHeight * 2.0f)));
-        time.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 4.0f)));
-        feedback.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 4.0f)));
-        mix.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 4.0f)));
+        int label_height = juce::roundToInt (b.getHeight() * 0.2f);
+        label.setBounds( b.removeFromTop( label_height ) );
+
+        auto unitWidth = b.getWidth() / static_cast<float> (4 + 4 + 4);
+        time.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 4.0f)));
+        feedback.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 4.0f)));
+        mix.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 4.0f)));
     }
 private:
-    juce::Label label;
-    ParameterSlider time, feedback, mix;
+    morph::AutoFitTextBox label;
+    KnobParameterSlider time, feedback, mix;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FeedbackPanel)
 };
@@ -177,15 +180,17 @@ public:
     void resized() override 
     {
         auto b = getLocalBounds();
-        auto unitHeight = b.getHeight() / static_cast<float> (2 + 4 + 4 + 4);
-        label.setBounds (b.removeFromTop(static_cast<int> (unitHeight * 2.0f)));
-        threshold.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 4.0f)));
-        ratio.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 4.0f)));
-        responsiveness.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 4.0f)));
+        int label_height = juce::roundToInt (b.getHeight() * 0.2f);
+        label.setBounds( b.removeFromTop (label_height));
+            
+        auto unitWidth = b.getWidth() / static_cast<float> (4 + 4 + 4);
+        threshold.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 4.0f)));
+        ratio.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 4.0f)));
+        responsiveness.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 4.0f)));
     }
 private:
-    juce::Label label;
-    ParameterSlider threshold, ratio, responsiveness;
+    morph::AutoFitTextBox label;
+    KnobParameterSlider threshold, ratio, responsiveness;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (RadialCompressorPanel)
 };
@@ -211,21 +216,25 @@ public:
     void resized() override 
     {
         auto b = getLocalBounds();
-        auto unitHeight = b.getHeight() / static_cast<float> (6);
-        amplitude.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
-        pitch.setBounds (b.removeFromTop( static_cast<int> (unitHeight)));
-        size.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
-        rotation.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
-        translation_x.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
-        translation_y.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
+        auto unitWidth = juce::roundToInt (b.getWidth() / static_cast<float> (3));
+        auto upperBounds = b.removeFromTop( b.getHeight() / 2 );
+        auto lowerBounds = b;
+
+        amplitude.setBounds (upperBounds.removeFromLeft (static_cast<int> (unitWidth)));
+        pitch.setBounds (upperBounds.removeFromLeft( static_cast<int> (unitWidth)));
+        size.setBounds (upperBounds.removeFromLeft (static_cast<int> (unitWidth)));
+
+        rotation.setBounds (lowerBounds.removeFromLeft (static_cast<int> (unitWidth)));
+        translation_x.setBounds (lowerBounds.removeFromLeft (static_cast<int> (unitWidth)));
+        translation_y.setBounds (lowerBounds.removeFromLeft (static_cast<int> (unitWidth)));
     }
 private:
-    ParameterSlider amplitude;
-    ParameterSlider pitch;
-    ParameterSlider size;
-    ParameterSlider rotation;
-    ParameterSlider translation_x;
-    ParameterSlider translation_y;
+    KnobParameterSlider amplitude;
+    KnobParameterSlider pitch;
+    KnobParameterSlider size;
+    KnobParameterSlider rotation;
+    KnobParameterSlider translation_x;
+    KnobParameterSlider translation_y;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TrajectoryVariables)
 };
@@ -246,14 +255,17 @@ public:
     void resized()
     {
         auto b = getLocalBounds();
-        auto unitHeight = b.getHeight() / static_cast<float> (2 + 4 + 4);
-        label.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 2.0f)));
-        scale.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 4.0f)));
-        speed.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 4.0f)));
+
+        auto text_height = juce::roundToInt (juce::roundToInt (b.getHeight() * 0.2f));
+        label.setBounds (b.removeFromTop (text_height));
+        
+        auto unitWidth = juce::roundToInt (b.getWidth() / static_cast<float> (2));
+        scale.setBounds (b.removeFromLeft (static_cast<int> (unitWidth)));
+        speed.setBounds (b.removeFromLeft (static_cast<int> (unitWidth)));
     }
 private:
-    juce::Label label;
-    ParameterSlider scale, speed;
+    morph::AutoFitTextBox label;
+    KnobParameterSlider scale, speed;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MeanderancePanel)
 };
@@ -279,12 +291,12 @@ public:
     {
         Panel::resized();
         auto b = getAdjustedBounds();
-        auto unitHeight = b.getHeight() / static_cast<float> ((12 + 20 + 10 + 22 + 22));
-        trajectorySelector.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 12.0f)));
-        trajectoryVariables.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 20.0f)));
-        meanderancePanel.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 10.0f)));
-        feedbackPanel.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 22.0f)));
-        radialCompressorPanel.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 22.0f)));
+        auto unitHeight = juce::roundToInt (b.getHeight() / static_cast<float> (6));
+        trajectorySelector.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
+        trajectoryVariables.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 2)));
+        meanderancePanel.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
+        feedbackPanel.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
+        radialCompressorPanel.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
     }
 private:
     TrajectorySelector trajectorySelector;

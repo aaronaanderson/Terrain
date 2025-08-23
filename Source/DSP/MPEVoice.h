@@ -66,7 +66,7 @@ public:
         terrain.noteOn (note.pressure.asUnsignedFloat(), 
                         note.timbre.asUnsignedFloat());
         trajectory.startNote (note.initialNote,
-                              adjustedFrequency,
+                              static_cast<float> (adjustedFrequency),
                               note.noteOnVelocity.asUnsignedFloat(), 
                               static_cast<float> (note.getFrequencyInHertz()), 
                               note.pressure.asUnsignedFloat(), 
