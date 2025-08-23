@@ -301,9 +301,9 @@ struct ParameterSliderBase : public juce::Component,
                        apvts.state.getChildWithName (id::PRESET_SETTINGS)
                                    .getChildWithName (id::MPE_ROUTING))
     {
-        label.setText (labelText, juce::dontSendNotification);
+        label.setText     (labelText, juce::dontSendNotification);
         addAndMakeVisible (label);
-        addAndMakeVisible (slider);
+        addChildComponent (slider);
         addChildComponent (voicesMeter);
     
         bindToParam (paramID);
@@ -313,36 +313,28 @@ struct ParameterSliderBase : public juce::Component,
         updateControlledState();
     }
 
-    ~ParameterSliderBase() override
-    {
-        valueTreeState.state.removeListener (this);
-    }
+    ~ParameterSliderBase() override { valueTreeState.state.removeListener (this); }
 
     // Subclass hook: layout & slider style
     virtual void applyLayout (juce::Rectangle<int> bounds) = 0;
 
-    // ---------- JUCE ----------
-    void lookAndFeelChanged() override
-    {
-        laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
-    }
-
     void paint (juce::Graphics& g) override
     {
-        if (laf == nullptr) return;
+        auto* tlaf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
+        jassert (tlaf != nullptr);
 
         const auto r = getLocalBounds().toFloat();
 
         if (itemDragHovering || isControlled)
         {
-            g.setColour (laf->getBackgroundDark());
+            g.setColour (tlaf->getBackgroundDark());
             g.drawRect (r, 4.0f);
         }
         if (isControlled)
         {
-            g.setColour (laf->getBackgroundColour().darker());
+            g.setColour (tlaf->getBackgroundColour().darker());
             g.fillRect (r);
-            g.setColour (laf->getBackgroundDark());
+            g.setColour (tlaf->getBackgroundDark());
             g.drawRect (r, 4.0f);
         }
     }
@@ -398,15 +390,14 @@ protected:
     juce::RangedAudioParameter* param = nullptr;
 
     morph::AutoFitTextBox  label;
-    juce::Slider slider;
-    VoiceMeter   voicesMeter;
+    juce::Slider           slider;
+    VoiceMeter             voicesMeter;
 
     std::unique_ptr<SliderAttachment> sliderAttachment;
 
     juce::String labelText;
     juce::String paramID;
 
-    TerrainLookAndFeel* laf = nullptr;
     bool itemDragHovering = false;
     bool isControlled     = false;
 
@@ -471,7 +462,6 @@ protected:
 
     void setControlled (bool controlled)
     {
-        if (isControlled == controlled) return;
         isControlled = controlled;
         slider.setVisible (!controlled);
         voicesMeter.setVisible (controlled);
@@ -481,29 +471,25 @@ protected:
     void updateControlledState()
     {
         const auto routing   = routingTree();
-        const bool mpeEnable = routing.getProperty (id::mpeEnabled, false);
 
         bool controlled = false;
         juce::Identifier outId;
 
-        //if (mpeEnable)
-        //{
-            auto pressure = child (routing, id::PRESSURE);
-            auto timbre   = child (routing, id::TIMBRE);
+        auto pressure = child (routing, id::PRESSURE);
+        auto timbre   = child (routing, id::TIMBRE);
 
-            if (isParamRoutedToBranch (pressure, paramID, outId))
-            {
-                voicesMeter.setOutputID (outId);
-                voicesMeter.setMPEChannel (id::PRESSURE);
-                controlled = true;
-            }
-            else if (isParamRoutedToBranch (timbre, paramID, outId))
-            {
-                voicesMeter.setOutputID (outId);
-                voicesMeter.setMPEChannel (id::TIMBRE);
-                controlled = true;
-            }
-        //}
+        if (isParamRoutedToBranch (pressure, paramID, outId))
+        {
+            voicesMeter.setOutputID (outId);
+            voicesMeter.setMPEChannel (id::PRESSURE);
+            controlled = true;
+        }
+        else if (isParamRoutedToBranch (timbre, paramID, outId))
+        {
+            voicesMeter.setOutputID (outId);
+            voicesMeter.setMPEChannel (id::TIMBRE);
+            controlled = true;
+        }
 
         setControlled (controlled);
     }

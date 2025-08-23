@@ -29,8 +29,8 @@ struct VoiceMeter : public juce::Component,
         else
             paintHorizontal (g);
     }
-    void setMPEChannel (juce::Identifier mpeCh) { mpeChannel = mpeCh; }
-    void setOutputID (juce::Identifier output) { outputID = output; }
+    void setMPEChannel (juce::Identifier mpeCh)    { mpeChannel = mpeCh; }
+    void setOutputID (juce::Identifier output)     { outputID = output; }
     void setRoutingState (juce::ValueTree routing) { routingBranch = routing; }
 private:
     void timerCallback() override { repaint(); }
