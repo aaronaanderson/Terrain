@@ -90,7 +90,10 @@ public:
     RangedFloatParameter*     radialCompressorRatio= dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter ("RadialCompressorRatio"));
     RangedFloatParameter*     radialCompressorResponsiveness = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter ("RadialCompressorResponsiveness"));
     NormalizedFloatParameter* feedbackMix = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter         ("FeedbackMix"));
-     
+    RangedFloatParameter*     voiceBandPassCenterFreq = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter ("VoiceBandPassCenterFreq"));
+    RangedFloatParameter*     voiceBandPassBandwidth = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter ("VoiceBandPassBandwidth"));
+
+
     ChoiceParameter*          currentTerrain = dynamic_cast<ChoiceParameter*> (valueTreeState.getParameter                ("CurrentTerrain"));
     NormalizedFloatParameter* terrainModA = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter ("TerrainModA"));
     NormalizedFloatParameter* terrainModB = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter ("TerrainModB"));

@@ -282,6 +282,14 @@ juce::AudioProcessorValueTreeState::ParameterLayout MainProcessor::createParamet
     layout.add (std::make_unique<tp::RangedFloatParameter> ("RadialCompressorResponsiveness", 
                                                              range, 
                                                              0.9f));
+    range = {20.0f, 20000.0f}; range.setSkewForCentre (640.0f);
+    layout.add (std::make_unique<tp::RangedFloatParameter> ("VoiceBandPassCenterFreq", 
+                                                            range, 
+                                                            640.0f));
+    range = {0.0, 5.0}; 
+    layout.add (std::make_unique<tp::RangedFloatParameter> ("VoiceBandPassBandwidth", 
+                                                             range, 
+                                                             5.0));
 
     //=======================================Terrain Parameters
     layout.add (std::make_unique<tp::ChoiceParameter> ("Current Terrain", 

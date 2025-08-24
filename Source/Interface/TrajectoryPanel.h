@@ -194,6 +194,38 @@ private:
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (RadialCompressorPanel)
 };
+
+class BandpassPanel : public juce::Component
+{
+public:
+    BandpassPanel (juce::AudioProcessorValueTreeState& vts, 
+                   tp::MPEVoiceData& vd)
+      : centerFreq ("Center", "VoiceBandPassCenterFreq", vts, vd), 
+        bandwidth ("Bandwidth", "VoiceBandPassBandwidth", vts, vd) 
+    {
+        label.setText ("Bandpass", juce::dontSendNotification);
+        label.setJustificationType (juce::Justification::centred);
+        addAndMakeVisible (label);
+        addAndMakeVisible (centerFreq);
+        addAndMakeVisible (bandwidth);
+    }
+    void resized() override 
+    {
+        auto b = getLocalBounds();
+        int label_height = juce::roundToInt (b.getHeight() * 0.2f);
+        label.setBounds( b.removeFromTop (label_height));
+            
+        auto unitWidth = b.getWidth() / static_cast<float> (2);
+        centerFreq.setBounds (b.removeFromLeft (static_cast<int> (unitWidth)));
+        bandwidth.setBounds (b.removeFromLeft (static_cast<int> (unitWidth)));
+    }
+private:
+    morph::AutoFitTextBox label;
+    KnobParameterSlider centerFreq, bandwidth;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BandpassPanel)
+};
+
 class TrajectoryVariables : public juce::Component 
 {
 public:
@@ -269,6 +301,9 @@ private:
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MeanderancePanel)
 };
+
+
+
 class TrajectoryPanel : public Panel
 {
 public:
@@ -279,24 +314,26 @@ public:
         trajectoryVariables (vts, vd),
         meanderancePanel (vts, vd),
         feedbackPanel (vts, vd),
-        radialCompressorPanel (vts, vd)
+        radialCompressorPanel (vts, vd),
+        bandPassPanel (vts, vd)
     {
         addAndMakeVisible (trajectorySelector);
         addAndMakeVisible (trajectoryVariables);
         addAndMakeVisible (meanderancePanel);
         addAndMakeVisible (feedbackPanel);
         addAndMakeVisible (radialCompressorPanel);
+        addAndMakeVisible (bandPassPanel);
 
-        for( int i = 0; i < 5; i++) { lines.add (std::make_unique<Line> (lineThickness));}
+        for( int i = 0; i < 6; i++) { lines.add (std::make_unique<Line> (lineThickness));}
         for( auto* line : lines ) { addAndMakeVisible (line); }
     }
     void resized () override 
     {
         Panel::resized();
         auto b = getAdjustedBounds();
-        auto unitHeight = juce::roundToInt ( (b.getHeight() - lines.size() * lineThickness) / static_cast<float> (6));
+        auto unitHeight = juce::roundToInt ( (b.getHeight() - lines.size() * lineThickness) / static_cast<float> (7));
 
-        jassert (lines.size() >= 5);
+        jassert (lines.size() >= 6);
         lines.getUnchecked( 0 )->setBounds (b.removeFromTop (lineThickness));
         trajectorySelector.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
         lines.getUnchecked( 1 )->setBounds (b.removeFromTop (lineThickness));
@@ -307,6 +344,9 @@ public:
         feedbackPanel.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
         lines.getUnchecked( 4 )->setBounds (b.removeFromTop (lineThickness));
         radialCompressorPanel.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
+        lines.getUnchecked( 5 )->setBounds (b.removeFromTop (lineThickness));
+        bandPassPanel.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
+        
     }
 private:
     TrajectorySelector trajectorySelector;
@@ -314,6 +354,7 @@ private:
     MeanderancePanel meanderancePanel;
     FeedbackPanel feedbackPanel;
     RadialCompressorPanel radialCompressorPanel;
+    BandpassPanel bandPassPanel;
 
     struct Line : public juce::Component {
         explicit Line (int w = 2) : thickness (static_cast<float>(w)) {}

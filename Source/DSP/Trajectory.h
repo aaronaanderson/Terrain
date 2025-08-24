@@ -2,7 +2,11 @@
 
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_data_structures/juce_data_structures.h>
+
 #include <MTS-ESP/Client/libMTSClient.h>
+
+#include <morphlib/BandPassFilter.h>
+
 #include "../Parameters.h"
 #include "DataTypes.h"
 #include "ADSR.h"
@@ -171,6 +175,7 @@ public:
         pitchWheelIncrementScalar.reset (newRate, 0.01);
         phaseIncrement.reset (blockSize);
         amplitude.reset (blockSize);
+       
     }
     const float* getRawData() const { return history.getRawData(); }
     virtual void setState (juce::ValueTree settingsBranch)
@@ -364,6 +369,7 @@ public:
         smoothRMS.reset (4);
 
         radialCompressor.prepare (newRate);
+        bandPassFilter.prepare (newRate, blockSize);
     }
     void startNote (int midiNoteNumber,
                     float adjustedFrequency,
@@ -392,6 +398,7 @@ public:
         rmsUpdater->startTimerHz (24);
 
         radialCompressor.reset();
+        bandPassFilter.noteOn();
     }
     void stopNote() override
     {
@@ -477,6 +484,14 @@ public:
             ladderFilter.setResonance (voiceParameters.filterResonance.getNext());
             ladderFilter.process (context);
         }
+        float cf = voiceParameters.bandPassCenterFreq.getNext();
+        float bw = voiceParameters.bandPassBandwidth.getNext();
+        float low  = juce::jlimit (20.0f, 20000.0f, cf * std::pow (2.0f, -bw));
+        float high = juce::jlimit (20.0f, 20000.0f, cf * std::pow (2.0f,  bw));
+
+        bandPassFilter.setLowFrequency (low);
+        bandPassFilter.setHighFrequency (high);
+        bandPassFilter.process(scratchBuffer);
         //setRMS (scratchBuffer.getRMSLevel (0, 0, scratchBuffer.getNumSamples()));
         // copy from scratch buffer, adding to incoming content
         for (int i = 0; i < numSamples; i++)
@@ -524,6 +539,7 @@ private:
     RadialCompressor radialCompressor;
 
     juce::dsp::LadderFilter<float> ladderFilter;
+    morph::BandPassFilter bandPassFilter;
     juce::dsp::ProcessSpec processSpec;
     
     juce::SmoothedValue<float> smoothRMS {0.0f};
@@ -562,11 +578,15 @@ private:
             filterBypass (p.perVoiceFilterOnOff),
             radialCompressorThreshold (p.radialCompressorThreshold, vts, MPERouting),
             radialCompressorRatio (p.radialCompressorRatio, vts, MPERouting),
-            radialCompressorResponsiveness (p.radialCompressorResponsiveness, vts, MPERouting)
+            radialCompressorResponsiveness (p.radialCompressorResponsiveness, vts, MPERouting),
+            bandPassCenterFreq (p.voiceBandPassCenterFreq, vts, MPERouting),
+            bandPassBandwidth (p.voiceBandPassBandwidth, vts, MPERouting)
         {
             sensitivity.setControlSmoothing (0.0);
             filterFrequency.setControlSmoothing (0.0);
             filterResonance.setControlSmoothing (0.0);
+            bandPassCenterFreq.setControlSmoothing (0.0);
+            bandPassBandwidth.setControlSmoothing (0.0);
         }
 
         /*
@@ -586,8 +606,9 @@ private:
         MPESmoothedParameter attack, decay, sustain, release, sensitivity;
         MPESmoothedParameter filterFrequency, filterResonance;
         juce::AudioParameterBool* filterBypass;
+        MPESmoothedParameter bandPassCenterFreq, bandPassBandwidth;
 
-        std::array<MPESmoothedParameter*, 25> parameters 
+        std::array<MPESmoothedParameter*, 27> parameters 
         {
             &mod_a,&mod_b,&mod_c,&mod_d,
             &amplitude, &pitch, &size,&rotation,&translationX,&translationY,
@@ -595,11 +616,12 @@ private:
             &feedbackScalar,&feedbackTime,&feedbackMix,
             &attack,&decay,&sustain,&release,&sensitivity,
             &filterFrequency,&filterResonance,
-            &radialCompressorThreshold,&radialCompressorRatio,&radialCompressorResponsiveness            
+            &radialCompressorThreshold,&radialCompressorRatio,&radialCompressorResponsiveness,
+            &bandPassCenterFreq, &bandPassCenterFreq
         };
         // Exception groups
-        std::array<MPESmoothedParameter*, 3> noPressureSmooth { &sensitivity,&filterFrequency,&filterResonance };
-        std::array<MPESmoothedParameter*, 2> noTimbreSmooth   { &filterFrequency,&filterResonance };
+        std::array<MPESmoothedParameter*, 5> noPressureSmooth { &sensitivity ,&filterFrequency, &filterResonance, &bandPassBandwidth, &bandPassCenterFreq };
+        std::array<MPESmoothedParameter*, 5> noTimbreSmooth   { &sensitivity, &filterFrequency,&filterResonance, &bandPassBandwidth, &bandPassCenterFreq };
 
         template <class F> void forAll(F&& f) { for (auto* p : parameters) f(*p); }
 
@@ -648,6 +670,8 @@ private:
 
     const float ONE_TWELFTH = 1.0f / 12.0f;
     inline float getPitchScalar(float pitch) { return std::pow(2.0f, pitch * ONE_TWELFTH); }
+
+
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MPETrajectory)
 };
