@@ -232,7 +232,8 @@ public:
     TrajectoryVariables (juce::AudioProcessorValueTreeState& vts, 
                          tp::MPEVoiceData& vd)
       : amplitude ("Amplitude", "Amplitude", vts, vd),
-        pitch ("Pitch", "pitch", vts, vd),
+        pitch ("Pitch", "Pitch", vts, vd),
+        cents ("Cents", "Cents", vts, vd),
         size ("Size", "Size", vts, vd),
         rotation ("Rotation", "Rotation", vts, vd),
         translation_x ("Translation X", "TranslationX", vts, vd),
@@ -241,6 +242,7 @@ public:
         addAndMakeVisible (amplitude);
         addAndMakeVisible (pitch);
         addAndMakeVisible (size);
+        addAndMakeVisible (cents);
         addAndMakeVisible (rotation);
         addAndMakeVisible (translation_x);
         addAndMakeVisible (translation_y);
@@ -248,14 +250,16 @@ public:
     void resized() override 
     {
         auto b = getLocalBounds();
-        auto unitWidth = juce::roundToInt (b.getWidth() / static_cast<float> (3));
         auto upperBounds = b.removeFromTop( b.getHeight() / 2 );
         auto lowerBounds = b;
 
+        auto unitWidth = juce::roundToInt (b.getWidth() / static_cast<float> (4));
         amplitude.setBounds (upperBounds.removeFromLeft (static_cast<int> (unitWidth)));
         pitch.setBounds (upperBounds.removeFromLeft( static_cast<int> (unitWidth)));
+        cents.setBounds (upperBounds.removeFromLeft( static_cast<int> (unitWidth)));
         size.setBounds (upperBounds.removeFromLeft (static_cast<int> (unitWidth)));
 
+        unitWidth = juce::roundToInt (b.getWidth() / static_cast<float> (3));
         rotation.setBounds (lowerBounds.removeFromLeft (static_cast<int> (unitWidth)));
         translation_x.setBounds (lowerBounds.removeFromLeft (static_cast<int> (unitWidth)));
         translation_y.setBounds (lowerBounds.removeFromLeft (static_cast<int> (unitWidth)));
@@ -263,6 +267,7 @@ public:
 private:
     KnobParameterSlider amplitude;
     KnobParameterSlider pitch;
+    KnobParameterSlider cents;
     KnobParameterSlider size;
     KnobParameterSlider rotation;
     KnobParameterSlider translation_x;

@@ -459,8 +459,8 @@ public:
             float env = static_cast<float> (envelope.calculateNext());
             setRMS (env);
             o[i] = outputSample * env * smoothAmplitude * voiceParameters.amplitude.getNext();
-
-            phase = std::fmod (phase + (phaseIncrement.getNextValue() * pitchWheelIncrementScalar.getNextValue() * static_cast<double> (getPitchScalar( voiceParameters.pitch.getNext()))),
+            double pitchScalar = getPitchScalar (voiceParameters.pitch.getNext() + voiceParameters.cents.getNext() * 0.01 );
+            phase = std::fmod (phase + (phaseIncrement.getNextValue() * pitchWheelIncrementScalar.getNextValue() * pitchScalar ),
                                juce::MathConstants<double>::twoPi );
 
             if(!envelope.isActive())
@@ -558,6 +558,7 @@ private:
             mod_d (p.trajectoryModD, vts, MPERouting), 
             amplitude (p.trajectoryAmplitude, vts, MPERouting),
             pitch (p.trajectoryPitch, vts, MPERouting),
+            cents (p.trajectoryCents, vts, MPERouting),
             size (p.trajectorySize, vts, MPERouting), 
             rotation (p.trajectoryRotation, vts, MPERouting), 
             translationX (p.trajectoryTranslationX, vts, MPERouting), 
@@ -598,7 +599,7 @@ private:
 
         tp::ChoiceParameter* currentTrajectory;
         MPESmoothedParameter mod_a, mod_b, mod_c, mod_d;
-        MPESmoothedParameter amplitude, pitch, size, rotation, translationX, translationY;
+        MPESmoothedParameter amplitude, pitch, cents, size, rotation, translationX, translationY;
         MPESmoothedParameter meanderanceScale, meanderanceSpeed;
         MPESmoothedParameter feedbackScalar, feedbackTime, feedbackMix;
         MPESmoothedParameter radialCompressorThreshold, radialCompressorRatio, radialCompressorResponsiveness;
@@ -608,10 +609,10 @@ private:
         juce::AudioParameterBool* filterBypass;
         MPESmoothedParameter bandPassCenterFreq, bandPassBandwidth;
 
-        std::array<MPESmoothedParameter*, 27> parameters 
+        std::array<MPESmoothedParameter*, 28> parameters 
         {
             &mod_a,&mod_b,&mod_c,&mod_d,
-            &amplitude, &pitch, &size,&rotation,&translationX,&translationY,
+            &amplitude, &pitch, &cents, &size,&rotation,&translationX,&translationY,
             &meanderanceScale,&meanderanceSpeed,
             &feedbackScalar,&feedbackTime,&feedbackMix,
             &attack,&decay,&sustain,&release,&sensitivity,

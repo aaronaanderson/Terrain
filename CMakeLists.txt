@@ -11,14 +11,6 @@ add_subdirectory(JUCE)
 add_subdirectory(clap-juce-extensions EXCLUDE_FROM_ALL)
 add_subdirectory(morphlib)
 
-# Choose a user-writable VST3 folder on all platforms
-if (WIN32)
-    set(USER_VST3_DIR "$ENV{LOCALAPPDATA}/Programs/Common/VST3")
-elseif (APPLE)
-    set(USER_VST3_DIR "$ENV{HOME}/Library/Audio/Plug-Ins/VST3")
-elseif (UNIX)
-    set(USER_VST3_DIR "$ENV{HOME}/.vst3")
-endif()
 
 # ------------------------------------------------------------------------------
 # Plugin target
@@ -31,7 +23,6 @@ juce_add_plugin(WaveTerrainSynth
     IS_MIDI_EFFECT FALSE
     BUNDLE_ID com.AaronAnderson.WaveTerrainSynth
     COPY_PLUGIN_AFTER_BUILD TRUE
-    VST3_COPY_DIR ${USER_VST3_DIR}
     PLUGIN_MANUFACTURER_CODE Aaro
     PLUGIN_CODE JEe9
     APP_SANDBOX_ENABLED TRUE
