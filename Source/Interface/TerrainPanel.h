@@ -20,7 +20,7 @@ public:
         saturation.setBounds (b.removeFromTop (b.getHeight()));
     }
 private:
-    LinearParameterSlider saturation;
+    KnobParameterSlider saturation;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TerrainVariables)
 };
@@ -150,18 +150,37 @@ public:
     {
         addAndMakeVisible (terrainSelector);
         addAndMakeVisible (terrainVariables);
+        for( int i = 0; i < 2; i++) { lines.add (std::make_unique<Line> (lineThickness));}
+        for( auto* line : lines ) { addAndMakeVisible (line); }
     }
     void resized() override
     {
         Panel::resized();
         auto b = getAdjustedBounds();
-        auto unitHeight = b.getHeight() / static_cast<float> (12 + 4 + 44);
+        auto unitHeight = b.getHeight() / static_cast<float> (12 + 8 + 44 - lines.size() * lineThickness);
         terrainSelector.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 12.0f)));
-        terrainVariables.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 4.0f)));
+        lines.getUnchecked( 0 )->setBounds (b.removeFromTop (lineThickness));
+        terrainVariables.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 8.0f)));
+        lines.getUnchecked( 1 )->setBounds (b.removeFromTop (lineThickness));
+
     }
 private:
     TerrainSelector terrainSelector;
     TerrainVariables terrainVariables;
+
+    struct Line : public juce::Component {
+        explicit Line (int w = 2) : thickness (static_cast<float>(w)) {}
+        void paint (juce::Graphics& g) {
+            auto bounds = getLocalBounds();
+            auto* tlaf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel() );
+            jassert (tlaf != nullptr);
+            g.setColour (tlaf->getBackgroundDark().darker());
+            g.drawLine (0.0f, 0.0f, bounds.toFloat().getWidth(), 0.0, thickness);       
+        }
+        float thickness { 2.0f };
+    };
+    juce::OwnedArray<Line> lines;
+    const int lineThickness { 6 };
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TerrainPanel)
 };
