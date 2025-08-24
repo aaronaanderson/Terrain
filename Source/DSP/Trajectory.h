@@ -475,6 +475,9 @@ public:
         for (int i = 0; i < numSamples; i++)
             scratchBuffer.getWritePointer (0)[i] = renderBuffer.getReadPointer (0)[startSample + i];
         
+        /*
+        //===== Moog Filter =====
+        */
         if (*voiceParameters.filterBypass)
         {
             auto outputBlock = juce::dsp::AudioBlock<float> (scratchBuffer);
@@ -485,6 +488,9 @@ public:
             ladderFilter.setResonance (voiceParameters.filterResonance.getNext());
             ladderFilter.process (context);
         }
+        /*
+        //===== BAND PASS FILTER =====
+        */
         float cf = voiceParameters.bandPassCenterFreq.getNext();
         float bw = voiceParameters.bandPassBandwidth.getNext();
         float low  = juce::jlimit (20.0f, 20000.0f, cf * std::pow (2.0f, -bw));
@@ -493,10 +499,25 @@ public:
         bandPassFilter.setLowFrequency (low);
         bandPassFilter.setHighFrequency (high);
         bandPassFilter.process(scratchBuffer);
-        //setRMS (scratchBuffer.getRMSLevel (0, 0, scratchBuffer.getNumSamples()));
+
         // copy from scratch buffer, adding to incoming content
         for (int i = 0; i < numSamples; i++)
             outputBuffer.getWritePointer (0)[i + startSample] += scratchBuffer.getReadPointer (0)[i];
+
+        /*
+        //===== PANNING =====
+        */
+        jassert (outputBuffer.getNumChannels() == 2);
+        auto* l = outputBuffer.getWritePointer (0);
+        auto* r = outputBuffer.getWritePointer (1);
+        for (int i = 0; i < numSamples; i++) 
+        {
+            float signal = outputBuffer.getSample (0, startSample + i);
+            float panPosition = voiceParameters.pan.getNext();
+            auto [left, right] = equalPowerPan (panPosition, signal);
+            l[startSample + i] += left;
+            r[startSample + i] += right;
+        }
     } 
     void setPressure (float newPressure) { voiceParameters.setPressure (newPressure); }
     void setTimbre (float newTimbre) { voiceParameters.setTimbre (newTimbre); }
@@ -558,6 +579,7 @@ private:
             mod_c (p.trajectoryModC, vts, MPERouting),
             mod_d (p.trajectoryModD, vts, MPERouting), 
             amplitude (p.trajectoryAmplitude, vts, MPERouting),
+            pan (p.trajectoryPan, vts, MPERouting),
             pitch (p.trajectoryPitch, vts, MPERouting),
             cents (p.trajectoryCents, vts, MPERouting),
             size (p.trajectorySize, vts, MPERouting), 
@@ -600,7 +622,7 @@ private:
 
         tp::ChoiceParameter* currentTrajectory;
         MPESmoothedParameter mod_a, mod_b, mod_c, mod_d;
-        MPESmoothedParameter amplitude, pitch, cents, size, rotation, translationX, translationY;
+        MPESmoothedParameter amplitude, pan, pitch, cents, size, rotation, translationX, translationY;
         MPESmoothedParameter meanderanceScale, meanderanceSpeed;
         MPESmoothedParameter feedbackScalar, feedbackTime, feedbackMix;
         MPESmoothedParameter radialCompressorThreshold, radialCompressorRatio, radialCompressorResponsiveness;
@@ -610,10 +632,10 @@ private:
         juce::AudioParameterBool* filterBypass;
         MPESmoothedParameter bandPassCenterFreq, bandPassBandwidth;
 
-        std::array<MPESmoothedParameter*, 28> parameters 
+        std::array<MPESmoothedParameter*, 29> parameters 
         {
             &mod_a,&mod_b,&mod_c,&mod_d,
-            &amplitude, &pitch, &cents, &size,&rotation,&translationX,&translationY,
+            &amplitude, &pan, &pitch, &cents, &size,&rotation,&translationX,&translationY,
             &meanderanceScale,&meanderanceSpeed,
             &feedbackScalar,&feedbackTime,&feedbackMix,
             &attack,&decay,&sustain,&release,&sensitivity,
@@ -672,7 +694,13 @@ private:
 
     const double ONE_TWELFTH = 1.0 / 12.0;
     inline double getPitchScalar(float pitch) { return std::pow(2.0, pitch * ONE_TWELFTH); }
-
+    inline std::pair<float, float> equalPowerPan (const float position, const float input) 
+    {
+        float pan = juce::jlimit (-1.0f, 1.0f, position);
+        float theta = 0.25f * juce::MathConstants<float>::twoPi * (pan + 1.0f);
+        return { input * std::cos (theta), 
+                 input * std::sin (theta) };
+    }
 
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MPETrajectory)

@@ -43,8 +43,6 @@ MainProcessor::MainProcessor()
     
     mpeOn.store (valueTreeState.state.getChildWithName (id::PRESET_SETTINGS).getProperty (id::mpeEnabled));
     valueTreeState.state.addListener (this);
-
-    // mpeSynthesizer->enableLegacyMode(0);
 }
 
 MainProcessor::~MainProcessor() 
@@ -75,7 +73,7 @@ void MainProcessor::prepareToPlay (double sr, int size)
 { 
     sampleRate = sr; maxSamplesPerBlock = size;
     
-    renderBuffer.setSize (1, maxSamplesPerBlock);
+    renderBuffer.setSize (2, maxSamplesPerBlock);
     allocateMaxSamplesPerBlock (maxSamplesPerBlock);
 
     juce::dsp::ProcessSpec spec {};
@@ -84,7 +82,7 @@ void MainProcessor::prepareToPlay (double sr, int size)
     spec.sampleRate = sr;
 
     auto& dcOffset = outputChain.get<0>();
-    dcOffset.coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass (spec.sampleRate, 20.0);
+    dcOffset.state = juce::dsp::IIR::Coefficients<float>::makeHighPass (spec.sampleRate, 20.0);
 
     auto& ladderFilter = outputChain.get<1>();
     ladderFilter.setEnabled (true);
@@ -118,8 +116,13 @@ void MainProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
+    jassert (renderBuffer.getNumChannels() == 2);
+    jassert (overSampler->numChannels == 2);
+    
     auto overSamplingBlock = overSampler->processSamplesUp (renderBuffer);
-    juce::Array<float*> channelPointers = {overSamplingBlock.getChannelPointer(0)};
+    jassert (overSamplingBlock.getNumChannels() == 2);
+
+    juce::Array<float*> channelPointers = {overSamplingBlock.getChannelPointer (0), overSamplingBlock.getChannelPointer (1)};
     juce::AudioBuffer<float> overSamplingBufferReference (channelPointers.getRawDataPointer(), 
                                                           static_cast<int> (overSamplingBlock.getNumChannels()), 
                                                           static_cast<int> (overSamplingBlock.getNumSamples()));
@@ -146,8 +149,10 @@ void MainProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     juce::dsp::ProcessContextReplacing<float> context (outputBlock);
     outputChain.process (context);
 
-    for (int c = 0; c < buffer.getNumChannels(); c++)
-        buffer.copyFrom (c, 0, renderBuffer.getReadPointer (0), buffer.getNumSamples());
+    jassert (renderBuffer.getNumChannels() == buffer.getNumChannels());
+    jassert (renderBuffer.getNumChannels() == 2);
+    buffer.copyFrom (0, 0, renderBuffer.getReadPointer (0), renderBuffer.getNumSamples());
+    buffer.copyFrom (1, 0, renderBuffer.getReadPointer (1), renderBuffer.getNumSamples());
     
     renderBuffer.clear();
 
@@ -353,7 +358,7 @@ void MainProcessor::allocateMaxSamplesPerBlock (int maxSamples)
     auto overSamplingFactor = static_cast<int> (settingsTree.getProperty (id::oversampling));
     // synthesizer->allocate (maxSamples * static_cast<int> (std::pow (2, overSamplingFactor)));
     mpeSynthesizer->allocate (maxSamples * static_cast<int> (std::pow (2, overSamplingFactor)));
-    overSampler = std::make_unique<juce::dsp::Oversampling<float>> (1, 
+    overSampler = std::make_unique<juce::dsp::Oversampling<float>> (2, 
                                                                     overSamplingFactor, 
                                                                     juce::dsp::Oversampling<float>::FilterType::filterHalfBandPolyphaseIIR);
     overSampler->initProcessing (static_cast<size_t> (maxSamples));
@@ -369,14 +374,14 @@ void MainProcessor::prepareOversampling (int bufferSize)
     if (overSamplingFactor != storedFactor)
     {
         mpeSynthesizer->allocate (maxSamplesPerBlock * static_cast<int> (std::pow (2, overSamplingFactor)));
-        overSampler = std::make_unique<juce::dsp::Oversampling<float>> (1, 
+        overSampler = std::make_unique<juce::dsp::Oversampling<float>> (2, 
                                                                         overSamplingFactor, 
                                                                         juce::dsp::Oversampling<float>::FilterType::filterHalfBandPolyphaseIIR);
         overSampler->initProcessing (static_cast<size_t> (maxSamplesPerBlock));
         
         mpeSynthesizer->prepareToPlay (sampleRate * std::pow (2, overSamplingFactor), 
                                        bufferSize * static_cast<int> (std::pow (2, overSamplingFactor)));
-        renderBuffer.setSize (1, bufferSize, false, false, true); // Don't re-allocate; maxBufferSize is set in prepareToPlay
+        renderBuffer.setSize (2, bufferSize, false, false, true); // Don't re-allocate; maxBufferSize is set in prepareToPlay
         renderBuffer.clear();
         
         storedFactor = overSamplingFactor;
@@ -387,7 +392,7 @@ void MainProcessor::prepareOversampling (int bufferSize)
     {
         mpeSynthesizer->prepareToPlay (sampleRate * std::pow (2, overSamplingFactor), 
                                        bufferSize * static_cast<int> (std::pow (2, overSamplingFactor)));
-        renderBuffer.setSize (1, bufferSize, false, false, true); // Don't re-allocate; maxBufferSize is set in prepareToPlay
+        renderBuffer.setSize (2, bufferSize, false, false, true); // Don't re-allocate; maxBufferSize is set in prepareToPlay
         renderBuffer.clear();
         storedBufferSize = bufferSize;
     }

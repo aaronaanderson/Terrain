@@ -72,10 +72,12 @@ private:
     int maxSamplesPerBlock;
     double sampleRate;
     juce::AudioBuffer<float> renderBuffer;
-    juce::dsp::ProcessorChain<juce::dsp::IIR::Filter<float>, // DC Offset filter
+    using dcFilter = juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Coefficients<float>>;
+    juce::dsp::ProcessorChain<dcFilter, 
                               juce::dsp::LadderFilter<float>, 
                               juce::dsp::Compressor<float>, 
                               juce::dsp::Gain<float>> outputChain;
+
     MTSClient* mtsClient = nullptr;
     void allocateMaxSamplesPerBlock (int maxSamples);
     void prepareOversampling (int bufferSize);
