@@ -219,6 +219,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout MainProcessor::createParamet
     layout.add (std::make_unique<tp::NormalizedFloatParameter> ("Trajectory Mod D", 0.5f));
     
     layout.add (std::make_unique<tp::NormalizedFloatParameter> ("Amplitude", 1.0f));
+    range = {-1.0f, 1.0f};
+    layout.add (std::make_unique<tp::RangedFloatParameter> ("Pan", range));
 
     layout.add (std::make_unique<juce::AudioParameterInt>("Pitch", "Pitch", -24, 24, 0));
     range = {-100.0f, 100.0f};

@@ -459,9 +459,10 @@ public:
             float env = static_cast<float> (envelope.calculateNext());
             setRMS (env);
             o[i] = outputSample * env * smoothAmplitude * voiceParameters.amplitude.getNext();
-            double pitchScalar = getPitchScalar (voiceParameters.pitch.getNext() + voiceParameters.cents.getNext() * 0.01 );
-            phase = std::fmod (phase + (phaseIncrement.getNextValue() * pitchWheelIncrementScalar.getNextValue() * pitchScalar ),
-                               juce::MathConstants<double>::twoPi );
+
+            double pitchScalar = getPitchScalar (voiceParameters.pitch.getNext() + voiceParameters.cents.getNext() * 0.01f);
+            pitchScalar *= pitchWheelIncrementScalar.getNextValue();
+            phase = std::fmod (phase + (phaseIncrement.getNextValue() * pitchScalar), juce::MathConstants<double>::twoPi);
 
             if(!envelope.isActive())
             {
@@ -669,8 +670,8 @@ private:
     };
     std::unique_ptr<RMSUpdater> rmsUpdater;
 
-    const float ONE_TWELFTH = 1.0f / 12.0f;
-    inline float getPitchScalar(float pitch) { return std::pow(2.0f, pitch * ONE_TWELFTH); }
+    const double ONE_TWELFTH = 1.0 / 12.0;
+    inline double getPitchScalar(float pitch) { return std::pow(2.0, pitch * ONE_TWELFTH); }
 
 
 

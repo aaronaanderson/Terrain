@@ -76,6 +76,7 @@ public:
     NormalizedFloatParameter* trajectoryModD        = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter ("TrajectoryModD"));
     
     NormalizedFloatParameter* trajectoryAmplitude = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter     ("Amplitude")); 
+    RangedFloatParameter*     trajectoryPan       = dynamic_cast<RangedFloatParameter*>     (valueTreeState.getParameter     ("Pan"));
     juce::AudioParameterInt*  trajectoryPitch = dynamic_cast<juce::AudioParameterInt*> (valueTreeState.getParameter ("Pitch"));
     RangedFloatParameter*     trajectoryCents = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter ("Cents"));
     NormalizedFloatParameter* trajectorySize = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter     ("Size"));       

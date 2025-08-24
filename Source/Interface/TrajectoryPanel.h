@@ -232,14 +232,16 @@ public:
     TrajectoryVariables (juce::AudioProcessorValueTreeState& vts, 
                          tp::MPEVoiceData& vd)
       : amplitude ("Amplitude", "Amplitude", vts, vd),
+        pan ("Pan", "Pan", vts, vd),
         pitch ("Pitch", "Pitch", vts, vd),
         cents ("Cents", "Cents", vts, vd),
         size ("Size", "Size", vts, vd),
         rotation ("Rotation", "Rotation", vts, vd),
-        translation_x ("Translation X", "TranslationX", vts, vd),
-        translation_y ("Translation Y", "TranslationY", vts, vd)
+        translation_x ("X", "TranslationX", vts, vd),
+        translation_y ("Y", "TranslationY", vts, vd)
     {
         addAndMakeVisible (amplitude);
+        addAndMakeVisible (pan);
         addAndMakeVisible (pitch);
         addAndMakeVisible (size);
         addAndMakeVisible (cents);
@@ -254,18 +256,21 @@ public:
         auto lowerBounds = b;
 
         auto unitWidth = juce::roundToInt (b.getWidth() / static_cast<float> (4));
+
         amplitude.setBounds (upperBounds.removeFromLeft (static_cast<int> (unitWidth)));
+        pan.setBounds (upperBounds.removeFromLeft (static_cast<int> (unitWidth)));
         pitch.setBounds (upperBounds.removeFromLeft( static_cast<int> (unitWidth)));
         cents.setBounds (upperBounds.removeFromLeft( static_cast<int> (unitWidth)));
-        size.setBounds (upperBounds.removeFromLeft (static_cast<int> (unitWidth)));
 
-        unitWidth = juce::roundToInt (b.getWidth() / static_cast<float> (3));
+
+        size.setBounds (lowerBounds.removeFromLeft (static_cast<int> (unitWidth)));
         rotation.setBounds (lowerBounds.removeFromLeft (static_cast<int> (unitWidth)));
         translation_x.setBounds (lowerBounds.removeFromLeft (static_cast<int> (unitWidth)));
         translation_y.setBounds (lowerBounds.removeFromLeft (static_cast<int> (unitWidth)));
     }
 private:
     KnobParameterSlider amplitude;
+    KnobParameterSlider pan;
     KnobParameterSlider pitch;
     KnobParameterSlider cents;
     KnobParameterSlider size;
