@@ -78,7 +78,7 @@ void MainProcessor::prepareToPlay (double sr, int size)
     renderBuffer.setSize (1, maxSamplesPerBlock);
     allocateMaxSamplesPerBlock (maxSamplesPerBlock);
 
-    juce::dsp::ProcessSpec spec;
+    juce::dsp::ProcessSpec spec {};
     spec.maximumBlockSize = static_cast<juce::uint32> (size);
     spec.numChannels = 2;
     spec.sampleRate = sr;
@@ -251,10 +251,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout MainProcessor::createParamet
     layout.add (std::make_unique<tp::RangedFloatParameter> ("Decay", 
                                                             range, 
                                                             80.0f));
-    range = juce::NormalisableRange<float> (-48.0f, 0.0f);
+    range = juce::NormalisableRange<float> (0.001f, 1.0f);
     layout.add (std::make_unique<tp::RangedFloatParameter> ("Sustain", 
                                                             range, 
-                                                            -6.0f));
+                                                            0.7f));
     range = juce::NormalisableRange<float> (2.0f, 5000.0f); range.setSkewForCentre (500.0f);
     layout.add (std::make_unique<tp::RangedFloatParameter> ("Release", 
                                                             range, 
@@ -286,10 +286,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout MainProcessor::createParamet
     layout.add (std::make_unique<tp::RangedFloatParameter> ("VoiceBandPassCenterFreq", 
                                                             range, 
                                                             640.0f));
-    range = {0.0, 5.0}; 
+    range = {0.0f, 5.0f}; 
     layout.add (std::make_unique<tp::RangedFloatParameter> ("VoiceBandPassBandwidth", 
                                                              range, 
-                                                             5.0));
+                                                             5.0f));
 
     //=======================================Terrain Parameters
     layout.add (std::make_unique<tp::ChoiceParameter> ("Current Terrain", 

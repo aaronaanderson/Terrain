@@ -1,124 +1,3 @@
-# cmake_minimum_required(VERSION 3.22) 
-
-# project(TERRAIN VERSION 1.2.2)
-
-# find_package(OpenGL REQUIRED)
-# add_subdirectory(JUCE)                    # If you've put JUCE in a subdirectory called JUCE
-# add_subdirectory(clap-juce-extensions EXCLUDE_FROM_ALL)
-
-# # set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64")
-# # set(CMAKE_OSX_DEPLOYMENT_TARGET "10.14" CACHE STRING "Minimum OS X deployment target" FORCE)
-
-# juce_add_plugin(WaveTerrainSynth
-#     VERSION "1.2.2"                               # Set this if the plugin version is different to the project version
-#     # ICON_BIG ...                              # ICON_* arguments specify a path to an image file to use as an icon for the Standalone
-#     # ICON_SMALL ...
-#     COMPANY_NAME "Aaron Anderson"                          # Specify the name of the plugin's author
-#     IS_SYNTH TRUE                       # Is this a synth or an effect?
-#     NEEDS_MIDI_INPUT TRUE              # Does the plugin need midi input?
-#     # NEEDS_MIDI_OUTPUT TRUE/FALSE              # Does the plugin need midi output?
-#     IS_MIDI_EFFECT FALSE                 # Is this plugin a MIDI effect?
-#     # VST3_COPY_DIR "./vst3" 
-#     BUNDLE_ID com.AaronAnderson.WaveTerrainSynth
-#     COPY_PLUGIN_AFTER_BUILD TRUE
-#     PLUGIN_MANUFACTURER_CODE Aaro               # A four-character manufacturer id with at least one upper-case character
-#     PLUGIN_CODE JEe9                        # A unique four-character plugin id with exactly one upper-case character
-#                                                 # GarageBand 10.3 requires the first letter to be upper-case, and the remaining letters to be lower-case
-#     APP_SANDBOX_ENABLED TRUE        # Needed for GarageBand
-#     FORMATS Standalone VST3 AU     # The formats to build. Other valid formats are: AAX Unity VST AU AUv3
-#     PRODUCT_NAME "Terrain"         # The name of the final executable, which can differ from the target name    
-#     APP_SANDBOX_FILE_ACCESS_HOME_RW "Library/Audio/Presets/Aaron Anderson/Terrain"
-# )    
-
-# clap_juce_extensions_plugin(TARGET WaveTerrainSynth
-#     CLAP_ID "com.AaronAnderson.WaveTerrainSynth"
-#     CLAP_FEATURES instrument synthesizer
-# )
-
-# # if (APPLE)
-# #    target_link_options(WaveTerrainSynth PUBLIC -Wl -ld_classic)
-# # endif()
-
-# # target_compile_options(WaveTerrainSynth PRIVATE -fsanitize=thread)
-# # target_link_options(WaveTerrainSynth PRIVATE -fsanitize=thread)
-
-# set_target_properties(WaveTerrainSynth PROPERTIES 
-#     CXX_STANDARD 17
-#     COMPILE_WARNING_AS_ERROR OFF
-# )
-
-# juce_add_module(glm_module)
-# set_target_properties(glm_module PROPERTIES 
-#     COMPILE_WARNING_AS_ERROR OFF,
-#     COMPILE_FLAGS "${CMAKE_CXX_FLAGS} -W"
-# )
-# # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-lto")
-# # target_sources(WaveTerrainSynth
-# #     PRIVATE
-# #         Source/MainEditor.cpp
-# #         Source/MainProcessor.cpp
-# #         Source/DSP/MPEVoiceData.cpp)
-# file(GLOB_RECURSE TERRAIN_CPP_FILES CONFIGURE_DEPENDS
-#     Source/*.cpp
-#     Source/*.c
-# )
-
-# file(GLOB_RECURSE TERRAIN_HEADER_FILES CONFIGURE_DEPENDS
-#     Source/*.h
-#     Source/*.hpp
-# )
-
-# target_sources(WaveTerrainSynth
-#     PRIVATE
-#         ${TERRAIN_CPP_FILES}
-#         ${TERRAIN_HEADER_FILES}
-# )
-
-# set(CMAKE_POSITION_INDEPENDENT_CODE ON) #necessary for GCC linking
-# add_library(MTS-ESP STATIC MTS-ESP/Client/libMTSClient.cpp)
-
-# target_include_directories(WaveTerrainSynth PRIVATE 
-#     PerlinNoise 
-#     MTS-ESP/Client
-#     glm/glm)
-
-# target_compile_definitions(WaveTerrainSynth
-#     PUBLIC
-#         # JUCE_WEB_BROWSER and JUCE_USE_CURL would be on by default, but you might not need them.
-#         JUCE_WEB_BROWSER=0  # If you remove this, add `NEEDS_WEB_BROWSER TRUE` to the `juce_add_plugin` call
-#         JUCE_USE_CURL=0     # If you remove this, add `NEEDS_CURL TRUE` to the `juce_add_plugin` call
-#         )
-
-# juce_add_binary_data(BinaryData SOURCES
-#     Source/Interface/Renderer/Shaders/TrajectoryPoint.frag 
-#     Source/Interface/Renderer/Shaders/TrajectoryPoint.vert
-#     Source/Interface/Renderer/Shaders/Terrain.frag 
-#     Source/Interface/Renderer/Shaders/Terrain.vert
-#     Source/Interface/Paul-le1V.ttf
-# )
-
-# if(WIN32) 
-#     target_link_libraries(WaveTerrainSynth 
-#     PRIVATE
-#         glu32.lib   
-#     )
-# endif()
-
-# add_subdirectory(morphlib)
-
-# target_link_libraries(WaveTerrainSynth
-#     PRIVATE
-#         BinaryData
-#         glm_module
-#         juce::juce_audio_utils
-#         juce::juce_dsp
-#         juce::juce_opengl
-#         MTS-ESP
-#         morphlib
-#     PUBLIC
-#         juce::juce_recommended_config_flags
-#         juce::juce_recommended_lto_flags
-#         juce::juce_recommended_warning_flags)
 cmake_minimum_required(VERSION 3.22)
 
 project(TERRAIN VERSION 1.2.2)
@@ -132,6 +11,15 @@ add_subdirectory(JUCE)
 add_subdirectory(clap-juce-extensions EXCLUDE_FROM_ALL)
 add_subdirectory(morphlib)
 
+# Choose a user-writable VST3 folder on all platforms
+if (WIN32)
+    set(USER_VST3_DIR "$ENV{LOCALAPPDATA}/Programs/Common/VST3")
+elseif (APPLE)
+    set(USER_VST3_DIR "$ENV{HOME}/Library/Audio/Plug-Ins/VST3")
+elseif (UNIX)
+    set(USER_VST3_DIR "$ENV{HOME}/.vst3")
+endif()
+
 # ------------------------------------------------------------------------------
 # Plugin target
 # ------------------------------------------------------------------------------
@@ -143,7 +31,7 @@ juce_add_plugin(WaveTerrainSynth
     IS_MIDI_EFFECT FALSE
     BUNDLE_ID com.AaronAnderson.WaveTerrainSynth
     COPY_PLUGIN_AFTER_BUILD TRUE
-    VST3_COPY_DIR "C:\\Program Files\\Common Files\\VST3\\"
+    VST3_COPY_DIR ${USER_VST3_DIR}
     PLUGIN_MANUFACTURER_CODE Aaro
     PLUGIN_CODE JEe9
     APP_SANDBOX_ENABLED TRUE
@@ -163,8 +51,41 @@ set_target_properties(WaveTerrainSynth PROPERTIES
     FOLDER "Apps"
 )
 
+# --------------------------------------------------------------------------
+# Custom build type: ReleaseWithDebugInfo
+# --------------------------------------------------------------------------
+set(CMAKE_CONFIGURATION_TYPES Debug Release ReleaseWithDebugInfo CACHE STRING "" FORCE)
+
+# Compiler flags for MSVC
+if (MSVC)
+    set(CMAKE_CXX_FLAGS_RELEASEWITHDEBUGINFO "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
+    set(CMAKE_C_FLAGS_RELEASEWITHDEBUGINFO    "${CMAKE_C_FLAGS_RELEASE} /Zi")
+    set(CMAKE_EXE_LINKER_FLAGS_RELEASEWITHDEBUGINFO
+        "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /DEBUG /INCREMENTAL:NO")
+    set(CMAKE_SHARED_LINKER_FLAGS_RELEASEWITHDEBUGINFO
+        "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /DEBUG /INCREMENTAL:NO")
+    set(CMAKE_MODULE_LINKER_FLAGS_RELEASEWITHDEBUGINFO
+        "${CMAKE_MODULE_LINKER_FLAGS_RELEASE} /DEBUG /INCREMENTAL:NO")
+endif()
+
+# Compiler flags for GCC/Clang
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    set(CMAKE_CXX_FLAGS_RELEASEWITHDEBUGINFO "${CMAKE_CXX_FLAGS_RELEASE} -g")
+    set(CMAKE_C_FLAGS_RELEASEWITHDEBUGINFO    "${CMAKE_C_FLAGS_RELEASE} -g")
+endif()
+
+# Necessary for VS 2022
+if (MSVC)
+    set_target_properties(WaveTerrainSynth_VST3 PROPERTIES
+        VS_DEBUGGER_COMMAND "C:/Program Files/REAPER (x64)/reaper.exe"
+        VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    )
+endif()
+
+
+
 # ------------------------------------------------------------------------------
-# glm module (as in your original)
+# glm module 
 # ------------------------------------------------------------------------------
 juce_add_module(glm_module)
 set_target_properties(glm_module PROPERTIES

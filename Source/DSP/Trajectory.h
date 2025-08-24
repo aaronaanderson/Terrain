@@ -422,7 +422,7 @@ public:
             if(!envelope.isActive()) break;
             tp::ADSR::Parameters p = {voiceParameters.attack.getNext(), 
                                       voiceParameters.decay.getNext(), 
-                                      juce::Decibels::decibelsToGain (voiceParameters.sustain.getNext()), 
+                                      voiceParameters.sustain.getNext(), 
                                       voiceParameters.release.getNext()};
             envelope.setParameters (p);
 
