@@ -24,6 +24,7 @@ struct ParameterToggle : public juce::Component
                      juce::AudioProcessorValueTreeState& vts)
     {
         label.setText (labelText, juce::dontSendNotification);
+        label.setJustificationType (juce::Justification::centred);
         addAndMakeVisible (label);
         addAndMakeVisible (toggle);
 
@@ -39,7 +40,7 @@ struct ParameterToggle : public juce::Component
     }
 private:
     juce::ToggleButton toggle;
-    juce::Label label;
+    morph::AutoFitTextBox label;
     std::unique_ptr<ButtonAttachment> buttonAttachment;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ParameterToggle)

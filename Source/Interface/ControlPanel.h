@@ -180,17 +180,22 @@ public:
     {
         auto b = getLocalBounds();
         label.setBounds (b.removeFromTop (20));
-        auto unitWidth = b.getWidth() / 53.0f;
-        envelopeSize.setBounds (b.removeFromLeft (static_cast<int> (juce::jmax (unitWidth * 3.0f, 22.0f))));
-        attack.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 10.0f)));
-        decay.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 10.0f)));
-        sustain.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 10.0f)));
-        release.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 10.0f)));
-        sensitivity.setBounds (b.removeFromLeft (static_cast<int> (unitWidth * 10.0f)));
+        auto esBounds = b.removeFromLeft (juce::roundToInt (b.getWidth() * 0.1f));
+        int dimension = esBounds.getWidth() > esBounds.getHeight() ? juce::roundToInt (esBounds.getHeight()) : juce::roundToInt (esBounds.getWidth());
+        auto esSquare = juce::Rectangle<int> (dimension, dimension);
+        esSquare.setCentre (esBounds.getCentre());
+        envelopeSize.setBounds (esSquare);
+
+        auto unitWidth = juce::roundToInt (b.getWidth() / 5.0f);
+        attack.setBounds (b.removeFromLeft (unitWidth));
+        decay.setBounds (b.removeFromLeft (unitWidth));
+        sustain.setBounds (b.removeFromLeft ((unitWidth)));
+        release.setBounds (b.removeFromLeft (unitWidth));
+        sensitivity.setBounds (b.removeFromLeft (unitWidth));
     }
 
 private:
-    juce::Label label;
+    morph::AutoFitTextBox label;
     ti::ParameterToggle envelopeSize;
     ti::KnobParameterSlider attack, decay, sustain, release, sensitivity;
 

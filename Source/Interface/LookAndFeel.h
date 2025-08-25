@@ -217,6 +217,62 @@ public:
                                 true);
         g.strokePath (thumbArc, juce::PathStrokeType (lineW, juce::PathStrokeType::mitered, juce::PathStrokeType::butt));
     }   
+    
+
+    void drawToggleButton (juce::Graphics& g,
+                           juce::ToggleButton& b,
+                           bool shouldDrawButtonAsHighlighted,
+                           bool /*down*/) override
+    {
+        // Work with the component's full area
+        auto area = b.getLocalBounds().toFloat();
+
+        // Enforce square shape (side = min(width, height))
+        float side = juce::jmin (area.getWidth(), area.getHeight());
+
+        // Center the square inside original bounds
+        auto square = juce::Rectangle<float> (side, side)
+                          .withCentre (area.getCentre());
+
+        // Rounded corners: proportional to side
+        float cornerSize = side * 0.2f;
+
+        // Colors: ON (down) = orange, OFF = dark blue
+        auto onCol  = accent;
+        auto offCol = background;
+        auto col    = b.getToggleState() ? onCol : offCol;
+
+        if (shouldDrawButtonAsHighlighted)
+            col = col.brighter (0.12f);
+
+        // Fill square
+        g.setColour (col);
+        g.fillRoundedRectangle (square, cornerSize);
+
+        // Outline
+        g.setColour (juce::Colours::black.withAlpha (0.4f));
+        g.drawRoundedRectangle (square, cornerSize, 2.0f);
+
+        // Optional centered text
+        if (! b.getButtonText().isEmpty())
+        {
+            g.setColour (juce::Colours::white);
+            g.setFont (juce::Font (juce::FontOptions (juce::jmin (16.0f, side * 0.5f))));
+            g.drawFittedText (b.getButtonText(), square.toNearestInt(),
+                              juce::Justification::centred, 1);
+        }
+    }
+
+
+
+
+    //// Avoid default tickbox drawing (we fully draw above)
+    //void drawTickBox (juce::Graphics&, juce::Component&, float, float, float, float,
+    //                  bool, bool, bool, bool) override {}
+    void drawButtonBackground (juce::Graphics&, juce::Button&, const juce::Colour&, bool, bool) override {}
+    
+    
+    
     void drawTickBox (juce::Graphics& g, juce::Component& component,
                       float x, float y, float w, float h,
                       const bool ticked,
@@ -239,6 +295,11 @@ public:
             g.fillRoundedRectangle (tickBounds.reduced (2.0f), 4.0f);
         }
     }
+
+
+
+
+
     int getTabButtonBestWidth (juce::TabBarButton& button, int /*tabDepth*/) override
     {
         return button.getTabbedButtonBar().getWidth() / 

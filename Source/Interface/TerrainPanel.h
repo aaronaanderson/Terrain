@@ -157,10 +157,10 @@ public:
     {
         Panel::resized();
         auto b = getAdjustedBounds();
-        auto unitHeight = b.getHeight() / static_cast<float> (12 + 8 + 44 - lines.size() * lineThickness);
+        auto unitHeight = b.getHeight() / static_cast<float> (12 + 6 + 44 - lines.size() * lineThickness);
         terrainSelector.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 12.0f)));
         lines.getUnchecked( 0 )->setBounds (b.removeFromTop (lineThickness));
-        terrainVariables.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 8.0f)));
+        terrainVariables.setBounds (b.removeFromTop (static_cast<int> (unitHeight * 6.0f)));
         lines.getUnchecked( 1 )->setBounds (b.removeFromTop (lineThickness));
 
     }
