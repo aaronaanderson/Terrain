@@ -12,6 +12,7 @@
 #include "ADSR.h"
 #include "Terrain.h"
 #include "RadialCompressor.h"
+#include "Meanderer.h"
 
 #include "MPEVoiceData.h"
 namespace tp{
@@ -164,7 +165,7 @@ public:
             sampleRate = newRate;
             envelope.prepare (sampleRate);
             setFrequencyImmediate (frequency);
-            perlinVector.setSampleRate (newRate);
+            meanderer.prepare (newRate);
         }
         // two second max delay
         feedbackBuffer.resize (static_cast<int> (sampleRate) * 2);
@@ -200,8 +201,7 @@ protected:
     Terrain& terrain;
     ADSR envelope;
     juce::Array<std::function<Point(float, ModSet)>> functions;
-
-    PerlinVector perlinVector;
+    Meanderer meanderer;
     float frequency = 440.0f;
     juce::SmoothedValue<float> amplitude;
     double phase = 0.0;
@@ -281,12 +281,7 @@ protected:
         Point newPoint (p.x + x, p.y + y);
         return newPoint;
     }
-    Point meander (const Point p, float scale)
-    {
-        auto meanderance = perlinVector.getNext() * scale;
-        auto output = Point (p.x + meanderance.x, p.y + meanderance.y);
-        return output;
-    }
+
     Point feedback (Point input, float feedbackTime, float feedback, float mix)
     {
         auto delayInSamples = static_cast<int>((feedbackTime * 0.001f) * sampleRate);
@@ -449,8 +444,13 @@ public:
             point = translate (point, 
                                voiceParameters.translationX.getNext(), 
                                voiceParameters.translationY.getNext());
-            perlinVector.setSpeed (voiceParameters.meanderanceSpeed.getNext());
-            point = meander (point, voiceParameters.meanderanceScale.getNext());
+
+            meanderer.setSpeed (voiceParameters.meanderanceSpeed.getNext());
+            meanderer.setScale (voiceParameters.meanderanceScale.getNext());
+            meanderer.setCaffiene (voiceParameters.meanderanceCaffiene.getNext());
+            auto jPoint = meanderer.process ({point.x, point.y});
+            point = {jPoint.x, jPoint.y};
+
             point = compressEdge (point);
 
             float outputSample = terrain.sampleAt (point, i);
@@ -588,6 +588,7 @@ private:
             translationY (p.trajectoryTranslationY, vts, MPERouting), 
             meanderanceScale (p.meanderanceScale, vts, MPERouting),
             meanderanceSpeed (p.meanderanceSpeed, vts, MPERouting),
+            meanderanceCaffiene (p.meanderanceCaffiene, vts, MPERouting),
             feedbackScalar (p.feedbackScalar, vts, MPERouting), 
             feedbackTime (p.combFrequency, vts, MPERouting), 
             feedbackMix (p.feedbackMix, vts, MPERouting), 
@@ -623,7 +624,7 @@ private:
         tp::ChoiceParameter* currentTrajectory;
         MPESmoothedParameter mod_a, mod_b, mod_c, mod_d;
         MPESmoothedParameter amplitude, pan, pitch, cents, size, rotation, translationX, translationY;
-        MPESmoothedParameter meanderanceScale, meanderanceSpeed;
+        MPESmoothedParameter meanderanceScale, meanderanceSpeed, meanderanceCaffiene;
         MPESmoothedParameter feedbackScalar, feedbackTime, feedbackMix;
         MPESmoothedParameter radialCompressorThreshold, radialCompressorRatio, radialCompressorResponsiveness;
         juce::AudioParameterBool* envelopeSize;
@@ -632,11 +633,11 @@ private:
         juce::AudioParameterBool* filterBypass;
         MPESmoothedParameter bandPassCenterFreq, bandPassBandwidth;
 
-        std::array<MPESmoothedParameter*, 29> parameters 
+        std::array<MPESmoothedParameter*, 30> parameters 
         {
             &mod_a,&mod_b,&mod_c,&mod_d,
             &amplitude, &pan, &pitch, &cents, &size,&rotation,&translationX,&translationY,
-            &meanderanceScale,&meanderanceSpeed,
+            &meanderanceScale,&meanderanceSpeed, &meanderanceCaffiene,
             &feedbackScalar,&feedbackTime,&feedbackMix,
             &attack,&decay,&sustain,&release,&sensitivity,
             &filterFrequency,&filterResonance,

@@ -286,13 +286,15 @@ public:
     MeanderancePanel (juce::AudioProcessorValueTreeState& vts,
                       tp::MPEVoiceData& vd)
       : scale ("Scale", "MeanderanceScale", vts, vd),
-        speed ("Speed", "MeanderanceSpeed", vts, vd)
+        speed ("Speed", "MeanderanceSpeed", vts, vd),
+        caffiene ("Caffiene", "MeanderanceCaffiene", vts, vd)
     {
         label.setText ("Meanderance", juce::dontSendNotification);
         label.setJustificationType (juce::Justification::centred);
         addAndMakeVisible (label);
         addAndMakeVisible (scale);
         addAndMakeVisible (speed);
+        addAndMakeVisible (caffiene);
     }
     void resized()
     {
@@ -301,13 +303,14 @@ public:
         auto text_height = juce::roundToInt (juce::roundToInt (b.getHeight() * 0.2f));
         label.setBounds (b.removeFromTop (text_height));
         
-        auto unitWidth = juce::roundToInt (b.getWidth() / static_cast<float> (2));
+        auto unitWidth = juce::roundToInt (b.getWidth() / static_cast<float> (3));
         scale.setBounds (b.removeFromLeft (static_cast<int> (unitWidth)));
         speed.setBounds (b.removeFromLeft (static_cast<int> (unitWidth)));
+        caffiene.setBounds (b.removeFromLeft (static_cast<int> (unitWidth)));
     }
 private:
     morph::AutoFitTextBox label;
-    KnobParameterSlider scale, speed;
+    KnobParameterSlider scale, speed, caffiene;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MeanderancePanel)
 };

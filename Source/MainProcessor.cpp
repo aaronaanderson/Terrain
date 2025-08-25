@@ -247,6 +247,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout MainProcessor::createParamet
                                                                 0.3f));
     layout.add (std::make_unique<tp::NormalizedFloatParameter> ("Meanderance Speed", 
                                                                 0.0f));
+    layout.add (std::make_unique<tp::NormalizedFloatParameter> ("Meanderance Caffiene", 
+                                                                0.0f));
 
     layout.add (std::make_unique<juce::AudioParameterBool> (juce::ParameterID {"EnvelopeSize", 1}, "Envelope Size", true));
     range = juce::NormalisableRange<float> (0.0f, 60.0f);

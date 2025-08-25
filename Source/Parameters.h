@@ -85,6 +85,7 @@ public:
     RangedFloatParameter*     trajectoryTranslationY = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter ("TranslationY"));
     NormalizedFloatParameter* meanderanceScale = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter   ("MeanderanceScale"));
     NormalizedFloatParameter* meanderanceSpeed = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter       ("MeanderanceSpeed"));
+    NormalizedFloatParameter* meanderanceCaffiene = dynamic_cast<NormalizedFloatParameter*> (valueTreeState.getParameter       ("MeanderanceCaffiene"));
 
     RangedFloatParameter*     combFrequency = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter        ("CombFrequency"));
     RangedFloatParameter*     feedbackScalar = dynamic_cast<RangedFloatParameter*> (valueTreeState.getParameter      ("Feedback"));
