@@ -31,7 +31,7 @@ void Meanderer::setScale (float newScale)
 
 void Meanderer::setSpeed (float newSpeed)
 {
-	jassert (newSpeed >= 0.0f && newSpeed <= 1.0f);
+	juce::jlimit (0.0f, 1.0f, newSpeed);
 	position.setSpeed (newSpeed);
 }
 

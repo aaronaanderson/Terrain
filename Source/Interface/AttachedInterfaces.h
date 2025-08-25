@@ -23,24 +23,17 @@ struct ParameterToggle : public juce::Component
                      const juce::String paramID, 
                      juce::AudioProcessorValueTreeState& vts)
     {
-        label.setText (labelText, juce::dontSendNotification);
-        label.setJustificationType (juce::Justification::centred);
-        addAndMakeVisible (label);
+        toggle.setButtonText (labelText);
         addAndMakeVisible (toggle);
 
         buttonAttachment.reset (new ButtonAttachment (vts, paramID, toggle));
     }
     void resized() override 
     {
-        auto b = getLocalBounds();
-        auto unitHeight = b.getHeight() / 3.0f;
-        if (label.getText() != "")
-            label.setBounds (b.removeFromTop (static_cast<int> (unitHeight)));
-        toggle.setBounds (b);
+        toggle.setBounds (getLocalBounds());
     }
 private:
     juce::ToggleButton toggle;
-    morph::AutoFitTextBox label;
     std::unique_ptr<ButtonAttachment> buttonAttachment;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ParameterToggle)
@@ -516,7 +509,7 @@ private:
 };
 
 //==============================================================
-// LinearParameterSlider: Layout::Wide (horizontal)
+// LinearParameterSlider: (horizontal)
 //==============================================================
 struct LinearParameterSlider : public ParameterSliderBase
 {
@@ -544,7 +537,7 @@ struct LinearParameterSlider : public ParameterSliderBase
 };
 
 //==============================================================
-// KnobParameterSlider: Layout::Tall (rotary knob)
+// KnobParameterSlider: (rotary knob)
 //==============================================================
 struct KnobParameterSlider : public ParameterSliderBase
 {

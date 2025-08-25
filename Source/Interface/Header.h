@@ -388,7 +388,7 @@ public:
         b.removeFromLeft (static_cast<int> (10 * scalar.x));
         connectionIndicator.setBounds     (b.removeFromLeft (static_cast<int> (juce::jmax (20 * scalar.x, 22.0f))).reduced (2));
         connectionStatusLabel.setBounds   (b.removeFromLeft (static_cast<int> (60 * scalar.x)) );
-        noteOnOrContinuous.setBounds      (b.removeFromLeft (22));
+        noteOnOrContinuous.setBounds      (b.removeFromLeft (juce::roundToInt (18 * scalar.x)));
         noteOnOrContinuousLabel.setBounds (b.removeFromLeft (static_cast<int> (60 * scalar.x)));
 
         currentTuningSystemLabel.setBounds (b.removeFromTop (b.getHeight() / 2));
@@ -398,11 +398,11 @@ private:
     juce::ValueTree settings;
     juce::ValueTree ephemeralState;
     ConnectionIndicator connectionIndicator;
-    juce::Label connectionStatusLabel { "connectionStatus", "Connection Status"};
-    juce::Label noteOnOrContinuousLabel;
+    morph::AutoFitTextBox connectionStatusLabel { "connectionStatus", "Connection Status"};
+    morph::AutoFitTextBox noteOnOrContinuousLabel;
     juce::ToggleButton noteOnOrContinuous;
-    juce::Label currentTuningSystemLabel {"CTS", "Current Tuning System"};
-    juce::Label currentTuningSystem;
+    morph::AutoFitTextBox currentTuningSystemLabel {"CTS", "Current Tuning System"};
+    morph::AutoFitTextBox currentTuningSystem;
 
     void valueTreePropertyChanged (juce::ValueTree& tree,
                                    const juce::Identifier& property) override

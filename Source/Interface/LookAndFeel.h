@@ -263,13 +263,6 @@ public:
         }
     }
 
-
-
-
-    //// Avoid default tickbox drawing (we fully draw above)
-    //void drawTickBox (juce::Graphics&, juce::Component&, float, float, float, float,
-    //                  bool, bool, bool, bool) override {}
-    void drawButtonBackground (juce::Graphics&, juce::Button&, const juce::Colour&, bool, bool) override {}
     
     
     

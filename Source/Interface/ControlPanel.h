@@ -58,7 +58,7 @@ public:
         ratio.setBounds (b.removeFromLeft (static_cast<int> (unitWidth)));
     }
 private:
-    juce::Label label;
+    morph::AutoFitTextBox label;
     KnobParameterSlider threshold, ratio;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Compressor)
@@ -89,14 +89,17 @@ public:
     void resized() override 
     {
         auto b = getLocalBounds();
-        perVoiceOnOff.setBounds (0, 0, 22, 22);
-        label.setBounds (b.removeFromTop (20));
+        int topMargin = juce::roundToInt (b.getHeight() * 0.15f);
+        juce::Rectangle<int> onOffBounds {topMargin, topMargin};
+        perVoiceOnOff.setBounds (onOffBounds.reduced (juce::roundToInt (b.getHeight() * 0.02f)));
+
+        label.setBounds (b.removeFromTop (topMargin));
         auto unitWidth = b.getWidth() / 2.0f;
         perVoiceFrequency.setBounds (b.removeFromLeft (static_cast<int> (unitWidth)));
         perVoiceResonance.setBounds (b.removeFromLeft (static_cast<int> (unitWidth)));
     }
 private:
-    juce::Label label;
+    morph::AutoFitTextBox label;
     KnobParameterSlider perVoiceFrequency, perVoiceResonance;
     ParameterToggle perVoiceOnOff;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PerVoiceFilter)
@@ -108,10 +111,7 @@ public:
             tp::MPEVoiceData& vd)
       : frequency ("Frequency", "FilterFrequency", vts, vd), 
         resonance ("Resonance", "FilterResonance", vts, vd), 
-        onOff ("", "FilterOnOff", vts), 
-        perVoiceFrequency ("Frequency", "Per-VoiceFilterFrequency", vts, vd),
-        perVoiceResonance ("Resonance", "Per-VoiceFilterResonance", vts, vd),
-        perVoiceOnOff ("", "Per-VoiceFilterOnOff", vts)
+        onOff ("", "FilterOnOff", vts)
     {
         label.setText ("Global Filter", juce::dontSendNotification);
         label.setJustificationType (juce::Justification::centred);
@@ -119,11 +119,6 @@ public:
         addAndMakeVisible (frequency);
         addAndMakeVisible (resonance);
         addAndMakeVisible (onOff);
-
-        addAndMakeVisible (perVoiceFrequency);
-        addAndMakeVisible (perVoiceResonance);
-        addAndMakeVisible (perVoiceOnOff);
-
     }
     void paint (juce::Graphics& g) override 
     {
@@ -133,19 +128,19 @@ public:
     void resized() override 
     {
         auto b = getLocalBounds();
-        onOff.setBounds (0, 0, 22, 22);
-        label.setBounds (b.removeFromTop (20));
+        int topMargin = juce::roundToInt (b.getHeight() * 0.15f);
+        juce::Rectangle<int> onOffBounds {topMargin, topMargin};
+        onOff.setBounds (onOffBounds.reduced (juce::roundToInt (b.getHeight() * 0.02f)));
+        label.setBounds (b.removeFromTop (topMargin));
         auto unitWidth = b.getWidth() / 2.0f;
         frequency.setBounds (b.removeFromLeft (static_cast<int> (unitWidth)));
         resonance.setBounds (b.removeFromLeft (static_cast<int> (unitWidth)));
     }
 private:
-    juce::Label label;
+    morph::AutoFitTextBox label;
     KnobParameterSlider frequency, resonance;
     ParameterToggle onOff;
 
-    KnobParameterSlider perVoiceFrequency, perVoiceResonance;
-    ParameterToggle perVoiceOnOff;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Filter)
 };
 class Envelope : public juce::Component
@@ -179,12 +174,10 @@ public:
     void resized() override 
     {
         auto b = getLocalBounds();
-        label.setBounds (b.removeFromTop (20));
+        int topMargin = juce::roundToInt (b.getHeight() * 0.15f);
+        label.setBounds (b.removeFromTop (topMargin));
         auto esBounds = b.removeFromLeft (juce::roundToInt (b.getWidth() * 0.1f));
-        int dimension = esBounds.getWidth() > esBounds.getHeight() ? juce::roundToInt (esBounds.getHeight()) : juce::roundToInt (esBounds.getWidth());
-        auto esSquare = juce::Rectangle<int> (dimension, dimension);
-        esSquare.setCentre (esBounds.getCentre());
-        envelopeSize.setBounds (esSquare);
+        envelopeSize.setBounds (esBounds.reduced ( juce::roundToInt (esBounds.getWidth() * 0.2f)));
 
         auto unitWidth = juce::roundToInt (b.getWidth() / 5.0f);
         attack.setBounds (b.removeFromLeft (unitWidth));
