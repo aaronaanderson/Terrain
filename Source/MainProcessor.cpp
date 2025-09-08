@@ -255,11 +255,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout MainProcessor::createParamet
     layout.add (std::make_unique<tp::RangedFloatParameter> ("Sensitivity", 
                                                             range, 
                                                             60.0f));
-    range = juce::NormalisableRange<float> (2.0f, 5000.0f); range.setSkewForCentre (500.0f);
+    range = juce::NormalisableRange<float> (2.0f, 20000.0f); range.setSkewForCentre (500.0f);
     layout.add (std::make_unique<tp::RangedFloatParameter> ("Attack", 
                                                             range, 
                                                             200.0f));
-    range = juce::NormalisableRange<float> (2.0f, 5000.0f); range.setSkewForCentre (500.0f);
+    range = juce::NormalisableRange<float> (2.0f, 20000.0f); range.setSkewForCentre (500.0f);
     layout.add (std::make_unique<tp::RangedFloatParameter> ("Decay", 
                                                             range, 
                                                             80.0f));
@@ -267,7 +267,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout MainProcessor::createParamet
     layout.add (std::make_unique<tp::RangedFloatParameter> ("Sustain", 
                                                             range, 
                                                             0.7f));
-    range = juce::NormalisableRange<float> (2.0f, 5000.0f); range.setSkewForCentre (500.0f);
+    range = juce::NormalisableRange<float> (2.0f, 40000.0f); range.setSkewForCentre (500.0f);
     layout.add (std::make_unique<tp::RangedFloatParameter> ("Release", 
                                                             range, 
                                                             800.0f));

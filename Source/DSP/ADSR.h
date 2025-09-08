@@ -18,7 +18,6 @@ public:
         LOG_EXP_N1_5 (-std::log((1.0f + std::exp (-1.5f)) / std::exp (-1.5f)))
     {
         setParameters (Parameters());
-        calculateCoefficients();
     }
     void prepare (double sr)
     {
@@ -60,6 +59,7 @@ public:
                 }
             break;
             case Phase::SUSTAIN:
+                currentValue = parameters.sustain;
             break;
             case Phase::RELEASE:
                 currentValue = release.offset + (currentValue * release.coefficient);
@@ -101,6 +101,7 @@ public:
         assert (newSustain >= 0.0f && newSustain <= 1.0f);
         parameters.sustain = newSustain;
         calculateDecay();
+        calculateRelease();
     }
     void setRelease (float newRelease)
     {
