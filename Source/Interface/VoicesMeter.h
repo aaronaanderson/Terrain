@@ -21,13 +21,7 @@ struct VoiceMeter : public juce::Component,
 
     void paint (juce::Graphics& g) override
     {
-        auto b = getLocalBounds();
-        if (b.getHeight() > b.getWidth() * 1.5)
-            paintVertical (g);
-        else if (b.getHeight() * 2 >= b.getWidth())
             paintArc (g);
-        else
-            paintHorizontal (g);
     }
     void setMPEChannel (juce::Identifier mpeCh)    { mpeChannel = mpeCh; }
     void setOutputID (juce::Identifier output)     { outputID = output; }
@@ -39,37 +33,6 @@ private:
     juce::Identifier mpeChannel;
     juce::Identifier outputID;
     
-    void paintHorizontal (juce::Graphics& g)
-    {
-        auto b = getLocalBounds();
-        auto sliderRect = b.reduced (4);
-        sliderRect = sliderRect.withHeight (juce::jmin (sliderRect.getHeight(), 16));
-        sliderRect = sliderRect.withCentre (b.getCentre());
-        auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
-        g.setColour (laf->getBackgroundColour());
-        g.fillRect (sliderRect.toFloat());
-
-        float width = sliderRect.getHeight() * 0.6f;
-        auto voicesData = voiceData.getVoiceDataMT();
-        for (int i = 0; i < voicesData.size(); i++)
-        {
-            // if (!(bool)voicesState.getChild (i).getProperty (id::voiceActive)) continue;
-            if( !voicesData[i].voiceActive ) { continue; }
-            
-            g.setColour (laf->getAccentColour());
-            float x = 0.0f;
-            if (mpeChannel == id::PRESSURE) x = voicesData[i].pressure;
-            if (mpeChannel == id::TIMBRE) x = voicesData[i].timbre;                       
-            auto curvedX = curveValue (x, 
-                                       (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::curve),
-                                       (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::handleOne),
-                                       (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::handleTwo));
-            
-            x = juce::jmap (curvedX, width, (float)sliderRect.getWidth());
-            auto thumbRect = juce::Rectangle<float> ((float)width, (float)width);
-            g.fillEllipse (thumbRect.withCentre({x, (float)sliderRect.getCentreY()}));
-        }
-    }
     void paintArc (juce::Graphics& g)
     {
         auto bounds = getLocalBounds().reduced (10);
@@ -114,37 +77,7 @@ private:
         }
         
     }
-    void paintVertical (juce::Graphics& g)
-    {
-        auto b = getLocalBounds();
-        auto sliderRect = b.reduced (4);
-        sliderRect = sliderRect.withWidth (juce::jmin (sliderRect.getWidth(), 16));
-        sliderRect = sliderRect.withCentre (b.getCentre());
-        auto* laf = dynamic_cast<TerrainLookAndFeel*> (&getLookAndFeel());
-        g.setColour (laf->getBackgroundColour());
-        g.fillRect (sliderRect.toFloat());
-
-        float width = sliderRect.getWidth() * 0.6f;
-        auto voicesData = voiceData.getVoiceDataMT();
-        for (int i = 0; i < voicesData.size(); i++)
-        {
-            // if (!voicesState.getChild (i).getProperty (id::voiceActive)) continue;
-            if (!voicesData[i].voiceActive) { continue; }
-
-            g.setColour (laf->getAccentColour());
-            float x = 0.0f;
-            if (mpeChannel == id::PRESSURE) x = voicesData[i].pressure;
-            if (mpeChannel == id::TIMBRE) x = voicesData[i].timbre;
-            auto curvedX = curveValue (x, 
-                                       (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::curve),
-                                       (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::handleOne),
-                                       (float)routingBranch.getChildWithName (mpeChannel).getChildWithName (outputID).getProperty (id::handleTwo));            
-            x = juce::jmap (curvedX, 0.0f, (float)sliderRect.getHeight() - width);
-            auto thumbRect = juce::Rectangle<float> ((float)width, (float)width);
-            g.fillEllipse (thumbRect.withCentre({(float)sliderRect.getCentreX(), sliderRect.getHeight() - x}));
-        }
-    }
-
+   
     juce::Point<float> normalToArc (float normalPosition, float startAngle, float endAngle, float radius, juce::Rectangle<int> bounds)
     {
         auto angle = startAngle + normalPosition * (endAngle - startAngle);
